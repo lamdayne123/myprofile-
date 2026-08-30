@@ -17,7 +17,7 @@ export const projectsData: Project[] = [
   {
     id: "discord-bot",
     name: "Discord Bot",
-    desc: "Bot Discord có AI, và nhiều source minigame.",
+    desc: "Bot Discord có AI và nhiều source minigame.",
     tags: ["Node.js", "Discord", "AI"],
     image: "/images/projects/discord.jpg"
   },
