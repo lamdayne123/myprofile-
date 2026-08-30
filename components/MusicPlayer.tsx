@@ -1,21 +1,55 @@
 "use client";
-import { songs } from "@/data/music";
-import { Pause,Play,SkipBack,SkipForward,Shuffle,Repeat2 } from "lucide-react";
-import { useEffect,useRef,useState } from "react";
 
-export default function MusicPlayer(){
- const [playing,setPlaying]=useState(false),[index,setIndex]=useState(0);
- const audio=useRef<HTMLAudioElement|null>(null); const song=songs[index];
- useEffect(()=>{audio.current?.pause();audio.current=null;setPlaying(false)},[index]);
- function toggle(){if(!audio.current) return setPlaying(v=>!v); if(playing){audio.current.pause();setPlaying(false)}else{audio.current.play().then(()=>setPlaying(true)).catch(()=>setPlaying(false))}}
- return <div className="glass fixed bottom-3 left-3 right-3 z-50 mx-auto flex max-w-5xl items-center gap-3 rounded-2xl p-2.5 md:bottom-5">
-   <audio ref={audio} src={song.audio} onEnded={()=>setIndex((index+1)%songs.length)}/>
-   <div className="hidden h-11 w-11 shrink-0 rounded-xl bg-gradient-to-br from-violet-700 to-slate-900 sm:block"/>
-   <div className="min-w-0 flex-1"><div className="truncate text-sm font-medium">{song.title}</div><div className="text-xs text-white/45">{song.artist}</div></div>
-   <div className="hidden items-center gap-3 text-white/45 sm:flex"><Shuffle size={15}/><SkipBack size={17}/></div>
-   <button onClick={toggle} aria-label={playing?"Pause":"Play"} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-violet-300 text-slate-950">{playing?<Pause size={17}/>:<Play size={17} className="ml-0.5"/>}</button>
-   <button onClick={()=>setIndex((index+1)%songs.length)} aria-label="Next song" className="text-white/65"><SkipForward size={18}/></button>
-   <div className="hidden w-44 md:block"><div className="h-1 rounded-full bg-white/10"><div className="h-1 w-1/3 rounded-full bg-violet-300"/></div></div>
-   <Repeat2 size={16} className="hidden text-white/40 sm:block"/>
- </div>
+import React, { useState } from "react";
+import { playlist } from "@/data/music";
+import { Play, Pause, SkipForward, SkipBack, Repeat, Shuffle, Volume2, ListMusic, Maximize2, X } from "lucide-react";
+
+export default function MusicPlayer() {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const currentSong = playlist[0];
+
+  return (
+    <div className="fixed bottom-14 md:bottom-0 left-0 right-0 md:left-24 bg-white/80 backdrop-blur-xl border-t border-white/90 px-4 py-2 z-20 shadow-lg flex items-center justify-between">
+      {/* Song Info */}
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-lg bg-slate-300 flex-shrink-0 flex items-center justify-center text-xs text-white">
+          🎵
+        </div>
+        <div>
+          <p className="text-xs font-bold text-slate-800">{currentSong.title}</p>
+          <p className="text-[10px] text-slate-500">{currentSong.artist}</p>
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="flex flex-col items-center gap-1">
+        <div className="flex items-center gap-3 text-slate-600">
+          <Shuffle className="w-3.5 h-3.5 cursor-pointer" />
+          <SkipBack className="w-4 h-4 cursor-pointer" />
+          <button 
+            onClick={() => setIsPlaying(!isPlaying)}
+            className="p-2 rounded-full bg-slate-900 text-white shadow-sm"
+          >
+            {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+          </button>
+          <SkipForward className="w-4 h-4 cursor-pointer" />
+          <Repeat className="w-3.5 h-3.5 cursor-pointer" />
+        </div>
+        <div className="hidden sm:flex items-center gap-2 text-[9px] text-slate-400">
+          <span>1:24</span>
+          <div className="w-48 h-1 bg-slate-200 rounded-full overflow-hidden">
+            <div className="w-1/3 h-full bg-sky-500"></div>
+          </div>
+          <span>{currentSong.duration}</span>
+        </div>
+      </div>
+
+      {/* Volume & Extra */}
+      <div className="hidden sm:flex items-center gap-3 text-slate-500">
+        <Volume2 className="w-4 h-4" />
+        <ListMusic className="w-4 h-4" />
+        <Maximize2 className="w-4 h-4" />
+      </div>
+    </div>
+  );
 }
