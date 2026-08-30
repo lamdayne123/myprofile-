@@ -1,16 +1,20 @@
-export const profile = {
+export const profileData = {
   name: "Trương Chí Lâm",
-  greeting: "こんにちは、私は",
-  subtitle: "Just another human being.",
-  location: "Vietnam",
-  role: "Developer / Student",
+  avatar: "/images/avatar.jpg",
+  greetingJp: "こんにちは、私は",
+  titleJp: "ただの人間です。",
+  tagline: "Just another human being.",
+  quoteJp: "小さな一歩でも、進んでいればそれでいい。",
+  quoteVi: "Dù chỉ là một bước nhỏ, miễn tiến lên là được.",
   status: "Online",
-  quote: "小さな一歩でも、進んでいればそれでいい。",
-  quoteVi: "Dù chỉ là một bước nhỏ, miễn là tiến lên là được."
+  location: "Vietnam",
+  age: "100 tuổi",
+  role: "Developer / Student",
+  aboutJp: "プログラミングと音楽が好きです。サーバーを構築したり、Discord Botを作ったりするのが趣味です。",
+  hobbies: [
+    "コードを書くこと",
+    "音楽を聴くこと",
+    "アニメを見ること",
+    "ゲーム (Minecraft)"
+  ]
 };
-
-export const socials = [
-  { label: "Discord", href: "#", icon: "discord" },
-  { label: "GitHub", href: "#", icon: "github" },
-  { label: "Spotify", href: "#", icon: "spotify" }
-];
