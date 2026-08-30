@@ -1,54 +1,249 @@
- "use client";
-import {useState} from "react";
-import {Menu,Search,Sparkles,X,Music2,Server as ServerIcon,FolderKanban,Images,UserRound,NotebookPen,Mail} from "lucide-react";
-import {profile} from "@/data/profile";
-import ProfileCard from "@/components/ProfileCard";
-import Projects from "@/components/Projects";
-import ServerStatus from "@/components/ServerStatus";
-import MusicPlayer from "@/components/MusicPlayer";
-import Sidebar from "@/components/Sidebar";
+"use client";
 
-export default function Home(){
- const [menu,setMenu]=useState(false);
- return <main className="min-h-screen overflow-x-hidden bg-[#07101d]">
-   <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_70%_25%,rgba(139,92,246,.18),transparent_32%),linear-gradient(rgba(4,9,18,.18),rgba(4,9,18,.72)),url('/images/background.jpg')] bg-cover bg-center"/>
-   <div className="fixed inset-0 -z-10 bg-gradient-to-b from-transparent via-[#07101d]/20 to-[#07101d]"/>
-   <Sidebar/>
-   <header className="fixed left-0 right-0 top-0 z-40 flex items-center justify-between px-4 py-4 lg:left-24">
-     <button onClick={()=>setMenu(true)} aria-label="Open menu" className="rounded-xl border border-white/10 bg-black/20 p-2 backdrop-blur-lg lg:hidden"><Menu size={19}/></button>
-     <div className="hidden text-xs text-white/35 lg:block">PERSONAL SPACE / 2026</div>
-     <div className="ml-auto flex gap-2"><button aria-label="Search" className="rounded-full border border-white/10 bg-black/20 p-2 text-white/65 backdrop-blur-lg"><Search size={16}/></button><button aria-label="Effects" className="rounded-full border border-white/10 bg-black/20 p-2 text-white/65 backdrop-blur-lg"><Sparkles size={16}/></button></div>
-   </header>
+import React, { useState } from "react";
+import {
+  Home,
+  User,
+  Folder,
+  Server,
+  Search,
+  Bell,
+  Play,
+  Pause,
+  SkipForward,
+  ExternalLink,
+  Menu,
+} from "lucide-react";
 
-   {menu&&<div className="fixed inset-0 z-[60] bg-black/65 backdrop-blur-sm lg:hidden" onClick={()=>setMenu(false)}>
-     <aside className="h-full w-[82%] max-w-sm border-r border-white/10 bg-[#07101d]/95 p-5" onClick={e=>e.stopPropagation()}>
-       <div className="flex items-center justify-between"><div className="font-semibold tracking-widest text-violet-200">CL / MENU</div><button onClick={()=>setMenu(false)} aria-label="Close menu"><X/></button></div>
-       <nav className="mt-8 grid gap-2">{[[UserRound,"PROFILE"],[FolderKanban,"PROJECTS"],[Music2,"MUSIC"],[Images,"GALLERY"],[ServerIcon,"SERVER"],[NotebookPen,"NOTES"],[Mail,"CONTACT"]].map(([I,n])=><a onClick={()=>setMenu(false)} key={n as string} href={`#${(n as string).toLowerCase()}`} className="flex items-center gap-3 rounded-2xl border border-white/5 bg-white/[.03] p-4 text-sm text-white/70"><I as any size={18}/>{n as string}</a>)}</nav>
-     </aside>
-   </div>}
+export default function MobileDashboard() {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [activeTab, setActiveTab] = useState("home");
 
-   <div className="mx-auto max-w-7xl px-4 pb-32 pt-24 lg:ml-24 lg:px-8">
-     <section id="home" className="grid items-center gap-8 py-8 lg:grid-cols-[1fr_1.15fr] lg:py-16">
-       <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
-         <div className="mb-5 grid h-32 w-32 place-items-center rounded-full border border-violet-200/35 bg-black/25 text-[10px] tracking-[.2em] text-white/35 shadow-[0_0_45px_rgba(139,92,246,.22)] backdrop-blur-lg">AVATAR</div>
-         <div className="text-sm tracking-[.35em] text-violet-100/70">{profile.greeting}</div>
-         <h1 className="mt-2 text-5xl font-semibold tracking-tight sm:text-6xl lg:text-7xl">{profile.name}</h1>
-         <p className="mt-3 text-base text-white/60">{profile.subtitle}</p>
-         <div className="mt-5 flex flex-wrap justify-center gap-2 lg:justify-start"><span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1.5 text-xs text-emerald-200">● {profile.status}</span><span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs text-white/65">🇻🇳 {profile.location}</span><span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs text-white/65">⌘ {profile.role}</span></div>
-         <div className="glass mt-6 max-w-xl rounded-2xl px-5 py-4 text-sm leading-6 text-white/70"><div>{profile.quote}</div><div className="text-xs text-white/40">{profile.quoteVi}</div></div>
-       </div>
-       <div className="grid gap-4 sm:grid-cols-2">
-         <section id="music" className="glass rounded-3xl p-5 sm:col-span-2"><div className="text-xs tracking-[.2em] text-violet-200/70">MY PLAYLIST / 私のプレイリスト</div><div className="mt-4 flex items-center gap-4"><div className="h-20 w-20 shrink-0 rounded-2xl bg-gradient-to-br from-violet-700 to-slate-900"/><div className="min-w-0 flex-1"><div className="truncate font-medium">夜に駆ける</div><div className="text-sm text-white/45">YOASOBI</div><div className="mt-4 h-1 rounded-full bg-white/10"><div className="h-1 w-1/3 rounded-full bg-violet-300"/></div></div></div></section>
-         <ServerStatus/>
-         <section id="notes" className="glass rounded-3xl p-5"><div className="text-xs tracking-[.2em] text-violet-200/70">TODAY'S NOTE</div><p className="mt-4 text-sm leading-6 text-white/65">夢を見ることができれば、それは実現できる。</p></section>
-       </div>
-     </section>
-     <Projects/>
-     <div className="mt-4 grid gap-4 md:grid-cols-2">
-       <ProfileCard/>
-       <section id="gallery" className="glass rounded-3xl p-5"><div className="text-sm font-semibold">GALLERY</div><div className="text-xs text-white/40">ギャラリー</div><div className="mt-4 grid grid-cols-2 gap-2">{["01","02","03","04"].map(x=><div key={x} className="aspect-video rounded-xl bg-gradient-to-br from-indigo-950 via-violet-950 to-slate-900"/>)}</div></section>
-     </div>
-   </div>
-   <MusicPlayer/>
- </main>
+  return (
+    <div className="max-w-md mx-auto min-h-screen bg-[url('/images/background.jpg')] bg-cover bg-center text-slate-800 pb-24 relative overflow-x-hidden font-sans">
+      {/* Light Overlay */}
+      <div className="absolute inset-0 bg-sky-200/20 backdrop-contrast-[1.02] z-0" />
+
+      {/* Top Mobile Bar */}
+      <div className="relative z-10 flex items-center justify-between p-3.5 glass-panel m-3 shadow-sm">
+        <div className="flex items-center gap-2.5">
+          <button className="p-1.5 rounded-lg bg-white/60 text-slate-700 active:scale-95 transition">
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
+              CL
+            </div>
+            <span className="font-semibold text-xs tracking-tight text-slate-800">
+              Trương Chí Lâm
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <button className="p-2 rounded-full bg-white/60 text-slate-700 active:scale-95 transition">
+            <Search className="w-4 h-4" />
+          </button>
+          <button className="p-2 rounded-full bg-white/60 text-slate-700 active:scale-95 transition">
+            <Bell className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content Vertical Stack */}
+      <div className="relative z-10 px-3 space-y-3">
+
+        {/* 1. Hero Profile Mobile */}
+        <div className="glass-panel p-5 flex flex-col items-center text-center relative shadow-sm">
+          <div className="relative mb-2.5">
+            <div className="w-20 h-20 rounded-full border-2 border-white/80 shadow-md overflow-hidden bg-slate-200">
+              <img
+                src="/images/avatar.jpg"
+                alt="Avatar"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Fallback khi chưa có ảnh avatar
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+              />
+            </div>
+            <span className="absolute bottom-0 right-0 bg-emerald-500 text-white text-[9px] px-1.5 py-0.2 rounded-full border border-white font-medium">
+              ● Online
+            </span>
+          </div>
+
+          <p className="text-[11px] text-slate-500 font-medium">こんにちは、私は</p>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            Trương Chí Lâm
+          </h1>
+          <p className="text-[11px] text-slate-500 mt-0.5">Just another human being.</p>
+
+          <div className="flex flex-wrap justify-center gap-1.5 mt-3 text-[10px] font-medium text-slate-600">
+            <span className="bg-white/70 px-2.5 py-1 rounded-md border border-slate-200/50">
+              🇻🇳 Vietnam
+            </span>
+            <span className="bg-white/70 px-2.5 py-1 rounded-md border border-slate-200/50">
+              🎂 14 tuổi
+            </span>
+            <span className="bg-white/70 px-2.5 py-1 rounded-md border border-slate-200/50">
+              💻 Dev / Student
+            </span>
+          </div>
+
+          {/* Japanese Quote Card */}
+          <div className="mt-3.5 p-2.5 rounded-xl bg-white/50 border border-white/80 text-[10px] text-slate-600 italic w-full">
+            <p className="font-japanese">"小さな一歩でも、進んでいればそれでいい。"</p>
+            <p className="text-slate-400 not-italic text-[9px] mt-0.5">Dù chỉ là một bước nhỏ, miễn tiến lên là được.</p>
+          </div>
+        </div>
+
+        {/* 2. Projects Horizontal Scroll / Carousel */}
+        <div className="glass-panel p-3.5 shadow-sm">
+          <div className="flex justify-between items-center mb-2.5">
+            <h2 className="text-[11px] font-bold text-slate-700 tracking-wider">
+              PROJECTS
+            </h2>
+            <span className="text-[10px] text-sky-600 flex items-center gap-0.5 font-semibold cursor-pointer">
+              VIEW ALL <ExternalLink className="w-2.5 h-2.5" />
+            </span>
+          </div>
+
+          <div className="flex gap-2.5 overflow-x-auto pb-1.5 snap-x no-scrollbar">
+            {[
+              {
+                name: "Craftopia Survival",
+                desc: "Máy chủ Minecraft sinh tồn",
+                tags: ["Minecraft", "Paper", "MySQL"],
+              },
+              {
+                name: "Discord AI Bot",
+                desc: "Bot Discord hỗ trợ AI",
+                tags: ["Node.js", "Discord.AI"],
+              },
+              {
+                name: "Card Battle System",
+                desc: "Game thẻ bài Anime",
+                tags: ["JavaScript", "Vue.js"],
+              },
+            ].map((p, idx) => (
+              <div
+                key={idx}
+                className="min-w-[190px] max-w-[190px] bg-white/60 p-3 rounded-xl snap-center border border-white/80 shadow-xs flex flex-col justify-between"
+              >
+                <div>
+                  <div className="h-16 rounded-lg bg-sky-100/60 mb-2 flex items-center justify-center text-[10px] text-sky-500 font-medium">
+                    Preview Frame
+                  </div>
+                  <h3 className="text-xs font-bold text-slate-800 truncate">
+                    {p.name}
+                  </h3>
+                  <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                    {p.desc}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {p.tags.map((t, i) => (
+                    <span
+                      key={i}
+                      className="text-[8px] bg-sky-100/80 text-sky-700 px-1.5 py-0.5 rounded font-medium"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 3. Server Status Widget */}
+        <div className="glass-panel p-3.5 shadow-sm">
+          <div className="flex justify-between items-center mb-1.5">
+            <span className="text-[11px] font-bold text-slate-700 tracking-wider">
+              SERVER STATUS
+            </span>
+            <span className="text-[9px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">
+              ● ONLINE
+            </span>
+          </div>
+          <p className="text-xs font-bold text-slate-800">Craftopia Survival</p>
+          <p className="text-[9px] text-slate-500 font-mono mt-0.5">
+            IP: play.craftopia.vn
+          </p>
+
+          <div className="grid grid-cols-2 gap-2 mt-2.5 text-center">
+            <div className="bg-white/60 p-2 rounded-lg border border-white/80">
+              <span className="text-[8px] text-slate-400 font-bold block">
+                PLAYERS
+              </span>
+              <span className="text-xs font-bold text-slate-700">8 / 50</span>
+            </div>
+            <div className="bg-white/60 p-2 rounded-lg border border-white/80">
+              <span className="text-[8px] text-slate-400 font-bold block">
+                TPS
+              </span>
+              <span className="text-xs font-bold text-emerald-600">19.87</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* 4. Bottom Sticky Player Mobile */}
+      <div className="fixed bottom-14 left-2 right-2 z-20 glass-panel p-2 rounded-xl flex items-center justify-between border border-white/90 shadow-md">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-slate-300 overflow-hidden flex-shrink-0">
+            <div className="w-full h-full bg-slate-700 flex items-center justify-center text-[8px] text-white">🎵</div>
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold text-slate-800 truncate leading-tight">
+              夜に駆ける
+            </p>
+            <p className="text-[9px] text-slate-500 truncate leading-tight">
+              YOASOBI
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <button
+            onClick={() => setIsPlaying(!isPlaying)}
+            className="p-2 rounded-full bg-slate-900 text-white shadow-sm active:scale-95 transition"
+          >
+            {isPlaying ? (
+              <Pause className="w-3 h-3" />
+            ) : (
+              <Play className="w-3 h-3" />
+            )}
+          </button>
+          <button className="p-1.5 text-slate-600 active:scale-95 transition">
+            <SkipForward className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* 5. Bottom Navigation Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-md border-t border-slate-200/60 py-1.5 px-6 flex justify-between items-center max-w-md mx-auto">
+        {[
+          { id: "home", icon: Home, label: "Trang chủ" },
+          { id: "profile", icon: User, label: "Hồ sơ" },
+          { id: "projects", icon: Folder, label: "Dự án" },
+          { id: "server", icon: Server, label: "Server" },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const active = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex flex-col items-center gap-0.5 text-[9px] font-medium transition ${
+                active ? "text-sky-600 font-bold" : "text-slate-400"
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
