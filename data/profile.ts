@@ -1,4 +1,20 @@
-export const profileData = {
+export interface ProfileData {
+  name: string;
+  avatar: string;
+  greetingJp: string;
+  titleJp: string;
+  tagline: string;
+  quoteJp: string;
+  quoteVi: string;
+  status: string;
+  location: string;
+  age: string;
+  role: string;
+  aboutJp: string;
+  hobbies: string[];
+}
+
+export const profileData: ProfileData = {
   name: "Trương Chí Lâm",
   avatar: "/images/avatar.jpg",
   greetingJp: "こんにちは、私は",
@@ -10,7 +26,8 @@ export const profileData = {
   location: "Vietnam",
   age: "100 tuổi",
   role: "Developer / Student",
-  aboutJp: "プログラミングと音楽が好きです。サーバーを構築したり、Discord Botを作ったりするのが趣味です。",
+  aboutJp:
+    "プログラミングと音楽が好きです。サーバーを構築したり、Discord Botを作ったりするのが趣味です。",
   hobbies: [
     "コードを書くこと",
     "音楽を聴くこと",
