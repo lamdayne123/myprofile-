@@ -2,14 +2,71 @@
 
 import React, { useState } from "react";
 import {
-  Home, User, Music, Folder, Image as GalleryIcon, StickyNote,
+  User, Music, Folder, Image as GalleryIcon, StickyNote,
   Github, Phone, Settings, Globe, Mail, MessageSquare, ExternalLink,
   Play, Pause, SkipForward, SkipBack, Shuffle, Repeat, Volume2, ListMusic, Maximize2,
   Search, Bell, Plus, ChevronDown, X
 } from "lucide-react";
-import { profileData } from "@/data/profile";
-import { projectsData } from "@/data/projects";
-import { playlist } from "@/data/music";
+
+// Inline Data để tránh lỗi module-not-found trên Vercel
+const profileData = {
+  name: "Trương Chí Lâm",
+  avatar: "/images/avatar.jpg",
+  greetingJp: "こんにちは、私は",
+  titleJp: "ただの人間です。",
+  tagline: "Just another human being.",
+  quoteJp: "小さな一歩でも、進んでいればそれでいい。",
+  quoteVi: "Dù chỉ là một bước nhỏ, miễn tiến lên là được.",
+  status: "Online",
+  location: "Vietnam",
+  age: "14 tuổi",
+  role: "Developer / Student",
+  aboutJp: "プログラミングと音楽が好きです。サーバーを構築したり、Discord Botを作ったりするのが趣味です。",
+  hobbies: [
+    "コードを書くこと",
+    "音楽を聴くこと",
+    "アニメを見ること",
+    "ゲーム (Minecraft)"
+  ]
+};
+
+const projectsData = [
+  {
+    id: "craftopia",
+    name: "Craftopia Survival",
+    desc: "Máy chủ Minecraft sinh tồn với cộng đồng tuyệt vời.",
+    tags: ["Minecraft", "Paper", "MySQL"],
+    image: "/images/projects/craftopia.jpg"
+  },
+  {
+    id: "discord-bot",
+    name: "Discord AI Assistant",
+    desc: "Bot Discord hỗ trợ AI, nhiều tính năng thông minh.",
+    tags: ["Node.js", "Discord.AI", "AI"],
+    image: "/images/projects/discord.jpg"
+  },
+  {
+    id: "card-battle-1",
+    name: "Card Cartle System",
+    desc: "Hệ thống game thẻ bài biến căn ứng dụng.",
+    tags: ["JavaScript", "Vue.js", "DB"],
+    image: "/images/projects/cardgame.jpg"
+  },
+  {
+    id: "card-battle-2",
+    name: "Card Bartle System",
+    desc: "Hệ thống game thẻ bài lấy cảm hứng từ anime.",
+    tags: ["JavaScript", "Vue.js", "DB"],
+    image: "/images/projects/cardgame.jpg"
+  }
+];
+
+const playlist = [
+  { title: "夜に駆ける", artist: "YOASOBI", duration: "4:21", cover: "/images/music/yoasobi.jpg" },
+  { title: "花に亡霊", artist: "ヨルシカ", duration: "4:01", cover: "/images/music/yorushika.jpg" },
+  { title: "アイドル", artist: "YOASOBI", duration: "3:33", cover: "/images/music/idol.jpg" },
+  { title: "光へ", artist: "Aimer", duration: "4:50", cover: "/images/music/aimer.jpg" }
+];
 
 export default function DashboardDesktop() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -17,25 +74,21 @@ export default function DashboardDesktop() {
 
   return (
     <div className="min-h-screen w-full bg-[url('/images/background.jpg')] bg-cover bg-center bg-no-repeat relative font-sans text-slate-800 overflow-x-hidden selection:bg-sky-200">
-      {/* Light Overlay */}
       <div className="absolute inset-0 bg-sky-100/15 backdrop-contrast-[1.02] pointer-events-none z-0" />
 
-      {/* 1. LEFT SIDEBAR */}
+      {/* LEFT SIDEBAR */}
       <aside className="fixed left-0 top-0 bottom-0 w-24 bg-white/40 backdrop-blur-xl border-r border-white/60 flex flex-col justify-between py-4 px-2 z-30 shadow-sm">
         <div className="flex flex-col items-center gap-5">
-          {/* Clock Header */}
           <div className="text-center pt-1">
             <span className="text-xs font-bold text-slate-700 block">23:42</span>
             <span className="text-[9px] text-slate-500 block">30 / 08 / 2026</span>
           </div>
 
-          {/* Logo / Home Button */}
           <div className="w-12 h-12 rounded-2xl bg-teal-100/70 border border-white/80 flex flex-col items-center justify-center text-teal-600 shadow-xs cursor-pointer">
             <span className="text-lg">🌸</span>
             <span className="text-[9px] font-bold">ホーム</span>
           </div>
 
-          {/* Nav Items */}
           <nav className="flex flex-col gap-3.5 w-full">
             {[
               { id: "profile", jp: "プロフィール", en: "PROFILE", icon: User },
@@ -63,7 +116,6 @@ export default function DashboardDesktop() {
           </nav>
         </div>
 
-        {/* Footer Icons & Credits */}
         <div className="flex flex-col items-center gap-3 text-slate-600">
           <div className="flex flex-col gap-2.5">
             <Github className="w-4 h-4 cursor-pointer hover:text-sky-600" />
@@ -82,9 +134,6 @@ export default function DashboardDesktop() {
           <Search className="w-4 h-4" />
         </button>
         <button className="w-8 h-8 rounded-full bg-white/50 backdrop-blur-md border border-white/80 flex items-center justify-center text-slate-700 shadow-xs hover:bg-white/80">
-          <Search className="w-4 h-4" />
-        </button>
-        <button className="w-8 h-8 rounded-full bg-white/50 backdrop-blur-md border border-white/80 flex items-center justify-center text-slate-700 shadow-xs hover:bg-white/80">
           <Bell className="w-4 h-4" />
         </button>
         <button className="w-8 h-8 rounded-full bg-white/50 backdrop-blur-md border border-white/80 flex items-center justify-center text-slate-700 shadow-xs hover:bg-white/80">
@@ -97,7 +146,6 @@ export default function DashboardDesktop() {
         
         {/* HERO PROFILE SECTION */}
         <div className="flex items-center gap-6 justify-center py-2">
-          {/* Avatar with Ring */}
           <div className="relative">
             <div className="w-36 h-36 rounded-full p-1 bg-gradient-to-tr from-sky-200 via-teal-100 to-indigo-200 shadow-lg">
               <div className="w-full h-full rounded-full border-2 border-white overflow-hidden bg-slate-300">
@@ -109,7 +157,6 @@ export default function DashboardDesktop() {
             </span>
           </div>
 
-          {/* Identity Info */}
           <div className="space-y-1.5">
             <p className="text-sm text-slate-600 font-medium">こんにちは、私は</p>
             <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-pink-400 to-sky-500 font-serif italic tracking-wide">
@@ -118,7 +165,6 @@ export default function DashboardDesktop() {
             <p className="text-xs text-slate-600 font-medium">{profileData.titleJp}</p>
             <p className="text-[11px] text-slate-400">{profileData.tagline}</p>
 
-            {/* Badges */}
             <div className="flex items-center gap-2 pt-1.5">
               <span className="text-[10px] bg-white/60 backdrop-blur-md border border-white/80 px-3 py-1 rounded-xl text-slate-700 font-medium shadow-2xs">
                 🇻🇳 {profileData.location}
@@ -131,7 +177,6 @@ export default function DashboardDesktop() {
               </span>
             </div>
 
-            {/* Quote Bubble */}
             <div className="mt-2 bg-white/50 backdrop-blur-md border border-white/80 px-3.5 py-2 rounded-2xl text-[10px] text-slate-600 max-w-md shadow-2xs">
               <p className="font-medium">"{profileData.quoteJp}"</p>
               <p className="text-slate-500 mt-0.5">{profileData.quoteVi}</p>
@@ -139,10 +184,10 @@ export default function DashboardDesktop() {
           </div>
         </div>
 
-        {/* WIDGETS GRID LAYOUT */}
+        {/* WIDGETS GRID */}
         <div className="grid grid-cols-12 gap-4 items-start max-w-7xl mx-auto w-full">
           
-          {/* COLUMN 1: Profile Details (3 cols) */}
+          {/* PROFILE CARD */}
           <div className="col-span-3 space-y-4">
             <div className="bg-white/45 backdrop-blur-xl border border-white/80 rounded-2xl p-4 shadow-sm relative">
               <div className="flex justify-between items-center mb-3">
@@ -182,7 +227,7 @@ export default function DashboardDesktop() {
             </div>
           </div>
 
-          {/* COLUMN 2: Projects Showcase (5 cols) */}
+          {/* PROJECTS */}
           <div className="col-span-5">
             <div className="bg-white/45 backdrop-blur-xl border border-white/80 rounded-2xl p-4 shadow-sm">
               <div className="flex justify-between items-center mb-3">
@@ -221,12 +266,9 @@ export default function DashboardDesktop() {
             </div>
           </div>
 
-          {/* COLUMN 3: Gallery, Server Status & Notes (4 cols) */}
+          {/* GALLERY + SERVER STATUS */}
           <div className="col-span-4 space-y-4">
-            
-            {/* Top row split: Gallery & Playlist float */}
             <div className="grid grid-cols-2 gap-3">
-              {/* Gallery Widget */}
               <div className="bg-white/45 backdrop-blur-xl border border-white/80 rounded-2xl p-3 shadow-sm">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
@@ -243,7 +285,6 @@ export default function DashboardDesktop() {
                 </div>
               </div>
 
-              {/* Server Status Widget */}
               <div className="bg-white/45 backdrop-blur-xl border border-white/80 rounded-2xl p-3 shadow-sm flex flex-col justify-between">
                 <div>
                   <div className="flex justify-between items-center mb-1">
@@ -260,7 +301,6 @@ export default function DashboardDesktop() {
                     <span className="text-slate-500">TPS</span>
                     <span className="text-emerald-600">19.87</span>
                   </div>
-                  {/* Waveform Graph Placeholder */}
                   <div className="h-4 w-full mt-1 border-b border-sky-300 flex items-end gap-0.5">
                     {[40, 60, 50, 70, 65, 80, 75, 90, 85].map((h, idx) => (
                       <div key={idx} className="flex-1 bg-sky-400/60 rounded-t-xs" style={{ height: `${h}%` }} />
@@ -270,7 +310,6 @@ export default function DashboardDesktop() {
               </div>
             </div>
 
-            {/* Today's Note Widget */}
             <div className="bg-white/45 backdrop-blur-xl border border-white/80 rounded-2xl p-3 shadow-sm relative overflow-hidden">
               <div className="flex justify-between items-center mb-1.5">
                 <span className="text-[10px] font-bold text-slate-700 flex items-center gap-1">
@@ -282,7 +321,6 @@ export default function DashboardDesktop() {
                 <p className="italic">夢を見ることができれば、<br />それは実現できる。</p>
                 <p className="text-slate-500 text-[9px]">Nếu có thể mơ,<br />bạn có thể làm được.</p>
               </div>
-              {/* Sakura decoration element */}
               <div className="absolute right-2 bottom-1 opacity-40 text-2xl pointer-events-none">🌸</div>
             </div>
 
@@ -290,7 +328,7 @@ export default function DashboardDesktop() {
         </div>
       </main>
 
-      {/* FLOATING PLAYLIST WINDOW (Top Right Widget) */}
+      {/* PLAYLIST WIDGET */}
       <div className="fixed top-14 right-6 w-56 bg-white/50 backdrop-blur-xl border border-white/80 rounded-2xl p-3 shadow-md z-20">
         <div className="flex justify-between items-center mb-2">
           <span className="text-[10px] font-bold text-slate-700 flex items-center gap-1">
@@ -299,7 +337,6 @@ export default function DashboardDesktop() {
           <X className="w-3 h-3 text-slate-400 cursor-pointer" />
         </div>
 
-        {/* Current Active Song in List */}
         <div className="flex items-center gap-2 bg-white/60 p-1.5 rounded-xl border border-white/90 mb-2">
           <div className="w-10 h-10 rounded-lg bg-slate-300 overflow-hidden flex-shrink-0">
             <img src={playlist[0].cover} alt="Cover" className="w-full h-full object-cover" />
@@ -314,7 +351,6 @@ export default function DashboardDesktop() {
           </div>
         </div>
 
-        {/* Track List */}
         <div className="space-y-1.5">
           {playlist.map((song, idx) => (
             <div key={idx} className="flex items-center justify-between text-[9px] text-slate-700 hover:bg-white/40 p-1 rounded-lg cursor-pointer">
@@ -333,9 +369,8 @@ export default function DashboardDesktop() {
         </div>
       </div>
 
-      {/* 4. BOTTOM FIXED MUSIC PLAYER BAR */}
+      {/* BOTTOM MUSIC PLAYER */}
       <footer className="fixed bottom-0 left-24 right-0 h-16 bg-white/75 backdrop-blur-xl border-t border-white/80 px-6 flex items-center justify-between z-40 shadow-lg">
-        {/* Track info */}
         <div className="flex items-center gap-3 w-1/4">
           <div className="w-10 h-10 rounded-xl bg-slate-300 overflow-hidden border border-white shadow-2xs">
             <img src={playlist[0].cover} alt="Cover" className="w-full h-full object-cover" />
@@ -346,7 +381,6 @@ export default function DashboardDesktop() {
           </div>
         </div>
 
-        {/* Main Audio Controls */}
         <div className="flex flex-col items-center gap-1 w-2/4">
           <div className="flex items-center gap-4 text-slate-600">
             <Shuffle className="w-3.5 h-3.5 cursor-pointer hover:text-sky-600" />
@@ -370,7 +404,6 @@ export default function DashboardDesktop() {
           </div>
         </div>
 
-        {/* Right Tools */}
         <div className="flex items-center gap-3 text-slate-500 justify-end w-1/4">
           <Volume2 className="w-4 h-4 cursor-pointer hover:text-slate-700" />
           <ListMusic className="w-4 h-4 cursor-pointer hover:text-slate-700" />
