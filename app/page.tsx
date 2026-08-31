@@ -73,6 +73,7 @@ type ServerData = {
   version: string;
 
   tps: number;
+
   ping: number;
 
   ip: string;
@@ -213,7 +214,9 @@ const projectsData: Project[] = [
 const playlist: Song[] = [
   {
     title: "夜に駆ける",
+
     artist: "YOASOBI",
+
     duration: "4:21",
 
     cover:
@@ -225,7 +228,9 @@ const playlist: Song[] = [
 
   {
     title: "花に亡霊",
+
     artist: "ヨルシカ",
+
     duration: "4:01",
 
     cover:
@@ -237,7 +242,9 @@ const playlist: Song[] = [
 
   {
     title: "アイドル",
+
     artist: "YOASOBI",
+
     duration: "3:33",
 
     cover:
@@ -249,7 +256,9 @@ const playlist: Song[] = [
 
   {
     title: "光へ",
+
     artist: "Aimer",
+
     duration: "4:50",
 
     cover:
@@ -261,12 +270,51 @@ const playlist: Song[] = [
 ];
 
 /* =========================================================
-   FORMAT TIME
+   NAVIGATION
 ========================================================= */
 
-function formatTime(
-  seconds: number
-) {
+const navigation = [
+  {
+    id: "profile",
+    jp: "プロフィール",
+    en: "PROFILE",
+    icon: User,
+  },
+
+  {
+    id: "music",
+    jp: "音楽",
+    en: "MUSIC",
+    icon: Music,
+  },
+
+  {
+    id: "projects",
+    jp: "作成",
+    en: "PROJECTS",
+    icon: Folder,
+  },
+
+  {
+    id: "gallery",
+    jp: "ギャラリー",
+    en: "GALLERY",
+    icon: GalleryIcon,
+  },
+
+  {
+    id: "diary",
+    jp: "日記",
+    en: "DIARY",
+    icon: StickyNote,
+  },
+];
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function formatTime(seconds: number) {
   if (
     !Number.isFinite(seconds) ||
     seconds < 0
@@ -346,12 +394,12 @@ const LiveClock = memo(
       ).format(now);
 
     return (
-      <div className="text-center select-none">
-        <span className="block text-xs font-bold text-slate-700">
+      <div className="text-center pt-1 select-none">
+        <span className="text-xs font-bold text-slate-700 block">
           {time}
         </span>
 
-        <span className="block text-[9px] text-slate-500">
+        <span className="text-[9px] text-slate-500 block">
           {date}
         </span>
       </div>
@@ -365,7 +413,10 @@ const LiveClock = memo(
 
 const ServerStatus = memo(
   function ServerStatus() {
-    const [serverData, setServerData] =
+    const [
+      serverData,
+      setServerData,
+    ] =
       useState<ServerData>({
         online: false,
 
@@ -430,13 +481,8 @@ const ServerStatus = memo(
               data.version ??
               "Unknown",
 
-            /*
-             * Theo yêu cầu hiện tại:
-             * TPS và Ping là giá trị hiển thị giả.
-             */
-
+            // Theo yêu cầu:
             tps: 20,
-
             ping: 0,
 
             ip:
@@ -489,6 +535,7 @@ const ServerStatus = memo(
         "
       >
         <div className="flex items-center justify-between mb-1">
+
           <span className="text-[10px] font-bold">
             SERVER STATUS
           </span>
@@ -500,6 +547,7 @@ const ServerStatus = memo(
               rounded-full
               text-[8px]
               font-bold
+
               ${
                 serverData.online
                   ? "bg-emerald-100 text-emerald-700"
@@ -514,6 +562,7 @@ const ServerStatus = memo(
               ? "ONLINE"
               : "OFFLINE"}
           </span>
+
         </div>
 
         <p className="text-xs font-bold">
@@ -527,6 +576,7 @@ const ServerStatus = memo(
         <div className="grid grid-cols-2 gap-1.5 mt-2">
 
           <div className="bg-white/45 rounded-lg p-1.5">
+
             <div className="flex items-center gap-1 text-[8px] text-slate-400">
               <Users className="w-2.5 h-2.5" />
               PLAYERS
@@ -537,9 +587,11 @@ const ServerStatus = memo(
                 ? "—"
                 : `${serverData.players.online} / ${serverData.players.max}`}
             </p>
+
           </div>
 
           <div className="bg-white/45 rounded-lg p-1.5">
+
             <div className="text-[8px] text-slate-400">
               VERSION
             </div>
@@ -549,6 +601,7 @@ const ServerStatus = memo(
                 ? "—"
                 : serverData.version}
             </p>
+
           </div>
 
         </div>
@@ -575,14 +628,7 @@ const ServerStatus = memo(
 
               <div className="h-1.5 bg-emerald-100 rounded-full overflow-hidden mt-1">
 
-                <div
-                  className="
-                    h-full
-                    w-full
-                    bg-emerald-400
-                    rounded-full
-                  "
-                />
+                <div className="h-full w-full bg-emerald-400 rounded-full" />
 
               </div>
 
@@ -595,8 +641,11 @@ const ServerStatus = memo(
               <div className="flex justify-between">
 
                 <span className="text-[8px] font-bold text-slate-500 flex items-center gap-0.5">
+
                   <Wifi className="w-2.5 h-2.5" />
+
                   PING
+
                 </span>
 
                 <span className="text-[9px] text-sky-600 font-bold">
@@ -607,14 +656,7 @@ const ServerStatus = memo(
 
               <div className="h-1.5 bg-sky-100 rounded-full overflow-hidden mt-1">
 
-                <div
-                  className="
-                    h-full
-                    w-full
-                    bg-sky-400
-                    rounded-full
-                  "
-                />
+                <div className="h-full w-full bg-sky-400 rounded-full" />
 
               </div>
 
@@ -630,8 +672,6 @@ const ServerStatus = memo(
 
 /* =========================================================
    MUSIC PLAYER
-   Component riêng để sidebar đổi tab không làm audio
-   bị destroy/re-create.
 ========================================================= */
 
 const MusicPlayer = memo(
@@ -641,8 +681,11 @@ const MusicPlayer = memo(
         null
       );
 
-    const currentIndexRef =
+    const indexRef =
       useRef(0);
+
+    const playingRef =
+      useRef(false);
 
     const repeatRef =
       useRef(false);
@@ -650,36 +693,76 @@ const MusicPlayer = memo(
     const shuffleRef =
       useRef(false);
 
-    const [currentIndex, setCurrentIndex] =
-      useState(0);
+    const [
+      currentIndex,
+      setCurrentIndex,
+    ] = useState(0);
 
-    const [isPlaying, setIsPlaying] =
-      useState(false);
+    const [
+      isPlaying,
+      setIsPlaying,
+    ] = useState(false);
 
-    const [currentTime, setCurrentTime] =
-      useState(0);
+    const [
+      currentTime,
+      setCurrentTime,
+    ] = useState(0);
 
-    const [duration, setDuration] =
-      useState(0);
+    const [
+      duration,
+      setDuration,
+    ] = useState(0);
 
-    const [volume, setVolume] =
-      useState(0.8);
+    const [
+      volume,
+      setVolume,
+    ] = useState(0.8);
 
-    const [shuffle, setShuffle] =
-      useState(false);
+    const [
+      shuffle,
+      setShuffle,
+    ] = useState(false);
 
-    const [repeat, setRepeat] =
-      useState(false);
+    const [
+      repeat,
+      setRepeat,
+    ] = useState(false);
 
-    const [showPlaylist, setShowPlaylist] =
-      useState(false);
+    const [
+      showPlaylist,
+      setShowPlaylist,
+    ] = useState(false);
 
     const currentSong =
       playlist[currentIndex];
 
-    /* =============================================
-       CREATE AUDIO ONLY ONCE
-    ============================================= */
+    /* ============================================
+       KEEP REFS IN SYNC
+    ============================================ */
+
+    useEffect(() => {
+      indexRef.current =
+        currentIndex;
+    }, [currentIndex]);
+
+    useEffect(() => {
+      playingRef.current =
+        isPlaying;
+    }, [isPlaying]);
+
+    useEffect(() => {
+      repeatRef.current =
+        repeat;
+    }, [repeat]);
+
+    useEffect(() => {
+      shuffleRef.current =
+        shuffle;
+    }, [shuffle]);
+
+    /* ============================================
+       CREATE AUDIO ONCE
+    ============================================ */
 
     useEffect(() => {
       const audio =
@@ -693,70 +776,56 @@ const MusicPlayer = memo(
       audioRef.current =
         audio;
 
-      return () => {
-        audio.pause();
-        audio.src = "";
-        audioRef.current =
-          null;
-      };
-    }, []);
-
-    /* =============================================
-       AUDIO EVENTS
-    ============================================= */
-
-    useEffect(() => {
-      const audio =
-        audioRef.current;
-
-      if (!audio) return;
-
-      const handleMetadata =
+      const onMetadata =
         () => {
-          const nextDuration =
+          if (
             Number.isFinite(
               audio.duration
             )
-              ? audio.duration
-              : 0;
-
-          setDuration(
-            nextDuration
-          );
+          ) {
+            setDuration(
+              audio.duration
+            );
+          }
         };
 
-      const handleTimeUpdate =
+      const onTimeUpdate =
         () => {
-          const nextSecond =
+          const second =
             Math.floor(
               audio.currentTime
             );
 
-          /*
-           * Không render lại hàng chục lần/giây.
-           * Chỉ update khi số giây thay đổi.
-           */
-
           setCurrentTime(
             (previous) =>
               previous ===
-              nextSecond
+              second
                 ? previous
-                : nextSecond
+                : second
           );
         };
 
-      const handlePlay =
+      const onPlay =
         () => {
-          setIsPlaying(true);
+          playingRef.current =
+            true;
+
+          setIsPlaying(
+            true
+          );
         };
 
-      const handlePause =
+      const onPause =
         () => {
-          setIsPlaying(false);
+          playingRef.current =
+            false;
+
+          setIsPlaying(
+            false
+          );
         };
 
-      const handleEnded =
+      const onEnded =
         () => {
           if (
             repeatRef.current
@@ -789,16 +858,16 @@ const MusicPlayer = memo(
                 );
             } while (
               nextIndex ===
-              currentIndexRef.current
+              indexRef.current
             );
           } else {
             nextIndex =
-              (currentIndexRef.current +
+              (indexRef.current +
                 1) %
               playlist.length;
           }
 
-          currentIndexRef.current =
+          indexRef.current =
             nextIndex;
 
           setCurrentIndex(
@@ -808,79 +877,66 @@ const MusicPlayer = memo(
 
       audio.addEventListener(
         "loadedmetadata",
-        handleMetadata
+        onMetadata
       );
 
       audio.addEventListener(
         "timeupdate",
-        handleTimeUpdate
+        onTimeUpdate
       );
 
       audio.addEventListener(
         "play",
-        handlePlay
+        onPlay
       );
 
       audio.addEventListener(
         "pause",
-        handlePause
+        onPause
       );
 
       audio.addEventListener(
         "ended",
-        handleEnded
+        onEnded
       );
 
       return () => {
+        audio.pause();
+        audio.src = "";
+
         audio.removeEventListener(
           "loadedmetadata",
-          handleMetadata
+          onMetadata
         );
 
         audio.removeEventListener(
           "timeupdate",
-          handleTimeUpdate
+          onTimeUpdate
         );
 
         audio.removeEventListener(
           "play",
-          handlePlay
+          onPlay
         );
 
         audio.removeEventListener(
           "pause",
-          handlePause
+          onPause
         );
 
         audio.removeEventListener(
           "ended",
-          handleEnded
+          onEnded
         );
+
+        audioRef.current =
+          null;
       };
     }, []);
 
-    /* =============================================
-       REFS
-    ============================================= */
-
-    useEffect(() => {
-      currentIndexRef.current =
-        currentIndex;
-    }, [currentIndex]);
-
-    useEffect(() => {
-      repeatRef.current =
-        repeat;
-    }, [repeat]);
-
-    useEffect(() => {
-      shuffleRef.current =
-        shuffle;
-    }, [shuffle]);
-
-    /* =============================================
-       CHANGE SONG
-    ============================================= */
+    /* ============================================
+       LOAD CURRENT SONG
+    ============================================ */
 
     useEffect(() => {
       const audio =
@@ -889,7 +945,7 @@ const MusicPlayer = memo(
       if (!audio) return;
 
       const shouldPlay =
-        !audio.paused;
+        playingRef.current;
 
       audio.src =
         currentSong.src;
@@ -908,11 +964,11 @@ const MusicPlayer = memo(
             );
           });
       }
-    }, [currentIndex]);
+    }, [currentIndex, currentSong.src]);
 
-    /* =============================================
+    /* ============================================
        PLAY / PAUSE
-    ============================================= */
+    ============================================ */
 
     const togglePlay =
       useCallback(
@@ -944,9 +1000,9 @@ const MusicPlayer = memo(
         []
       );
 
-    /* =============================================
+    /* ============================================
        NEXT
-    ============================================= */
+    ============================================ */
 
     const playNext =
       useCallback(() => {
@@ -964,28 +1020,30 @@ const MusicPlayer = memo(
               );
           } while (
             next ===
-            currentIndexRef.current
+            indexRef.current
           );
         } else {
           next =
-            (currentIndexRef.current +
+            (indexRef.current +
               1) %
             playlist.length;
         }
 
-        currentIndexRef.current =
+        indexRef.current =
           next;
 
         setCurrentIndex(
           next
         );
 
-        setIsPlaying(true);
+        setIsPlaying(
+          true
+        );
       }, []);
 
-    /* =============================================
+    /* ============================================
        PREVIOUS
-    ============================================= */
+    ============================================ */
 
     const playPrevious =
       useCallback(() => {
@@ -994,8 +1052,7 @@ const MusicPlayer = memo(
 
         if (
           audio &&
-          audio.currentTime >
-            3
+          audio.currentTime > 3
         ) {
           audio.currentTime =
             0;
@@ -1008,24 +1065,26 @@ const MusicPlayer = memo(
         }
 
         const previous =
-          (currentIndexRef.current -
+          (indexRef.current -
             1 +
             playlist.length) %
           playlist.length;
 
-        currentIndexRef.current =
+        indexRef.current =
           previous;
 
         setCurrentIndex(
           previous
         );
 
-        setIsPlaying(true);
+        setIsPlaying(
+          true
+        );
       }, []);
 
-    /* =============================================
-       SELECT SONG
-    ============================================= */
+    /* ============================================
+       SELECT
+    ============================================ */
 
     const selectSong =
       useCallback(
@@ -1036,21 +1095,23 @@ const MusicPlayer = memo(
             return;
           }
 
-          currentIndexRef.current =
+          indexRef.current =
             index;
 
           setCurrentIndex(
             index
           );
 
-          setIsPlaying(true);
+          setIsPlaying(
+            true
+          );
         },
         []
       );
 
-    /* =============================================
+    /* ============================================
        SEEK
-    ============================================= */
+    ============================================ */
 
     const changeProgress =
       (
@@ -1074,9 +1135,9 @@ const MusicPlayer = memo(
         );
       };
 
-    /* =============================================
+    /* ============================================
        VOLUME
-    ============================================= */
+    ============================================ */
 
     const changeVolume =
       (
@@ -1108,9 +1169,11 @@ const MusicPlayer = memo(
           audio.volume > 0
         ) {
           audio.volume = 0;
+
           setVolume(0);
         } else {
           audio.volume = 0.8;
+
           setVolume(0.8);
         }
       };
@@ -1151,9 +1214,11 @@ const MusicPlayer = memo(
               shadow-2xl
             "
           >
+
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/70">
 
               <div>
+
                 <p className="text-xs font-bold text-slate-800">
                   MY PLAYLIST
                 </p>
@@ -1161,6 +1226,7 @@ const MusicPlayer = memo(
                 <p className="text-[9px] text-slate-500">
                   {playlist.length} songs
                 </p>
+
               </div>
 
               <button
@@ -1210,11 +1276,12 @@ const MusicPlayer = memo(
                         transition-colors
                         ${
                           active
-                            ? "bg-white/70 shadow-sm"
+                            ? "bg-white/75 shadow-sm"
                             : "hover:bg-white/50"
                         }
                       `}
                     >
+
                       <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0">
 
                         <Image
@@ -1229,11 +1296,13 @@ const MusicPlayer = memo(
 
                         {active && (
                           <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
+
                             {isPlaying ? (
                               <Pause className="w-4 h-4 text-white" />
                             ) : (
                               <Play className="w-4 h-4 text-white" />
                             )}
+
                           </div>
                         )}
 
@@ -1260,12 +1329,14 @@ const MusicPlayer = memo(
                           song.duration
                         }
                       </span>
+
                     </button>
                   );
                 }
               )}
 
             </div>
+
           </div>
         )}
 
@@ -1292,6 +1363,8 @@ const MusicPlayer = memo(
             shadow-lg
           "
         >
+
+          {/* SONG */}
 
           <div className="flex items-center gap-3 w-1/4 min-w-0">
 
@@ -1328,6 +1401,8 @@ const MusicPlayer = memo(
             </div>
 
           </div>
+
+          {/* CENTER */}
 
           <div className="flex flex-col items-center gap-1 flex-1">
 
@@ -1383,6 +1458,7 @@ const MusicPlayer = memo(
                   shadow-md
                   active:scale-95
                   transition-transform
+                  duration-150
                 "
               >
                 {isPlaying ? (
@@ -1446,7 +1522,6 @@ const MusicPlayer = memo(
                 onChange={
                   changeProgress
                 }
-                aria-label="Progress"
                 className="flex-1 h-1 accent-teal-500 cursor-pointer"
                 style={{
                   background: `linear-gradient(
@@ -1455,6 +1530,7 @@ const MusicPlayer = memo(
                     rgb(226 232 240) ${progress}%
                   )`,
                 }}
+                aria-label="Progress"
               />
 
               <span className="text-[8px] text-slate-400 w-7">
@@ -1468,6 +1544,8 @@ const MusicPlayer = memo(
             </div>
 
           </div>
+
+          {/* RIGHT */}
 
           <div className="flex items-center gap-3 w-1/4 justify-end">
 
@@ -1512,12 +1590,12 @@ const MusicPlayer = memo(
                     !value
                 )
               }
-              aria-label="Playlist"
               className={
                 showPlaylist
                   ? "text-teal-500"
                   : "text-slate-500"
               }
+              aria-label="Playlist"
             >
               <ListMusic className="w-4 h-4" />
             </button>
@@ -1538,21 +1616,21 @@ const MusicPlayer = memo(
           className="
             md:hidden
             fixed
-            left-3
-            right-3
-            bottom-3
-            h-[60px]
+            bottom-2
+            left-2
+            right-2
             z-[80]
+            h-[58px]
             rounded-2xl
-            px-2.5
+            px-2
             flex
             items-center
             gap-2
-            bg-white/65
+            bg-slate-950/88
             backdrop-blur-xl
             border
-            border-white/80
-            shadow-xl
+            border-white/10
+            shadow-2xl
           "
         >
 
@@ -1574,19 +1652,19 @@ const MusicPlayer = memo(
 
           <div className="min-w-0 flex-1">
 
-            <p className="text-[10px] font-bold text-slate-800 truncate">
+            <p className="text-[10px] font-bold text-white truncate">
               {
                 currentSong.title
               }
             </p>
 
-            <p className="text-[8px] text-slate-500 truncate">
+            <p className="text-[8px] text-white/45 truncate">
               {
                 currentSong.artist
               }
             </p>
 
-            <div className="h-0.5 bg-slate-200 rounded-full overflow-hidden mt-1">
+            <div className="h-0.5 bg-white/10 rounded-full overflow-hidden mt-1">
 
               <div
                 className="h-full bg-teal-400 transition-[width] duration-300"
@@ -1604,7 +1682,7 @@ const MusicPlayer = memo(
             onClick={
               playPrevious
             }
-            className="text-slate-500 shrink-0"
+            className="text-white/60 shrink-0"
             aria-label="Previous"
           >
             <SkipBack className="w-3.5 h-3.5" />
@@ -1616,8 +1694,8 @@ const MusicPlayer = memo(
               togglePlay
             }
             className="
-              w-9
-              h-9
+              w-8
+              h-8
               rounded-full
               bg-teal-500
               text-white
@@ -1645,7 +1723,7 @@ const MusicPlayer = memo(
             onClick={
               playNext
             }
-            className="text-slate-500 shrink-0"
+            className="text-white/60 shrink-0"
             aria-label="Next"
           >
             <SkipForward className="w-3.5 h-3.5" />
@@ -1659,7 +1737,7 @@ const MusicPlayer = memo(
                   !value
               )
             }
-            className="text-slate-500 shrink-0"
+            className="text-white/50 shrink-0"
             aria-label="Playlist"
           >
             <ListMusic className="w-4 h-4" />
@@ -1672,7 +1750,7 @@ const MusicPlayer = memo(
 );
 
 /* =========================================================
-   HOME VIEW
+   HOME
 ========================================================= */
 
 const HomeView = memo(
@@ -1691,7 +1769,7 @@ const HomeView = memo(
           flex
           flex-col
           gap-5
-          animate-[contentEnter_.35s_cubic-bezier(.22,1,.36,1)]
+          animate-[contentEnter_.32s_cubic-bezier(.22,1,.36,1)]
         "
       >
 
@@ -1880,6 +1958,7 @@ const HomeView = memo(
             </div>
 
           </div>
+
         </section>
 
         {/* =================================================
@@ -1890,6 +1969,7 @@ const HomeView = memo(
           className="
             grid
             grid-cols-1
+            md:grid-cols-2
             xl:grid-cols-12
             gap-4
             items-start
@@ -1978,7 +2058,11 @@ const HomeView = memo(
                   (
                     hobby
                   ) => (
-                    <li key={hobby}>
+                    <li
+                      key={
+                        hobby
+                      }
+                    >
                       ・ {hobby}
                     </li>
                   )
@@ -1997,7 +2081,10 @@ const HomeView = memo(
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"
-                className="hover:text-sky-600 transition-colors"
+                className="
+                  hover:text-sky-600
+                  transition-colors
+                "
               >
                 <Github className="w-3.5 h-3.5" />
               </a>
@@ -2009,7 +2096,10 @@ const HomeView = memo(
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Discord"
-                className="hover:text-indigo-600 transition-colors"
+                className="
+                  hover:text-indigo-600
+                  transition-colors
+                "
               >
                 <DiscordIcon className="w-3.5 h-3.5" />
               </a>
@@ -2017,7 +2107,10 @@ const HomeView = memo(
               <a
                 href="mailto:"
                 aria-label="Email"
-                className="hover:text-sky-600 transition-colors"
+                className="
+                  hover:text-sky-600
+                  transition-colors
+                "
               >
                 <Mail className="w-3.5 h-3.5" />
               </a>
@@ -2031,6 +2124,7 @@ const HomeView = memo(
           <section
             id="projects"
             className="
+              md:col-span-2
               xl:col-span-5
               rounded-2xl
               border
@@ -2053,13 +2147,13 @@ const HomeView = memo(
 
               </span>
 
-              <span className="flex items-center gap-0.5 text-[9px] text-sky-600 font-bold">
-
+              <button
+                type="button"
+                className="flex items-center gap-0.5 text-[9px] text-sky-600 font-bold"
+              >
                 VIEW ALL
-
                 <ExternalLink className="w-2.5 h-2.5" />
-
-              </span>
+              </button>
 
             </div>
 
@@ -2114,7 +2208,10 @@ const HomeView = memo(
                     <div className="flex flex-wrap gap-0.5 my-1.5">
 
                       {project.tags.map(
-                        (tag) => (
+                        (
+                          tag
+                        ) => (
+
                           <span
                             key={
                               tag
@@ -2131,6 +2228,7 @@ const HomeView = memo(
                               tag
                             }
                           </span>
+
                         )
                       )}
 
@@ -2168,7 +2266,7 @@ const HomeView = memo(
 
           </section>
 
-          {/* RIGHT */}
+          {/* RIGHT SIDE */}
 
           <div
             className="
@@ -2346,9 +2444,7 @@ const HomeView = memo(
                 bg-slate-950
                 shadow-2xl
               "
-              onClick={(
-                event
-              ) =>
+              onClick={(event) =>
                 event.stopPropagation()
               }
             >
@@ -2403,7 +2499,13 @@ const HomeView = memo(
 const MusicView = memo(
   function MusicView() {
     return (
-      <div className="max-w-3xl mx-auto animate-[contentEnter_.35s_cubic-bezier(.22,1,.36,1)]">
+      <div
+        className="
+          max-w-3xl
+          mx-auto
+          animate-[contentEnter_.32s_cubic-bezier(.22,1,.36,1)]
+        "
+      >
 
         <div
           className="
@@ -2524,7 +2626,11 @@ const MusicView = memo(
 const ProjectView = memo(
   function ProjectView() {
     return (
-      <div className="animate-[contentEnter_.35s_cubic-bezier(.22,1,.36,1)]">
+      <div
+        className="
+          animate-[contentEnter_.32s_cubic-bezier(.22,1,.36,1)]
+        "
+      >
 
         <div
           className="
@@ -2662,7 +2768,11 @@ const ProjectView = memo(
 const GalleryView = memo(
   function GalleryView() {
     return (
-      <div className="animate-[contentEnter_.35s_cubic-bezier(.22,1,.36,1)]">
+      <div
+        className="
+          animate-[contentEnter_.32s_cubic-bezier(.22,1,.36,1)]
+        "
+      >
 
         <div
           className="
@@ -2751,13 +2861,6 @@ const DiaryView = memo(
   function DiaryView() {
     const openDiary =
       () => {
-        /*
-         * Không dùng location.href vì cách đó
-         * tạo navigation cứng và làm toàn page reload.
-         *
-         * pushState giúp giữ browser tab.
-         */
-
         window.history.pushState(
           {},
           "",
@@ -2774,11 +2877,11 @@ const DiaryView = memo(
     return (
       <div
         className="
+          animate-[contentEnter_.32s_cubic-bezier(.22,1,.36,1)]
           min-h-[60vh]
           flex
           items-center
           justify-center
-          animate-[contentEnter_.35s_cubic-bezier(.22,1,.36,1)]
         "
       >
 
@@ -2805,8 +2908,6 @@ const DiaryView = memo(
               mx-auto
               rounded-2xl
               bg-teal-100/70
-              border
-              border-white
               flex
               items-center
               justify-center
@@ -2818,18 +2919,18 @@ const DiaryView = memo(
 
           </div>
 
-          <p className="text-[10px] text-slate-400 tracking-[.2em] mb-1">
-            DIARY / 日記
+          <p className="text-[9px] text-slate-400 tracking-[.2em]">
+            PERSONAL SPACE
           </p>
 
-          <h2 className="text-xl md:text-2xl font-bold mb-3">
-            Những Kỷ Niệm
+          <h2 className="text-2xl font-bold mt-1">
+            My Diary
           </h2>
 
-          <p className="text-[11px] md:text-xs text-slate-600 mb-6">
-            Nơi mình ghi lại những câu chuyện,
-            <br />
-            suy nghĩ và kỉ niệm đáng nhớ...
+          <p className="text-[10px] text-slate-500 mt-2 max-w-sm mx-auto">
+            Nơi lưu lại những ngày đã đi qua,
+            những điều đã nghĩ và những khoảnh khắc
+            không muốn quên.
           </p>
 
           <button
@@ -2838,23 +2939,22 @@ const DiaryView = memo(
               openDiary
             }
             className="
-              inline-flex
-              items-center
-              gap-2
-              px-5
-              py-2.5
+              mt-5
+              h-10
+              px-4
               rounded-xl
               bg-teal-500
               text-white
               text-xs
-              font-bold
-              shadow-lg
-              hover:bg-teal-600
+              font-semibold
+              inline-flex
+              items-center
+              gap-2
               active:scale-95
-              transition-all
+              transition-transform
             "
           >
-            Đọc Nhật Ký Của Mình
+            Mở Diary
 
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
@@ -2867,69 +2967,69 @@ const DiaryView = memo(
 );
 
 /* =========================================================
-   NAVIGATION DATA
-========================================================= */
-
-const navigation = [
-  {
-    id: "profile",
-    jp: "プロフィール",
-    en: "PROFILE",
-    icon: User,
-  },
-
-  {
-    id: "music",
-    jp: "音楽",
-    en: "MUSIC",
-    icon: Music,
-  },
-
-  {
-    id: "projects",
-    jp: "作成",
-    en: "PROJECTS",
-    icon: Folder,
-  },
-
-  {
-    id: "gallery",
-    jp: "ギャラリー",
-    en: "GALLERY",
-    icon: GalleryIcon,
-  },
-
-  {
-    id: "diary",
-    jp: "日記",
-    en: "DIARY",
-    icon: StickyNote,
-  },
-];
-
-/* =========================================================
-   APP
+   MAIN APP
 ========================================================= */
 
 export default function DashboardDesktop() {
-  const [activeTab, setActiveTab] =
-    useState("home");
+  const [
+    activeTab,
+    setActiveTab,
+  ] = useState("home");
 
   const [
     mobileMenuOpen,
     setMobileMenuOpen,
   ] = useState(false);
 
+  /* ============================================
+     NAVIGATION
+  ============================================ */
+
   const changeTab =
     useCallback(
       (tab: string) => {
         setActiveTab(tab);
+
         setMobileMenuOpen(
           false
         );
       },
       []
     );
+
+  /* ============================================
+     CLOSE MOBILE MENU WITH ESC
+  ============================================ */
+
+  useEffect(() => {
+    const handleKeyDown =
+      (event: KeyboardEvent) => {
+        if (
+          event.key ===
+          "Escape"
+        ) {
+          setMobileMenuOpen(
+            false
+          );
+        }
+      };
+
+    window.addEventListener(
+      "keydown",
+      handleKeyDown
+    );
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown
+      );
+    };
+  }, []);
+
+  /* ============================================
+     CONTENT
+  ============================================ */
 
   const renderContent =
     () => {
@@ -2963,9 +3063,10 @@ export default function DashboardDesktop() {
         w-full
         h-full
         overflow-hidden
-        bg-slate-200
+        font-sans
         text-slate-800
         antialiased
+        bg-slate-200
         selection:bg-sky-200
         selection:text-sky-900
       "
@@ -2973,11 +3074,15 @@ export default function DashboardDesktop() {
 
       {/* =================================================
           RESPONSIVE BACKGROUND
-          
-          PC  → background-pc.jpg
-          Mobile → background-mobile.jpg
-          
-          Dùng 2 layer CSS nên không cần tải cả hai ảnh.
+
+          PC:
+          background-pc.jpg
+
+          MOBILE:
+          background-mobile.jpg
+
+          Đây là phần tối ưu từ bản mới.
+          Không dùng background-attachment: fixed.
       ================================================= */}
 
       <div
@@ -2987,7 +3092,9 @@ export default function DashboardDesktop() {
           z-0
           pointer-events-none
           overflow-hidden
-          bg-slate-200
+          transform-gpu
+          [backface-visibility:hidden]
+          [contain:paint]
         "
       >
 
@@ -3004,6 +3111,7 @@ export default function DashboardDesktop() {
             bg-center
             bg-no-repeat
             transform-gpu
+            [backface-visibility:hidden]
           "
         />
 
@@ -3020,6 +3128,7 @@ export default function DashboardDesktop() {
             bg-center
             bg-no-repeat
             transform-gpu
+            [backface-visibility:hidden]
           "
         />
 
@@ -3036,18 +3145,224 @@ export default function DashboardDesktop() {
       </div>
 
       {/* =================================================
+          DESKTOP SIDEBAR
+          GIỮ KIỂU CŨ
+      ================================================= */}
+
+      <aside
+        className="
+          hidden
+          md:flex
+          fixed
+          left-0
+          top-0
+          bottom-0
+          w-24
+          z-[70]
+          flex-col
+          justify-between
+          px-2
+          py-4
+          border-r
+          border-white/60
+          bg-white/40
+          backdrop-blur-md
+          md:backdrop-blur-xl
+          shadow-sm
+        "
+      >
+
+        <div className="flex flex-col items-center gap-5">
+
+          {/* CLOCK */}
+
+          <LiveClock />
+
+          {/* HOME */}
+
+          <button
+            type="button"
+            onClick={() =>
+              changeTab(
+                "home"
+              )
+            }
+            className={`
+              w-12
+              h-12
+              rounded-2xl
+              border
+              flex
+              flex-col
+              items-center
+              justify-center
+              shadow-sm
+              transition-colors
+              duration-200
+              ${
+                activeTab ===
+                "home"
+                  ? "bg-teal-100/80 border-white text-teal-600"
+                  : "bg-white/40 border-white/60 text-slate-600 hover:bg-white/70"
+              }
+            `}
+          >
+
+            <span className="text-lg">
+              🌸
+            </span>
+
+            <span className="text-[9px] font-bold">
+              ホーム
+            </span>
+
+          </button>
+
+          {/* NAVIGATION */}
+
+          <nav className="flex flex-col gap-2.5 w-full">
+
+            {navigation.map(
+              (
+                item
+              ) => {
+                const Icon =
+                  item.icon;
+
+                const active =
+                  activeTab ===
+                  item.id;
+
+                return (
+                  <button
+                    type="button"
+                    key={
+                      item.id
+                    }
+                    onClick={() =>
+                      changeTab(
+                        item.id
+                      )
+                    }
+                    className={`
+                      flex
+                      flex-col
+                      items-center
+                      rounded-xl
+                      py-2
+                      px-1
+                      transition-colors
+                      duration-200
+                      ${
+                        active
+                          ? "bg-white/80 text-sky-600 shadow-sm font-bold"
+                          : "text-slate-600 hover:bg-white/50"
+                      }
+                    `}
+                  >
+
+                    <Icon className="w-4 h-4 mb-0.5" />
+
+                    <span className="text-[9px] leading-tight">
+                      {
+                        item.jp
+                      }
+                    </span>
+
+                    <span className="text-[7px] text-slate-400 font-semibold tracking-wider">
+                      {
+                        item.en
+                      }
+                    </span>
+
+                  </button>
+                );
+              }
+            )}
+
+          </nav>
+
+        </div>
+
+        {/* SOCIAL */}
+
+        <div className="flex flex-col items-center gap-3 text-slate-600">
+
+          <div className="flex flex-col gap-2.5">
+
+            <a
+              href={
+                socials.github
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="GitHub"
+              className="
+                transition-colors
+                hover:text-sky-600
+              "
+            >
+              <Github className="w-4 h-4" />
+            </a>
+
+            <a
+              href={
+                socials.discord
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Discord"
+              className="
+                transition-colors
+                hover:text-indigo-600
+              "
+            >
+              <DiscordIcon className="w-4 h-4" />
+            </a>
+
+            <button
+              type="button"
+              aria-label="Settings"
+              onClick={() =>
+                alert(
+                  "Settings đang được phát triển ⚙️"
+                )
+              }
+              className="
+                transition-colors
+                hover:text-sky-600
+              "
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+
+          </div>
+
+          <span className="text-[8px] text-slate-400 text-center leading-tight">
+            Designed with
+            <br />
+            30/08 Lâm
+          </span>
+
+        </div>
+
+      </aside>
+
+      {/* =================================================
           MOBILE HEADER
-          ĐÚNG BẢN CŨ
+          GIỮ KIỂU CŨ
       ================================================= */}
 
       <header
         className="
           md:hidden
           fixed
-          top-3
-          left-3
-          right-3
+          top-0
+          left-0
+          right-0
           z-[70]
+          px-3
+          pt-3
           pointer-events-none
         "
       >
@@ -3056,20 +3371,20 @@ export default function DashboardDesktop() {
           className="
             h-[76px]
             rounded-[24px]
+            px-5
+            flex
+            items-center
+            justify-between
             border
             border-white/80
             bg-white/45
             backdrop-blur-xl
             shadow-sm
-            px-5
-            flex
-            items-center
-            justify-between
             pointer-events-auto
           "
         >
 
-          {/* CLOCK */}
+          {/* TIME */}
 
           <LiveClock />
 
@@ -3082,7 +3397,7 @@ export default function DashboardDesktop() {
                 true
               )
             }
-            aria-label="Open menu"
+            aria-label="Open navigation"
             className="
               w-12
               h-12
@@ -3097,12 +3412,10 @@ export default function DashboardDesktop() {
               shadow-sm
               active:scale-95
               transition-transform
-              duration-200
+              duration-150
             "
           >
-
             <Menu className="w-5 h-5" />
-
           </button>
 
         </div>
@@ -3110,8 +3423,8 @@ export default function DashboardDesktop() {
       </header>
 
       {/* =================================================
-          MOBILE SIDEBAR
-          ĐÚNG DESIGN ẢNH BẠN CHỌN
+          MOBILE DRAWER
+          ĐÚNG STYLE BẢN CŨ
       ================================================= */}
 
       {mobileMenuOpen && (
@@ -3130,8 +3443,6 @@ export default function DashboardDesktop() {
             )
           }
         >
-
-          {/* PANEL */}
 
           <aside
             className="
@@ -3160,16 +3471,14 @@ export default function DashboardDesktop() {
 
               animate-[mobileMenuIn_.28s_cubic-bezier(.22,1,.36,1)]
             "
-            onClick={(
-              event
-            ) =>
+            onClick={(event) =>
               event.stopPropagation()
             }
           >
 
-            {/* =========================================
-                HEADER
-            ========================================= */}
+            {/* =================================================
+                DRAWER HEADER
+            ================================================= */}
 
             <div
               className="
@@ -3228,10 +3537,9 @@ export default function DashboardDesktop() {
                   justify-center
                   text-slate-500
                   shadow-sm
+                  shrink-0
                   active:scale-95
                   transition-transform
-                  duration-200
-                  shrink-0
                 "
               >
 
@@ -3241,9 +3549,9 @@ export default function DashboardDesktop() {
 
             </div>
 
-            {/* =========================================
-                NAVIGATION
-            ========================================= */}
+            {/* =================================================
+                DRAWER NAV
+            ================================================= */}
 
             <nav className="space-y-2.5">
 
@@ -3313,7 +3621,7 @@ export default function DashboardDesktop() {
 
               </button>
 
-              {/* OTHER ITEMS */}
+              {/* OTHER NAV */}
 
               {navigation.map(
                 (
@@ -3351,7 +3659,6 @@ export default function DashboardDesktop() {
                         border-white/80
                         transition-colors
                         duration-200
-
                         ${
                           active
                             ? `
@@ -3407,9 +3714,9 @@ export default function DashboardDesktop() {
 
             </nav>
 
-            {/* =========================================
+            {/* =================================================
                 SOCIAL
-            ========================================= */}
+            ================================================= */}
 
             <div
               className="
@@ -3463,327 +3770,151 @@ export default function DashboardDesktop() {
       )}
 
       {/* =================================================
-          DESKTOP SIDEBAR
+          DESKTOP TOP RIGHT
+          GIỮ KIỂU CŨ
       ================================================= */}
 
-      <aside
+      <div
         className="
           hidden
           md:flex
           fixed
-          top-5
-          bottom-[88px]
-          left-5
-          w-56
-          z-[60]
-          flex-col
-          rounded-3xl
-          border
-          border-white/80
-          bg-white/45
-          backdrop-blur-xl
-          p-4
-          shadow-lg
-        "
-      >
-
-        <div className="flex items-center gap-2.5 mb-6 px-1">
-
-          <div
-            className="
-              relative
-              w-9
-              h-9
-              rounded-xl
-              overflow-hidden
-              border
-              border-white
-              bg-slate-300
-              shrink-0
-            "
-          >
-
-            <Image
-              src={
-                profileData.avatar
-              }
-              alt=""
-              fill
-              sizes="36px"
-              className="object-cover"
-            />
-
-          </div>
-
-          <div className="min-w-0">
-
-            <p className="text-[11px] font-bold text-slate-800 truncate">
-              {
-                profileData.name
-              }
-            </p>
-
-            <p className="text-[9px] text-slate-500 truncate">
-              {
-                profileData.role
-              }
-            </p>
-
-          </div>
-
-        </div>
-
-        <nav className="flex-1 space-y-1">
-
-          {/* HOME */}
-
-          <button
-            type="button"
-            onClick={() =>
-              changeTab(
-                "home"
-              )
-            }
-            className={`
-              w-full
-              flex
-              items-center
-              gap-3
-              px-3
-              py-2.5
-              rounded-xl
-              text-[10px]
-              font-bold
-              transition-colors
-              ${
-                activeTab ===
-                "home"
-                  ? "bg-slate-900 text-white"
-                  : "text-slate-500 hover:bg-slate-200/50"
-              }
-            `}
-          >
-
-            <User className="w-4 h-4" />
-
-            HOME
-
-          </button>
-
-          {navigation.map(
-            (
-              item
-            ) => {
-              const Icon =
-                item.icon;
-
-              const active =
-                activeTab ===
-                item.id;
-
-              return (
-                <button
-                  type="button"
-                  key={
-                    item.id
-                  }
-                  onClick={() =>
-                    changeTab(
-                      item.id
-                    )
-                  }
-                  className={`
-                    w-full
-                    flex
-                    items-center
-                    gap-3
-                    px-3
-                    py-2.5
-                    rounded-xl
-                    text-[10px]
-                    font-bold
-                    transition-colors
-                    ${
-                      active
-                        ? "bg-slate-900 text-white"
-                        : "text-slate-500 hover:bg-slate-200/50"
-                    }
-                  `}
-                >
-
-                  <Icon className="w-4 h-4" />
-
-                  {
-                    item.en
-                  }
-
-                </button>
-              );
-            }
-          )}
-
-        </nav>
-
-        <div className="pt-4 border-t border-white/60">
-
-          <LiveClock />
-
-        </div>
-
-      </aside>
-
-      {/* =================================================
-          DESKTOP TOP BAR
-      ================================================= */}
-
-      <header
-        className="
-          hidden
-          md:flex
-          fixed
-          top-5
-          right-5
-          left-[264px]
-          h-14
-          z-50
+          top-4
+          right-6
+          z-40
           items-center
-          justify-between
-          px-5
-          rounded-2xl
-          border
-          border-white/80
-          bg-white/45
-          backdrop-blur-xl
-          shadow-sm
+          gap-2
         "
       >
 
-        <div
+        <button
+          type="button"
+          aria-label="Search"
           className="
-            flex
-            items-center
-            gap-2
-            px-3
-            py-1.5
-            rounded-xl
-            bg-white/60
+            w-8
+            h-8
+            rounded-full
             border
             border-white/80
-            w-64
+            bg-white/50
+            backdrop-blur-md
+            flex
+            items-center
+            justify-center
+            text-slate-700
+            shadow-sm
+            hover:bg-white/80
+            transition-colors
           "
         >
+          <Search className="w-4 h-4" />
+        </button>
 
-          <Search className="w-3.5 h-3.5 text-slate-400" />
+        <button
+          type="button"
+          aria-label="Notifications"
+          className="
+            w-8
+            h-8
+            rounded-full
+            border
+            border-white/80
+            bg-white/50
+            backdrop-blur-md
+            flex
+            items-center
+            justify-center
+            text-slate-700
+            shadow-sm
+            hover:bg-white/80
+            transition-colors
+          "
+        >
+          <Bell className="w-4 h-4" />
+        </button>
 
-          <input
-            type="text"
-            placeholder="Tìm kiếm..."
-            className="
-              bg-transparent
-              border-none
-              outline-none
-              text-[10px]
-              text-slate-700
-              placeholder:text-slate-400
-              w-full
-            "
-          />
+        <button
+          type="button"
+          aria-label="Add"
+          className="
+            w-8
+            h-8
+            rounded-full
+            border
+            border-white/80
+            bg-white/50
+            backdrop-blur-md
+            flex
+            items-center
+            justify-center
+            text-slate-700
+            shadow-sm
+            hover:bg-white/80
+            transition-colors
+          "
+        >
+          <Plus className="w-4 h-4" />
+        </button>
 
-        </div>
-
-        <div className="flex items-center gap-2">
-
-          <button
-            type="button"
-            className="
-              w-8
-              h-8
-              rounded-xl
-              bg-white/60
-              border
-              border-white/80
-              flex
-              items-center
-              justify-center
-              text-slate-600
-            "
-          >
-            <Bell className="w-3.5 h-3.5" />
-          </button>
-
-          <button
-            type="button"
-            className="
-              flex
-              items-center
-              gap-1.5
-              px-3
-              h-8
-              rounded-xl
-              bg-slate-900
-              text-white
-              text-[10px]
-              font-bold
-            "
-          >
-            <Plus className="w-3 h-3" />
-            CONNECT
-          </button>
-
-        </div>
-
-      </header>
+      </div>
 
       {/* =================================================
           MAIN CONTENT
           
-          Đây vẫn là vùng scroll duy nhất.
-          Background nằm ngoài nên không bị repaint
-          theo từng chuyển động scroll.
+          Chỉ MAIN cuộn.
+          Background đứng ngoài vùng scroll.
+          Đây là phần giữ lại từ bản tối ưu.
       ================================================= */}
 
       <main
         className="
           absolute
           top-[92px]
-          md:top-[92px]
+          md:top-0
           bottom-[74px]
-          md:bottom-[88px]
+          md:bottom-[68px]
           left-0
-          md:left-[264px]
+          md:left-24
           right-0
-          md:right-5
           overflow-y-auto
           overflow-x-hidden
           custom-scrollbar
           [-webkit-overflow-scrolling:touch]
-          [overscroll-behavior-y:none]
+          overscroll-contain
+          z-10
         "
       >
 
         <div
           className="
+            min-h-full
             w-full
-            max-w-7xl
-            mx-auto
-            p-3
-            md:p-1
-            pb-24
+            px-3
+            py-3
+            md:px-6
+            md:py-6
+            pb-8
+            md:pb-10
           "
         >
 
-          {renderContent()}
+          <div className="max-w-[1400px] mx-auto">
+
+            {renderContent()}
+
+          </div>
 
         </div>
 
       </main>
 
       {/* =================================================
-          MUSIC
+          MUSIC PLAYER
+          Nằm ngoài MAIN để đổi tab không destroy audio.
       ================================================= */}
 
       <MusicPlayer />
 
     </div>
   );
-                }
+      }
