@@ -1,105 +1,6 @@
 @import "tailwindcss";
 
 /* =========================================
-   SMOOTH PAGE ANIMATIONS
-========================================= */
-
-@keyframes contentEnter {
-  0% {
-    opacity: 0;
-    transform: translate3d(10px, 0, 0);
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes diaryEnter {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 10px, 0);
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-/* Sidebar / content transition */
-.page-content {
-  animation: contentEnter 350ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  will-change: transform, opacity;
-  backface-visibility: hidden; /* Fix giật/nháy trên WebKit/iOS */
-}
-
-/* Diary cards */
-.diary-enter {
-  animation: diaryEnter 400ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-}
-
-/* Stagger nhẹ cho diary - Khoảng cách delay ngắn hơn để load mượt mà */
-.diary-enter:nth-child(1) { animation-delay: 0ms; }
-.diary-enter:nth-child(2) { animation-delay: 30ms; }
-.diary-enter:nth-child(3) { animation-delay: 60ms; }
-.diary-enter:nth-child(4) { animation-delay: 90ms; }
-.diary-enter:nth-child(5) { animation-delay: 120ms; }
-
-
-/* =========================================
-   MICRO INTERACTIONS
-========================================= */
-
-button,
-a {
-  -webkit-tap-highlight-color: transparent;
-}
-
-button {
-  transition: transform 150ms ease-out, opacity 150ms ease-out, background-color 150ms ease-out;
-  will-change: transform;
-}
-
-button:hover {
-  transform: translateY(-1px);
-}
-
-button:active {
-  transform: translateY(0) scale(0.96);
-}
-
-
-/* =========================================
-   GLASS (TỐI ƯU GPU)
-========================================= */
-
-.glass {
-  /* Tăng opacity nền lên một chút để bù cho việc giảm blur */
-  background: rgba(7, 14, 28, 0.65);
-  border: 1px solid rgba(220, 215, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  
-  /* Ép trình duyệt dùng lớp layer riêng (Hardware Acceleration) */
-  transform: translateZ(0); 
-}
-
-.soft-glass {
-  background: rgba(7, 14, 28, 0.45);
-  border: 1px solid rgba(220, 215, 255, 0.08);
-
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  
-  transform: translateZ(0);
-}
-
-
-/* =========================================
    BASE
 ========================================= */
 
@@ -107,24 +8,34 @@ button:active {
   color-scheme: dark;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
+  min-width: 0;
+
   background: #07101d;
   color: #eef2ff;
-  font-family: Arial, Helvetica, sans-serif;
-  
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  overflow-x: hidden; /* Ngăn lỗi tính toán overflow khi component lướt từ ngoài vào */
+
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
 }
 
 ::selection {
@@ -133,35 +44,209 @@ body {
 
 
 /* =========================================
-   MOBILE
+   SCROLLING
+========================================= */
+
+html,
+body {
+  overscroll-behavior-y: none;
+}
+
+main {
+  min-width: 0;
+}
+
+
+/* =========================================
+   LINKS / BUTTONS
+========================================= */
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font: inherit;
+}
+
+/*
+   KHÔNG animate transform toàn bộ button.
+   Đây là một trong những thứ dễ tạo cảm giác
+   giao diện co giãn trên mobile.
+*/
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid rgba(125, 211, 252, 0.65);
+  outline-offset: 2px;
+}
+
+
+/* =========================================
+   GLASS
+========================================= */
+
+.glass {
+  background: rgba(7, 14, 28, 0.72);
+
+  border: 1px solid rgba(220, 215, 255, 0.1);
+
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.16);
+
+  /*
+     Blur vừa phải.
+     Không dùng translateZ(0).
+  */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.soft-glass {
+  background: rgba(7, 14, 28, 0.5);
+
+  border: 1px solid rgba(220, 215, 255, 0.08);
+
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+
+/* =========================================
+   MOBILE PERFORMANCE
 ========================================= */
 
 @media (max-width: 640px) {
+
+  /*
+     Mobile:
+     giảm mạnh hiệu ứng kính.
+  */
+
   .glass {
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    background: rgba(7, 14, 28, 0.8); /* Tối hơn để đảm bảo khả năng đọc chữ */
+    background: rgba(7, 14, 28, 0.86);
+
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
   .soft-glass {
-    /* Tắt hẳn blur trên điện thoại để cứu FPS */
+    background: rgba(7, 14, 28, 0.78);
+
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    background: rgba(7, 14, 28, 0.7); 
   }
 
-  .page-content,
-  .diary-enter {
-    animation-duration: 300ms;
-  }
+  /*
+     Không animate hover trên mobile.
+  */
 
   button:hover {
     transform: none;
   }
 
   button:active {
-    transform: scale(0.96);
+    transform: none;
   }
+
+  /*
+     Giữ scroll native của điện thoại.
+  */
+
+  main {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+}
+
+
+/* =========================================
+   DESKTOP MICRO INTERACTION
+========================================= */
+
+@media (min-width: 641px) {
+
+  button {
+    transition:
+      background-color 120ms ease,
+      opacity 120ms ease;
+  }
+
+  button:hover {
+    /*
+       KHÔNG translate button.
+       Chỉ thay đổi màu/nền.
+    */
+  }
+}
+
+
+/* =========================================
+   PAGE CONTENT
+========================================= */
+
+/*
+   QUAN TRỌNG:
+   Không animate toàn bộ page.
+
+   Nếu React đổi tab và component được mount lại,
+   animation này sẽ khiến nó trông như reload.
+*/
+
+.page-content {
+  animation: none;
+  transform: none;
+  will-change: auto;
+  backface-visibility: visible;
+}
+
+
+/* =========================================
+   DIARY
+========================================= */
+
+/*
+   Diary cũng không chạy stagger nữa.
+   Trên mobile nhiều card cùng animation dễ gây
+   compositor spike.
+*/
+
+.diary-enter {
+  animation: none;
+  transform: none;
+  opacity: 1;
+
+  will-change: auto;
+  backface-visibility: visible;
+}
+
+
+/* =========================================
+   OPTIONAL SMALL FADE
+========================================= */
+
+/*
+   Nếu vẫn muốn một chút chuyển động,
+   chỉ fade nhẹ, KHÔNG translate.
+*/
+
+@keyframes tinyFade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-enter {
+  animation:
+    tinyFade
+    160ms
+    ease-out
+    both;
 }
 
 
@@ -170,6 +255,7 @@ body {
 ========================================= */
 
 @media (prefers-reduced-motion: reduce) {
+
   html {
     scroll-behavior: auto;
   }
@@ -177,9 +263,8 @@ body {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    animation: none !important;
+    transition: none !important;
     scroll-behavior: auto !important;
   }
 }
