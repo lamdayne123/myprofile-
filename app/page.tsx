@@ -41,6 +41,7 @@ import {
   ArrowRight,
   BookOpen,
 } from "lucide-react";
+import { div } from "framer-motion/client";
 
 /* =========================================================
    TYPES
@@ -3672,228 +3673,16 @@ export default function DashboardDesktop() {
 
                         <p className="text-[11px] sm:text-[12px] text-slate-400 mt-0.5">
                           {
-{/* =================================================
-    MOBILE DRAWER
-    GIỮ NGUYÊN KÍCH THƯỚC BẢN CŨ
-================================================= */}
+                            item.en
+                          }
+                        </p>
 
-{mobileMenuOpen && (
-  <div
-    className="
-      md:hidden
-      fixed
-      inset-0
-      z-[100]
-      bg-slate-900/20
-      backdrop-blur-sm
-    "
-    onClick={() =>
-      setMobileMenuOpen(false)
-    }
-  >
+                      </div>
 
-    <div
-      className="
-        absolute
-        top-0
-        right-0
-        bottom-0
-
-        w-64
-
-        bg-white/80
-        backdrop-blur-2xl
-
-        border-l
-        border-white/80
-
-        p-4
-
-        shadow-2xl
-
-        overflow-y-auto
-
-        animate-[mobileMenuIn_.28s_cubic-bezier(.22,1,.36,1)]
-      "
-      onClick={(event) =>
-        event.stopPropagation()
-      }
-    >
-
-      {/* HEADER */}
-
-      <div className="flex items-center justify-between mb-6">
-
-        <div>
-
-          <p className="text-[9px] text-slate-400 tracking-[.2em]">
-            NAVIGATION
-          </p>
-
-          <h2 className="text-lg font-bold text-slate-800">
-            Trương Chí Lâm
-          </h2>
-
-        </div>
-
-        <button
-          type="button"
-          onClick={() =>
-            setMobileMenuOpen(false)
-          }
-          className="
-            w-8
-            h-8
-            rounded-full
-            bg-white/70
-            flex
-            items-center
-            justify-center
-          "
-          aria-label="Close menu"
-        >
-          <X className="w-4 h-4 text-slate-500" />
-        </button>
-
-      </div>
-
-      {/* NAVIGATION */}
-
-      <div className="space-y-1.5">
-
-        {/* HOME */}
-
-        <button
-          type="button"
-          onClick={() =>
-            changeTab("home")
-          }
-          className={`
-            w-full
-            flex
-            items-center
-            gap-3
-            p-3
-            rounded-2xl
-            text-left
-            transition-colors
-            ${
-              activeTab === "home"
-                ? "bg-teal-100/80 text-teal-700"
-                : "bg-white/35 text-slate-600"
-            }
-          `}
-        >
-
-          <span className="text-base">
-            🌸
-          </span>
-
-          <div>
-
-            <p className="text-xs font-bold">
-              ホーム
-            </p>
-
-            <p className="text-[8px] opacity-60">
-              HOME
-            </p>
-
-          </div>
-
-        </button>
-
-        {/* OTHER NAV */}
-
-        {navigation.map((item) => {
-
-          const Icon = item.icon;
-
-          const active =
-            activeTab === item.id;
-
-          return (
-            <button
-              type="button"
-              key={item.id}
-              onClick={() =>
-                changeTab(item.id)
-              }
-              className={`
-                w-full
-                flex
-                items-center
-                gap-3
-                p-3
-                rounded-2xl
-                text-left
-                transition-colors
-                ${
-                  active
-                    ? "bg-white text-sky-600 shadow-sm"
-                    : "bg-white/35 text-slate-600"
+                    </button>
+                  );
                 }
-              `}
-            >
-
-              <Icon className="w-4 h-4 shrink-0" />
-
-              <div>
-
-                <p className="text-xs font-bold">
-                  {item.jp}
-                </p>
-
-                <p className="text-[8px] opacity-60">
-                  {item.en}
-                </p>
-
-              </div>
-
-            </button>
-          );
-        })}
-
-      </div>
-
-      {/* SOCIAL */}
-
-      <div className="mt-6 pt-4 border-t border-white/60 flex gap-4">
-
-        <a
-          href={socials.github}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="GitHub"
-          className="
-            text-slate-600
-            hover:text-sky-600
-            transition-colors
-          "
-        >
-          <Github className="w-4 h-4" />
-        </a>
-
-        <a
-          href={socials.discord}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Discord"
-          className="
-            text-slate-600
-            hover:text-indigo-600
-            transition-colors
-          "
-        >
-          <DiscordIcon className="w-4 h-4" />
-        </a>
-
-      </div>
-
-    </div>
-
-  </div>
-)}
+              )}
 
             </nav>
 
@@ -4097,7 +3886,6 @@ export default function DashboardDesktop() {
       ================================================= */}
 
       <MusicPlayer />
-
     </div>
   );
-      }
+}
