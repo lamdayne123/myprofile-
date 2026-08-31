@@ -12,6 +12,16 @@ import Image from "next/image";
 
 import {
   User,
+  MapPin,
+  Code2,
+  CalendarDays,
+  Clock3,
+  Activity,
+  Target,
+  Heart,
+  Terminal,
+  Boxes,
+  Sparkles,
   Music,
   Folder,
   Image as GalleryIcon,
@@ -208,12 +218,83 @@ const projectsData: Project[] = [
 ];
 
 /* =========================================================
+   PROFILE PAGE DATA
+========================================================= */
+
+const profileStats = [
+  { value: "12+", label: "PROJECTS", icon: Code2 },
+  { value: "3+", label: "YEARS CODING", icon: CalendarDays },
+  { value: "1", label: "MINECRAFT SERVER", icon: Boxes },
+  { value: "500+", label: "DISCORD USERS", icon: MessageSquare },
+];
+
+const profileBuilds = [
+  {
+    icon: "🧱",
+    title: "Minecraft",
+    desc: "Server, Plugin, Optimization",
+    detail: "Custom systems & events",
+  },
+  {
+    icon: "discord",
+    title: "Discord",
+    desc: "Bots, Automation, Community",
+    detail: "Tools & utilities",
+  },
+  {
+    icon: "🌐",
+    title: "Web Development",
+    desc: "Personal websites,",
+    detail: "Dashboards & APIs",
+  },
+];
+
+const profileSkills = [
+  ["TypeScript", "blue"],
+  ["JavaScript", "green"],
+  ["React", "blue"],
+  ["Next.js", "indigo"],
+  ["Node.js", "green"],
+  ["Discord.js", "yellow"],
+  ["MongoDB", "green"],
+  ["MySQL", "slate"],
+  ["Minecraft", "yellow"],
+  ["Java", "purple"],
+  ["Git", "purple"],
+  ["Tailwind CSS", "blue"],
+  ["HTML", "red"],
+  ["CSS", "purple"],
+  ["Linux", "slate"],
+  ["Docker", "blue"],
+] as const;
+
+const profileFavorites = [
+  { icon: "🧱", label: "Minecraft" },
+  { icon: "🌸", label: "Anime" },
+  { icon: "🎵", label: "Music" },
+  { icon: "🎮", label: "Genshin" },
+  { icon: "⛩️", label: "Japan" },
+  { icon: "☕", label: "Coffee" },
+];
+
+const profileGoals = [
+  { icon: "🎯", title: "Now", text: "Improve my coding skills and build better projects." },
+  { icon: "🚀", title: "Next", text: "Build larger systems and grow my community." },
+  { icon: "🌐", title: "Future", text: "Study abroad & work in technology." },
+];
+
+const profileActivity = [
+  { icon: Github, title: "Pushed a new commit", meta: "A few hours ago" },
+  { icon: Boxes, title: "Updated Craftopia Survival", meta: "Recently" },
+  { icon: Music, title: "Listening to YOASOBI", meta: "Today" },
+];
+
+/* =========================================================
    MUSIC
 ========================================================= */
 
-const DEFAULT_PLAYLIST: Song[] = [
+const playlist: Song[] = [
   {
-    id: "yoru-ni-kakeru",
     title: "夜に駆ける",
 
     artist: "YOASOBI",
@@ -228,7 +309,6 @@ const DEFAULT_PLAYLIST: Song[] = [
   },
 
   {
-    id: "hana-ni-bourei",
     title: "花に亡霊",
 
     artist: "ヨルシカ",
@@ -243,7 +323,6 @@ const DEFAULT_PLAYLIST: Song[] = [
   },
 
   {
-    id: "idol",
     title: "アイドル",
 
     artist: "YOASOBI",
@@ -258,7 +337,6 @@ const DEFAULT_PLAYLIST: Song[] = [
   },
 
   {
-    id: "hikari-e",
     title: "光へ",
 
     artist: "Aimer",
@@ -688,593 +766,1095 @@ const ServerStatus = memo(
 
 /* =========================================================
    MUSIC PLAYER
-   Stable audio engine. The audio element lives outside the
-   scrolling content and does not depend on the active tab.
 ========================================================= */
 
-function MusicImportModal({
-  open,
-  onClose,
-  onImported,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onImported: (song: Song) => void;
-}) {
-  const [title, setTitle] = useState("");
-  const [artist, setArtist] = useState("");
-  const [src, setSrc] = useState("");
-  const [cover, setCover] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (!open) {
-      setTitle("");
-      setArtist("");
-      setSrc("");
-      setCover("");
-      setLoading(false);
-      setError("");
-    }
-  }, [open]);
-
-  if (!open) return null;
-
-  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError("");
-
-    const cleanTitle = title.trim();
-    const cleanArtist = artist.trim();
-    const cleanSrc = src.trim();
-    const cleanCover = cover.trim();
-
-    try {
-      const audioUrl = new URL(cleanSrc);
-      if (audioUrl.protocol !== "https:" && audioUrl.protocol !== "http:") {
-        throw new Error("Chỉ hỗ trợ URL http/https.");
-      }
-    } catch {
-      setError("Audio URL không hợp lệ.");
-      return;
-    }
-
-    if (!cleanTitle || !cleanArtist) {
-      setError("Vui lòng nhập tên bài và nghệ sĩ.");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const response = await fetch("/api/music", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: cleanTitle,
-          artist: cleanArtist,
-          src: cleanSrc,
-          cover: cleanCover,
-        }),
-      });
-
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(
-          data?.error || "Không thể thêm bài hát."
-        );
-      }
-
-      onImported(data.song as Song);
-      onClose();
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Không thể kết nối tới music API."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div
-      className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/20 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <form
-        onSubmit={submit}
-        onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-lg rounded-[28px] border border-white/90 bg-white/88 shadow-2xl p-5 text-slate-800"
-      >
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center">
-              <Music className="w-5 h-5 text-teal-600" />
-            </div>
-            <div>
-              <p className="text-[9px] tracking-[.2em] text-slate-400">
-                MUSIC LIBRARY
-              </p>
-              <h2 className="text-lg font-bold">Import nhạc</h2>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center text-slate-500"
-            aria-label="Close"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="space-y-3">
-          <label className="block">
-            <span className="text-[10px] font-semibold">AUDIO URL</span>
-            <input
-              value={src}
-              onChange={(event) => setSrc(event.target.value)}
-              placeholder="https://cdn.example.com/song.mp3"
-              className="w-full mt-1.5 h-11 rounded-xl bg-white/75 border border-white px-3 outline-none text-xs"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-[10px] font-semibold">TÊN BÀI</span>
-            <input
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="Tên bài hát"
-              className="w-full mt-1.5 h-11 rounded-xl bg-white/75 border border-white px-3 outline-none text-xs"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-[10px] font-semibold">NGHỆ SĨ</span>
-            <input
-              value={artist}
-              onChange={(event) => setArtist(event.target.value)}
-              placeholder="Tên nghệ sĩ"
-              className="w-full mt-1.5 h-11 rounded-xl bg-white/75 border border-white px-3 outline-none text-xs"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-[10px] font-semibold">COVER URL</span>
-            <input
-              value={cover}
-              onChange={(event) => setCover(event.target.value)}
-              placeholder="https://cdn.example.com/cover.jpg"
-              className="w-full mt-1.5 h-11 rounded-xl bg-white/75 border border-white px-3 outline-none text-xs"
-            />
-          </label>
-        </div>
-
-        <p className="text-[9px] text-slate-400 leading-relaxed mt-4">
-          Chỉ lưu metadata + URL. File audio không được upload lên Vercel.
-        </p>
-
-        {error && (
-          <p className="mt-3 rounded-xl bg-rose-50 text-rose-600 text-[9px] px-3 py-2">
-            {error}
-          </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full h-11 mt-4 rounded-xl bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          {loading ? "ĐANG LƯU..." : "THÊM VÀO PLAYLIST"}
-        </button>
-      </form>
-    </div>
-  );
-}
-
 const MusicPlayer = memo(
-  function MusicPlayer({
-    playlist,
-  }: {
-    playlist: Song[];
-  }) {
-    const audioRef = useRef<HTMLAudioElement | null>(null);
-    const indexRef = useRef(0);
-    const playingRef = useRef(false);
-    const repeatRef = useRef(false);
-    const shuffleRef = useRef(false);
-    const playlistRef = useRef<Song[]>(playlist);
+  function MusicPlayer() {
+    const audioRef =
+      useRef<HTMLAudioElement | null>(
+        null
+      );
 
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [currentTime, setCurrentTime] = useState(0);
-    const [duration, setDuration] = useState(0);
-    const [volume, setVolume] = useState(0.8);
-    const [shuffle, setShuffle] = useState(false);
-    const [repeat, setRepeat] = useState(false);
-    const [showPlaylist, setShowPlaylist] = useState(false);
+    const indexRef =
+      useRef(0);
 
-    const currentSong = playlist[currentIndex] ?? playlist[0];
-    const currentSongSrc = currentSong?.src ?? "";
+    const playingRef =
+      useRef(false);
+
+    const repeatRef =
+      useRef(false);
+
+    const shuffleRef =
+      useRef(false);
+
+    const [
+      currentIndex,
+      setCurrentIndex,
+    ] = useState(0);
+
+    const [
+      isPlaying,
+      setIsPlaying,
+    ] = useState(false);
+
+    const [
+      currentTime,
+      setCurrentTime,
+    ] = useState(0);
+
+    const [
+      duration,
+      setDuration,
+    ] = useState(0);
+
+    const [
+      volume,
+      setVolume,
+    ] = useState(0.8);
+
+    const [
+      shuffle,
+      setShuffle,
+    ] = useState(false);
+
+    const [
+      repeat,
+      setRepeat,
+    ] = useState(false);
+
+    const [
+      showPlaylist,
+      setShowPlaylist,
+    ] = useState(false);
+
+    const currentSong =
+      playlist[currentIndex];
+
+    /* ============================================
+       REFS
+    ============================================ */
 
     useEffect(() => {
-      indexRef.current = currentIndex;
+      indexRef.current =
+        currentIndex;
     }, [currentIndex]);
 
     useEffect(() => {
-      playingRef.current = isPlaying;
+      playingRef.current =
+        isPlaying;
     }, [isPlaying]);
 
     useEffect(() => {
-      repeatRef.current = repeat;
+      repeatRef.current =
+        repeat;
     }, [repeat]);
 
     useEffect(() => {
-      shuffleRef.current = shuffle;
+      shuffleRef.current =
+        shuffle;
     }, [shuffle]);
 
-    useEffect(() => {
-      playlistRef.current = playlist;
-
-      if (currentIndex >= playlist.length && playlist.length > 0) {
-        setCurrentIndex(playlist.length - 1);
-      }
-    }, [playlist, currentIndex]);
+    /* ============================================
+       CREATE ONE AUDIO INSTANCE
+    ============================================ */
 
     useEffect(() => {
-      const audio = new Audio();
-      audio.preload = "metadata";
+      const audio =
+        new Audio();
+
+      audio.preload =
+        "metadata";
+
       audio.volume = 0.8;
-      audioRef.current = audio;
 
-      const onMetadata = () => {
-        setDuration(
-          Number.isFinite(audio.duration) ? audio.duration : 0
-        );
-      };
+      audioRef.current =
+        audio;
 
-      const onTimeUpdate = () => {
-        const second = Math.floor(audio.currentTime);
-        setCurrentTime((previous) =>
-          previous === second ? previous : second
-        );
-      };
+      const handleMetadata =
+        () => {
+          if (
+            Number.isFinite(
+              audio.duration
+            )
+          ) {
+            setDuration(
+              audio.duration
+            );
+          }
+        };
 
-      const onPlay = () => {
-        playingRef.current = true;
-        setIsPlaying(true);
-      };
+      const handleTimeUpdate =
+        () => {
+          const nextSecond =
+            Math.floor(
+              audio.currentTime
+            );
 
-      const onPause = () => {
-        playingRef.current = false;
-        setIsPlaying(false);
-      };
+          setCurrentTime(
+            (previous) =>
+              previous ===
+              nextSecond
+                ? previous
+                : nextSecond
+          );
+        };
 
-      const onEnded = () => {
-        const songs = playlistRef.current;
-        if (!songs.length) return;
+      const handlePlay =
+        () => {
+          playingRef.current =
+            true;
 
-        if (repeatRef.current) {
-          audio.currentTime = 0;
-          void audio.play().catch(() => setIsPlaying(false));
-          return;
-        }
+          setIsPlaying(
+            true
+          );
+        };
 
-        let next = (indexRef.current + 1) % songs.length;
+      const handlePause =
+        () => {
+          playingRef.current =
+            false;
 
-        if (shuffleRef.current && songs.length > 1) {
-          do {
-            next = Math.floor(Math.random() * songs.length);
-          } while (next === indexRef.current);
-        }
+          setIsPlaying(
+            false
+          );
+        };
 
-        indexRef.current = next;
-        setCurrentIndex(next);
-      };
+      const handleEnded =
+        () => {
+          if (
+            repeatRef.current
+          ) {
+            audio.currentTime =
+              0;
 
-      audio.addEventListener("loadedmetadata", onMetadata);
-      audio.addEventListener("timeupdate", onTimeUpdate);
-      audio.addEventListener("play", onPlay);
-      audio.addEventListener("pause", onPause);
-      audio.addEventListener("ended", onEnded);
+            void audio
+              .play()
+              .catch(() => {
+                setIsPlaying(
+                  false
+                );
+              });
+
+            return;
+          }
+
+          let nextIndex: number;
+
+          if (
+            shuffleRef.current &&
+            playlist.length > 1
+          ) {
+            do {
+              nextIndex =
+                Math.floor(
+                  Math.random() *
+                    playlist.length
+                );
+            } while (
+              nextIndex ===
+              indexRef.current
+            );
+          } else {
+            nextIndex =
+              (indexRef.current +
+                1) %
+              playlist.length;
+          }
+
+          indexRef.current =
+            nextIndex;
+
+          setCurrentIndex(
+            nextIndex
+          );
+        };
+
+      audio.addEventListener(
+        "loadedmetadata",
+        handleMetadata
+      );
+
+      audio.addEventListener(
+        "timeupdate",
+        handleTimeUpdate
+      );
+
+      audio.addEventListener(
+        "play",
+        handlePlay
+      );
+
+      audio.addEventListener(
+        "pause",
+        handlePause
+      );
+
+      audio.addEventListener(
+        "ended",
+        handleEnded
+      );
 
       return () => {
         audio.pause();
-        audio.removeAttribute("src");
+
+        audio.removeAttribute(
+          "src"
+        );
+
         audio.load();
-        audio.removeEventListener("loadedmetadata", onMetadata);
-        audio.removeEventListener("timeupdate", onTimeUpdate);
-        audio.removeEventListener("play", onPlay);
-        audio.removeEventListener("pause", onPause);
-        audio.removeEventListener("ended", onEnded);
-        audioRef.current = null;
+
+        audio.removeEventListener(
+          "loadedmetadata",
+          handleMetadata
+        );
+
+        audio.removeEventListener(
+          "timeupdate",
+          handleTimeUpdate
+        );
+
+        audio.removeEventListener(
+          "play",
+          handlePlay
+        );
+
+        audio.removeEventListener(
+          "pause",
+          handlePause
+        );
+
+        audio.removeEventListener(
+          "ended",
+          handleEnded
+        );
+
+        audioRef.current =
+          null;
       };
     }, []);
 
-    useEffect(() => {
-      const audio = audioRef.current;
-      if (!audio || !currentSong) return;
+    /* ============================================
+       LOAD SONG
+    ============================================ */
 
-      const shouldPlay = playingRef.current;
-      audio.src = currentSong.src;
-      audio.preload = "metadata";
+    useEffect(() => {
+      const audio =
+        audioRef.current;
+
+      if (!audio) return;
+
+      const shouldPlay =
+        playingRef.current;
+
+      audio.src =
+        currentSong.src;
+
       audio.load();
+
       setCurrentTime(0);
       setDuration(0);
 
       if (shouldPlay) {
-        void audio.play().catch(() => setIsPlaying(false));
+        void audio
+          .play()
+          .catch(() => {
+            setIsPlaying(
+              false
+            );
+          });
       }
-    }, [currentIndex, currentSongSrc]);
+    }, [
+      currentIndex,
+      currentSong.src,
+    ]);
 
-    const togglePlay = useCallback(async () => {
-      const audio = audioRef.current;
-      if (!audio) return;
+    /* ============================================
+       PLAY / PAUSE
+    ============================================ */
 
-      try {
-        if (audio.paused) {
-          await audio.play();
+    const togglePlay =
+      useCallback(
+        async () => {
+          const audio =
+            audioRef.current;
+
+          if (!audio) return;
+
+          try {
+            if (
+              audio.paused
+            ) {
+              await audio.play();
+            } else {
+              audio.pause();
+            }
+          } catch (error) {
+            console.error(
+              "Audio error:",
+              error
+            );
+
+            setIsPlaying(
+              false
+            );
+          }
+        },
+        []
+      );
+
+    /* ============================================
+       NEXT
+    ============================================ */
+
+    const playNext =
+      useCallback(() => {
+        let next: number;
+
+        if (
+          shuffleRef.current &&
+          playlist.length > 1
+        ) {
+          do {
+            next =
+              Math.floor(
+                Math.random() *
+                  playlist.length
+              );
+          } while (
+            next ===
+            indexRef.current
+          );
         } else {
-          audio.pause();
+          next =
+            (indexRef.current +
+              1) %
+            playlist.length;
         }
-      } catch {
-        setIsPlaying(false);
-      }
-    }, []);
 
-    const playNext = useCallback(() => {
-      if (playlist.length <= 1) return;
+        indexRef.current =
+          next;
 
-      let next = (indexRef.current + 1) % playlist.length;
+        setCurrentIndex(
+          next
+        );
 
-      if (shuffleRef.current && playlist.length > 1) {
-        do {
-          next = Math.floor(Math.random() * playlist.length);
-        } while (next === indexRef.current);
-      }
+        setIsPlaying(
+          true
+        );
+      }, []);
 
-      indexRef.current = next;
-      setCurrentIndex(next);
-      setIsPlaying(true);
-    }, [playlist]);
+    /* ============================================
+       PREVIOUS
+    ============================================ */
 
-    const playPrevious = useCallback(() => {
-      const audio = audioRef.current;
+    const playPrevious =
+      useCallback(() => {
+        const audio =
+          audioRef.current;
 
-      if (audio && audio.currentTime > 3) {
-        audio.currentTime = 0;
-        setCurrentTime(0);
-        return;
-      }
+        if (
+          audio &&
+          audio.currentTime >
+            3
+        ) {
+          audio.currentTime =
+            0;
 
-      if (!playlist.length) return;
+          setCurrentTime(
+            0
+          );
 
-      const previous =
-        (indexRef.current - 1 + playlist.length) % playlist.length;
+          return;
+        }
 
-      indexRef.current = previous;
-      setCurrentIndex(previous);
-      setIsPlaying(true);
-    }, [playlist]);
+        const previous =
+          (indexRef.current -
+            1 +
+            playlist.length) %
+          playlist.length;
 
-    const selectSong = useCallback(
-      (index: number) => {
-        if (!playlist[index]) return;
-        indexRef.current = index;
-        setCurrentIndex(index);
-        setIsPlaying(true);
-        setShowPlaylist(false);
-      },
-      [playlist]
-    );
+        indexRef.current =
+          previous;
 
-    const changeProgress = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const value = Number(event.target.value);
-      const audio = audioRef.current;
-      if (!audio) return;
-      audio.currentTime = value;
-      setCurrentTime(Math.floor(value));
-    };
+        setCurrentIndex(
+          previous
+        );
 
-    const changeVolume = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const value = Number(event.target.value);
-      setVolume(value);
-      if (audioRef.current) audioRef.current.volume = value;
-    };
+        setIsPlaying(
+          true
+        );
+      }, []);
 
-    const toggleMute = () => {
-      const audio = audioRef.current;
-      if (!audio) return;
+    /* ============================================
+       SELECT
+    ============================================ */
 
-      if (audio.volume > 0) {
-        audio.volume = 0;
-        setVolume(0);
-      } else {
-        audio.volume = 0.8;
-        setVolume(0.8);
-      }
-    };
+    const selectSong =
+      useCallback(
+        (index: number) => {
+          if (
+            !playlist[index]
+          ) {
+            return;
+          }
+
+          indexRef.current =
+            index;
+
+          setCurrentIndex(
+            index
+          );
+
+          setIsPlaying(
+            true
+          );
+        },
+        []
+      );
+
+    /* ============================================
+       SEEK
+    ============================================ */
+
+    const changeProgress =
+      (
+        event: React.ChangeEvent<HTMLInputElement>
+      ) => {
+        const value =
+          Number(
+            event.target.value
+          );
+
+        const audio =
+          audioRef.current;
+
+        if (!audio) return;
+
+        audio.currentTime =
+          value;
+
+        setCurrentTime(
+          Math.floor(value)
+        );
+      };
+
+    /* ============================================
+       VOLUME
+    ============================================ */
+
+    const changeVolume =
+      (
+        event: React.ChangeEvent<HTMLInputElement>
+      ) => {
+        const value =
+          Number(
+            event.target.value
+          );
+
+        setVolume(value);
+
+        if (
+          audioRef.current
+        ) {
+          audioRef.current.volume =
+            value;
+        }
+      };
+
+    const toggleMute =
+      () => {
+        const audio =
+          audioRef.current;
+
+        if (!audio) return;
+
+        if (
+          audio.volume > 0
+        ) {
+          audio.volume = 0;
+
+          setVolume(0);
+        } else {
+          audio.volume = 0.8;
+
+          setVolume(0.8);
+        }
+      };
 
     const progress =
       duration > 0
-        ? Math.min((currentTime / duration) * 100, 100)
+        ? Math.min(
+            (currentTime /
+              duration) *
+              100,
+            100
+          )
         : 0;
-
-    if (!currentSong) return null;
 
     return (
       <>
+        {/* =================================================
+            PLAYLIST POPUP
+        ================================================= */}
+
         {showPlaylist && (
-          <div className="fixed z-[90] bottom-[76px] md:bottom-[80px] right-3 md:right-5 w-[calc(100vw-24px)] max-w-sm rounded-2xl overflow-hidden bg-white/88 backdrop-blur-xl border border-white/80 shadow-2xl">
+          <div
+            className="
+              fixed
+              z-[90]
+              bottom-[76px]
+              md:bottom-[80px]
+              right-3
+              md:right-5
+              w-[calc(100vw-24px)]
+              max-w-sm
+              rounded-2xl
+              overflow-hidden
+              bg-white/80
+              backdrop-blur-xl
+              border
+              border-white/80
+              shadow-2xl
+            "
+          >
+
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/70">
+
               <div>
-                <p className="text-xs font-bold text-slate-800">MY PLAYLIST</p>
-                <p className="text-[9px] text-slate-500">{playlist.length} songs</p>
+
+                <p className="text-xs font-bold text-slate-800">
+                  MY PLAYLIST
+                </p>
+
+                <p className="text-[9px] text-slate-500">
+                  {playlist.length} songs
+                </p>
+
               </div>
+
               <button
                 type="button"
-                onClick={() => setShowPlaylist(false)}
+                onClick={() =>
+                  setShowPlaylist(
+                    false
+                  )
+                }
                 className="text-slate-400 hover:text-slate-700"
               >
                 <X className="w-4 h-4" />
               </button>
+
             </div>
 
             <div className="p-2 max-h-72 overflow-y-auto">
-              {playlist.map((song, index) => {
-                const active = index === currentIndex;
-                return (
-                  <button
-                    type="button"
-                    key={song.id}
-                    onClick={() => selectSong(index)}
-                    className={`w-full flex items-center gap-3 p-2 rounded-xl text-left transition-colors ${
-                      active ? "bg-white/75 shadow-sm" : "hover:bg-white/50"
-                    }`}
-                  >
-                    <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-slate-200">
-                      <Image
-                        src={song.cover || "/images/music/default.jpg"}
-                        alt=""
-                        fill
-                        sizes="40px"
-                        className="object-cover"
-                      />
-                      {active && (
-                        <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
-                          {isPlaying ? (
-                            <Pause className="w-4 h-4 text-white" />
-                          ) : (
-                            <Play className="w-4 h-4 text-white" />
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[11px] font-semibold text-slate-800 truncate">
-                        {song.title}
-                      </p>
-                      <p className="text-[9px] text-slate-500 truncate">
-                        {song.artist}
-                      </p>
-                    </div>
-                    <span className="text-[9px] text-slate-400">
-                      {song.duration}
-                    </span>
-                  </button>
-                );
-              })}
+
+              {playlist.map(
+                (
+                  song,
+                  index
+                ) => {
+
+                  const active =
+                    index ===
+                    currentIndex;
+
+                  return (
+                    <button
+                      type="button"
+                      key={
+                        song.title
+                      }
+                      onClick={() =>
+                        selectSong(
+                          index
+                        )
+                      }
+                      className={`
+                        w-full
+                        flex
+                        items-center
+                        gap-3
+                        p-2
+                        rounded-xl
+                        text-left
+                        transition-colors
+                        ${
+                          active
+                            ? "bg-white/80 shadow-sm"
+                            : "hover:bg-white/55"
+                        }
+                      `}
+                    >
+
+                      <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0">
+
+                        <Image
+                          src={
+                            song.cover
+                          }
+                          alt=""
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                        />
+
+                        {active && (
+                          <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
+
+                            {isPlaying ? (
+                              <Pause className="w-4 h-4 text-white" />
+                            ) : (
+                              <Play className="w-4 h-4 text-white" />
+                            )}
+
+                          </div>
+                        )}
+
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+
+                        <p className="text-[11px] font-semibold text-slate-800 truncate">
+                          {
+                            song.title
+                          }
+                        </p>
+
+                        <p className="text-[9px] text-slate-500 truncate">
+                          {
+                            song.artist
+                          }
+                        </p>
+
+                      </div>
+
+                      <span className="text-[9px] text-slate-400">
+                        {
+                          song.duration
+                        }
+                      </span>
+
+                    </button>
+                  );
+                }
+              )}
+
             </div>
+
           </div>
         )}
 
-        <footer className="hidden md:flex fixed bottom-0 left-24 right-0 h-[68px] z-[80] items-center px-5 bg-white/80 backdrop-blur-xl border-t border-white/80 shadow-lg">
+        {/* =================================================
+            DESKTOP PLAYER
+        ================================================= */}
+
+        <footer
+          className="
+            hidden
+            md:flex
+            fixed
+            bottom-0
+            left-24
+            right-0
+            h-[68px]
+            z-[80]
+            items-center
+            px-5
+            bg-white/80
+            backdrop-blur-xl
+            border-t
+            border-white/80
+            shadow-lg
+          "
+        >
+
           <div className="flex items-center gap-3 w-1/4 min-w-0">
-            <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-slate-200">
+
+            <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0">
+
               <Image
-                src={currentSong.cover || "/images/music/default.jpg"}
-                alt={currentSong.title}
+                src={
+                  currentSong.cover
+                }
+                alt={
+                  currentSong.title
+                }
                 fill
                 sizes="40px"
                 className="object-cover"
               />
+
             </div>
+
             <div className="min-w-0">
-              <p className="text-xs font-bold text-slate-800 truncate">{currentSong.title}</p>
-              <p className="text-[10px] text-slate-500 truncate">{currentSong.artist}</p>
+
+              <p className="text-xs font-bold text-slate-800 truncate">
+                {
+                  currentSong.title
+                }
+              </p>
+
+              <p className="text-[10px] text-slate-500 truncate">
+                {
+                  currentSong.artist
+                }
+              </p>
+
             </div>
+
           </div>
 
           <div className="flex flex-col items-center gap-1 flex-1">
+
             <div className="flex items-center gap-4 text-slate-600">
-              <button type="button" onClick={() => setShuffle((value) => !value)} className={shuffle ? "text-sky-500" : "text-slate-500"} aria-label="Shuffle">
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShuffle(
+                    (value) =>
+                      !value
+                  )
+                }
+                className={
+                  shuffle
+                    ? "text-sky-500"
+                    : "text-slate-500"
+                }
+                aria-label="Shuffle"
+              >
                 <Shuffle className="w-3.5 h-3.5" />
               </button>
-              <button type="button" onClick={playPrevious} aria-label="Previous">
+
+              <button
+                type="button"
+                onClick={
+                  playPrevious
+                }
+                aria-label="Previous"
+              >
                 <SkipBack className="w-4 h-4" />
               </button>
-              <button type="button" onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Play"} className="w-9 h-9 rounded-full bg-teal-500 text-white flex items-center justify-center shadow-md active:scale-95 transition-transform duration-150">
-                {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
+
+              <button
+                type="button"
+                onClick={
+                  togglePlay
+                }
+                aria-label={
+                  isPlaying
+                    ? "Pause"
+                    : "Play"
+                }
+                className="
+                  w-9
+                  h-9
+                  rounded-full
+                  bg-teal-500
+                  text-white
+                  flex
+                  items-center
+                  justify-center
+                  shadow-md
+                  active:scale-95
+                  transition-transform
+                  duration-150
+                "
+              >
+
+                {isPlaying ? (
+                  <Pause className="w-4 h-4 fill-current" />
+                ) : (
+                  <Play className="w-4 h-4 fill-current ml-0.5" />
+                )}
+
               </button>
-              <button type="button" onClick={playNext} aria-label="Next">
+
+              <button
+                type="button"
+                onClick={
+                  playNext
+                }
+                aria-label="Next"
+              >
                 <SkipForward className="w-4 h-4" />
               </button>
-              <button type="button" onClick={() => setRepeat((value) => !value)} className={repeat ? "text-sky-500" : "text-slate-500"} aria-label="Repeat">
+
+              <button
+                type="button"
+                onClick={() =>
+                  setRepeat(
+                    (value) =>
+                      !value
+                  )
+                }
+                className={
+                  repeat
+                    ? "text-sky-500"
+                    : "text-slate-500"
+                }
+                aria-label="Repeat"
+              >
                 <Repeat className="w-3.5 h-3.5" />
               </button>
+
             </div>
 
             <div className="flex items-center gap-2 w-full max-w-md">
-              <span className="text-[8px] text-slate-400 w-7 text-right">{formatTime(currentTime)}</span>
+
+              <span className="text-[8px] text-slate-400 w-7 text-right">
+                {
+                  formatTime(
+                    currentTime
+                  )
+                }
+              </span>
+
               <input
                 type="range"
                 min="0"
-                max={duration || 0}
+                max={
+                  duration || 0
+                }
                 step="0.1"
-                value={Math.min(currentTime, duration || 0)}
-                onChange={changeProgress}
-                aria-label="Progress"
+                value={Math.min(
+                  currentTime,
+                  duration || 0
+                )}
+                onChange={
+                  changeProgress
+                }
                 className="flex-1 h-1 accent-teal-500 cursor-pointer"
                 style={{
-                  background: `linear-gradient(to right, rgb(45 212 191) ${progress}%, rgb(226 232 240) ${progress}%)`,
+                  background: `linear-gradient(
+                    to right,
+                    rgb(45 212 191) ${progress}%,
+                    rgb(226 232 240) ${progress}%
+                  )`,
                 }}
+                aria-label="Progress"
               />
-              <span className="text-[8px] text-slate-400 w-7">{formatTime(duration)}</span>
+
+              <span className="text-[8px] text-slate-400 w-7">
+                {
+                  formatTime(
+                    duration
+                  )
+                }
+              </span>
+
             </div>
+
           </div>
 
           <div className="flex items-center gap-3 w-1/4 justify-end">
+
             <div className="hidden lg:flex items-center gap-2">
-              <button type="button" onClick={toggleMute} aria-label="Mute">
-                {volume > 0 ? <Volume2 className="w-4 h-4 text-slate-500" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
+
+              <button
+                type="button"
+                onClick={
+                  toggleMute
+                }
+                aria-label="Mute"
+              >
+
+                {volume > 0 ? (
+                  <Volume2 className="w-4 h-4 text-slate-500" />
+                ) : (
+                  <VolumeX className="w-4 h-4 text-slate-500" />
+                )}
+
               </button>
-              <input type="range" min="0" max="1" step="0.01" value={volume} onChange={changeVolume} className="w-16 accent-teal-500" aria-label="Volume" />
+
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={
+                  volume
+                }
+                onChange={
+                  changeVolume
+                }
+                className="w-16 accent-teal-500"
+                aria-label="Volume"
+              />
+
             </div>
-            <button type="button" onClick={() => setShowPlaylist((value) => !value)} className={showPlaylist ? "text-teal-500" : "text-slate-500"} aria-label="Playlist">
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowPlaylist(
+                  (value) =>
+                    !value
+                )
+              }
+              aria-label="Playlist"
+              className={
+                showPlaylist
+                  ? "text-teal-500"
+                  : "text-slate-500"
+              }
+            >
               <ListMusic className="w-4 h-4" />
             </button>
+
             <Maximize2 className="hidden lg:block w-4 h-4 text-slate-500" />
+
             <ChevronDown className="hidden lg:block w-4 h-4 text-slate-500" />
+
           </div>
+
         </footer>
 
-        <footer className="md:hidden fixed bottom-2 left-2 right-2 z-[80] h-[58px] rounded-2xl px-2 flex items-center gap-2 bg-slate-950/88 backdrop-blur-xl border border-white/10 shadow-2xl">
-          <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-slate-800">
+        {/* =================================================
+            MOBILE PLAYER
+            TRẮNG ĐỒNG BỘ UI
+        ================================================= */}
+
+        <footer
+          className="
+            md:hidden
+            fixed
+            bottom-2
+            left-2
+            right-2
+            z-[80]
+
+            h-[58px]
+
+            rounded-2xl
+
+            px-2
+
+            flex
+            items-center
+            gap-2
+
+            bg-white/75
+            backdrop-blur-xl
+
+            border
+            border-white/85
+
+            shadow-lg
+          "
+        >
+
+          <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0">
+
             <Image
-              src={currentSong.cover || "/images/music/default.jpg"}
-              alt={currentSong.title}
+              src={
+                currentSong.cover
+              }
+              alt={
+                currentSong.title
+              }
               fill
               sizes="40px"
               className="object-cover"
             />
+
           </div>
+
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-bold text-white truncate">{currentSong.title}</p>
-            <p className="text-[8px] text-white/45 truncate">{currentSong.artist}</p>
-            <div className="h-0.5 bg-white/10 rounded-full overflow-hidden mt-1">
-              <div className="h-full bg-teal-400 transition-[width] duration-300" style={{ width: `${progress}%` }} />
+
+            <p className="text-[10px] font-bold text-slate-800 truncate">
+              {
+                currentSong.title
+              }
+            </p>
+
+            <p className="text-[8px] text-slate-500 truncate">
+              {
+                currentSong.artist
+              }
+            </p>
+
+            <div className="h-0.5 bg-slate-200 rounded-full overflow-hidden mt-1">
+
+              <div
+                className="h-full bg-teal-400 transition-[width] duration-200"
+                style={{
+                  width: `${progress}%`,
+                }}
+              />
+
             </div>
+
           </div>
-          <button type="button" onClick={playPrevious} className="text-white/60 shrink-0" aria-label="Previous">
+
+          <button
+            type="button"
+            onClick={
+              playPrevious
+            }
+            className="text-slate-500 shrink-0"
+            aria-label="Previous"
+          >
             <SkipBack className="w-3.5 h-3.5" />
           </button>
-          <button type="button" onClick={togglePlay} className="w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center shrink-0 active:scale-95" aria-label={isPlaying ? "Pause" : "Play"}>
-            {isPlaying ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+
+          <button
+            type="button"
+            onClick={
+              togglePlay
+            }
+            className="
+              w-8
+              h-8
+              rounded-full
+              bg-teal-500
+              text-white
+              flex
+              items-center
+              justify-center
+              shrink-0
+              active:scale-95
+            "
+            aria-label={
+              isPlaying
+                ? "Pause"
+                : "Play"
+            }
+          >
+
+            {isPlaying ? (
+              <Pause className="w-3.5 h-3.5 fill-current" />
+            ) : (
+              <Play className="w-3.5 h-3.5 fill-current" />
+            )}
+
           </button>
-          <button type="button" onClick={playNext} className="text-white/60 shrink-0" aria-label="Next">
+
+          <button
+            type="button"
+            onClick={
+              playNext
+            }
+            className="text-slate-500 shrink-0"
+            aria-label="Next"
+          >
             <SkipForward className="w-3.5 h-3.5" />
           </button>
-          <button type="button" onClick={() => setShowPlaylist((value) => !value)} className="text-white/50 shrink-0" aria-label="Playlist">
+
+          <button
+            type="button"
+            onClick={() =>
+              setShowPlaylist(
+                (value) =>
+                  !value
+              )
+            }
+            className="text-slate-500 shrink-0"
+            aria-label="Playlist"
+          >
             <ListMusic className="w-4 h-4" />
           </button>
+
         </footer>
       </>
     );
@@ -2019,66 +2599,464 @@ const HomeView = memo(
 );
 
 /* =========================================================
+   PROFILE VIEW
+========================================================= */
+
+const ProfileView = memo(
+  function ProfileView() {
+    const skillTone: Record<string, string> = {
+      blue: "bg-sky-50 text-sky-700 border-sky-100",
+      green: "bg-emerald-50 text-emerald-700 border-emerald-100",
+      indigo: "bg-indigo-50 text-indigo-700 border-indigo-100",
+      yellow: "bg-amber-50 text-amber-700 border-amber-100",
+      slate: "bg-slate-50 text-slate-700 border-slate-200",
+      purple: "bg-violet-50 text-violet-700 border-violet-100",
+      red: "bg-rose-50 text-rose-700 border-rose-100",
+    };
+
+    const glassCard = `
+      rounded-[24px]
+      border border-white/80
+      bg-white/60
+      backdrop-blur-md
+      md:backdrop-blur-xl
+      shadow-[0_10px_35px_rgba(15,23,42,0.06)]
+    `;
+
+    return (
+      <div className="w-full space-y-3 md:space-y-4">
+        {/* PAGE TITLE */}
+        <div className="flex items-end justify-between px-1 md:px-2">
+          <div>
+            <div className="flex items-center gap-2 text-slate-700">
+              <User className="w-5 h-5 md:w-6 md:h-6" />
+              <h1 className="text-lg md:text-2xl font-semibold tracking-tight">
+                PROFILE
+              </h1>
+            </div>
+            <p className="ml-7 md:ml-8 text-[8px] md:text-[10px] text-slate-400 tracking-[0.2em]">
+              プロフィール
+            </p>
+          </div>
+          <span className="hidden md:inline-flex items-center gap-1 text-[10px] text-slate-400">
+            <Sparkles className="w-3.5 h-3.5" />
+            About me
+          </span>
+        </div>
+
+        {/* HERO */}
+        <section className={`${glassCard} p-4 md:p-5`}>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+            <div className="lg:col-span-4 flex items-center gap-4 md:gap-5">
+              <div className="relative shrink-0">
+                <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full p-1 bg-gradient-to-br from-sky-200 via-cyan-100 to-indigo-200 shadow-lg">
+                  <div className="relative w-full h-full overflow-hidden rounded-full border-2 border-white bg-slate-200">
+                    <Image
+                      src={profileData.avatar}
+                      alt={profileData.name}
+                      fill
+                      priority
+                      sizes="(max-width: 768px) 96px, 128px"
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+                <span className="absolute right-0 bottom-0 inline-flex items-center gap-1 rounded-full border border-white bg-emerald-400 px-2 py-0.5 text-[8px] md:text-[9px] font-semibold text-white shadow-sm">
+                  ● Online
+                </span>
+              </div>
+
+              <div className="min-w-0">
+                <p className="text-[10px] md:text-xs text-slate-500 font-medium">
+                  {profileData.greetingJp}
+                </p>
+                <h2 className="mt-0.5 text-2xl md:text-4xl font-extrabold italic font-serif tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-sky-500 via-cyan-500 to-indigo-500">
+                  {profileData.name}
+                </h2>
+                <p className="mt-1 text-[10px] md:text-xs font-medium text-slate-600">
+                  {profileData.titleJp}
+                </p>
+                <p className="text-[8px] md:text-[10px] text-slate-400">
+                  {profileData.tagline}
+                </p>
+              </div>
+            </div>
+
+            <div className="lg:col-span-5">
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/90 bg-white/75 px-2.5 py-1 text-[9px] md:text-[10px] text-slate-600"><MapPin className="w-3 h-3" /> Vietnam</span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/90 bg-white/75 px-2.5 py-1 text-[9px] md:text-[10px] text-slate-600"><User className="w-3 h-3" /> {profileData.age}</span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/90 bg-white/75 px-2.5 py-1 text-[9px] md:text-[10px] text-slate-600"><Code2 className="w-3 h-3" /> {profileData.role}</span>
+              </div>
+
+              <div className="rounded-2xl border border-white/80 bg-white/65 p-3">
+                <p className="text-[10px] md:text-xs text-slate-600 leading-relaxed font-medium">
+                  “{profileData.quoteJp}”
+                </p>
+                <p className="mt-1 text-[9px] md:text-[10px] text-slate-500">
+                  {profileData.quoteVi}
+                </p>
+              </div>
+            </div>
+
+            <div className="lg:col-span-3">
+              <div className="overflow-hidden rounded-2xl border border-white/90 bg-white/70 divide-y divide-slate-200/60">
+                <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+                  <span className="flex items-center gap-2 text-[9px] md:text-[10px] text-slate-500"><MapPin className="w-3.5 h-3.5" />場所</span>
+                  <span className="text-[9px] md:text-[10px] font-semibold text-slate-700">Vietnam</span>
+                </div>
+                <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+                  <span className="flex items-center gap-2 text-[9px] md:text-[10px] text-slate-500"><Code2 className="w-3.5 h-3.5" />興味</span>
+                  <span className="text-[9px] md:text-[10px] font-semibold text-slate-700">Code, Anime, Music</span>
+                </div>
+                <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+                  <span className="flex items-center gap-2 text-[9px] md:text-[10px] text-slate-500"><Clock3 className="w-3.5 h-3.5" />活動時間</span>
+                  <span className="text-[9px] md:text-[10px] font-semibold text-slate-700">夜型人間 🌙</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ABOUT / CURRENTLY / STATS */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 md:gap-4">
+          <section className={`${glassCard} xl:col-span-4 p-4`}>
+            <SectionHeader icon={<User className="w-4 h-4" />} title="ABOUT ME" sub="私について" />
+            <p className="mt-4 text-[11px] md:text-xs leading-relaxed text-slate-600">
+              {profileData.aboutJp}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-1.5">
+              {profileData.hobbies.map((hobby) => (
+                <span key={hobby} className="rounded-full border border-sky-100 bg-sky-50/80 px-2.5 py-1 text-[9px] text-slate-600">
+                  ✦ {hobby}
+                </span>
+              ))}
+            </div>
+            <div className="mt-4 flex items-center gap-3 border-t border-slate-200/60 pt-3">
+              <a href={socials.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-slate-500 hover:text-slate-800 transition-colors"><Github className="w-4 h-4" /></a>
+              <a href={socials.discord} target="_blank" rel="noopener noreferrer" aria-label="Discord" className="text-slate-500 hover:text-indigo-600 transition-colors"><DiscordIcon className="w-4 h-4" /></a>
+              <a href="mailto:" aria-label="Email" className="text-slate-500 hover:text-sky-600 transition-colors"><Mail className="w-4 h-4" /></a>
+            </div>
+          </section>
+
+          <section className={`${glassCard} xl:col-span-4 p-4`}>
+            <SectionHeader icon={<Activity className="w-4 h-4" />} title="CURRENTLY" sub="今していること" dot />
+            <div className="mt-3 divide-y divide-slate-200/60 rounded-2xl border border-white/80 bg-white/55 overflow-hidden">
+              <CurrentRow icon="💻" title="Coding" text="Building Discord Bot" />
+              <CurrentRow icon="🎵" title="Listening" text="YOASOBI · 夜に駆ける" />
+              <CurrentRow icon="🎮" title="Playing" text="Minecraft" />
+              <CurrentRow icon="📚" title="Learning" text="Physics & Mathematics" />
+            </div>
+          </section>
+
+          <section className={`${glassCard} xl:col-span-4 p-4`}>
+            <SectionHeader icon={<Activity className="w-4 h-4" />} title="STATS" sub="統計" action="View more" />
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {profileStats.map((stat) => {
+                const Icon = stat.icon;
+                return (
+                  <div key={stat.label} className="rounded-2xl border border-white/90 bg-white/65 p-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-lg font-extrabold leading-none text-sky-600">{stat.value}</p>
+                        <p className="mt-1 text-[7px] font-semibold text-slate-400 leading-tight">{stat.label}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </div>
+
+        {/* WHAT I BUILD / SKILLS */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 md:gap-4">
+          <section className={`${glassCard} xl:col-span-7 p-4`}>
+            <SectionHeader icon={<Boxes className="w-4 h-4" />} title="WHAT I BUILD" sub="何を作っているか" action="View all" />
+            <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2.5">
+              {profileBuilds.map((build) => (
+                <div key={build.title} className="rounded-2xl border border-white/90 bg-white/65 p-3">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-white text-xl">
+                      {build.icon === "discord" ? <DiscordIcon className="w-6 h-6 text-indigo-600" /> : <span>{build.icon}</span>}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-[11px] font-bold text-slate-800">{build.title}</h3>
+                      <p className="mt-0.5 text-[8px] text-slate-500 leading-relaxed">{build.desc}</p>
+                      <p className="mt-1 text-[8px] text-slate-400 leading-relaxed">{build.detail}</p>
+                    </div>
+                  </div>
+                  <button type="button" className="mt-3 text-[8px] font-semibold text-sky-600">Explore →</button>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className={`${glassCard} xl:col-span-5 p-4`}>
+            <SectionHeader icon={<Terminal className="w-4 h-4" />} title="SKILLS & STACK" sub="スキル・技術" />
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {profileSkills.map(([skill, tone]) => (
+                <span key={skill} className={`rounded-full border px-2.5 py-1 text-[8px] font-semibold ${skillTone[tone]}`}>
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        {/* GOALS / FAVORITES */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 md:gap-4">
+          <section className={`${glassCard} xl:col-span-7 p-4`}>
+            <SectionHeader icon={<Target className="w-4 h-4" />} title="GOALS" sub="目標" />
+            <div className="mt-3 grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200/60 rounded-2xl border border-white/90 bg-white/55 overflow-hidden">
+              {profileGoals.map((goal) => (
+                <div key={goal.title} className="flex items-start gap-3 p-3.5">
+                  <span className="text-2xl leading-none">{goal.icon}</span>
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-800">{goal.title}</p>
+                    <p className="mt-1 text-[8px] leading-relaxed text-slate-500">{goal.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className={`${glassCard} xl:col-span-5 p-4`}>
+            <SectionHeader icon={<Heart className="w-4 h-4" />} title="FAVORITES" sub="お気に入り" />
+            <div className="mt-3 grid grid-cols-3 md:grid-cols-6 gap-2">
+              {profileFavorites.map((item) => (
+                <div key={item.label} className="flex flex-col items-center rounded-2xl border border-white/90 bg-white/60 px-2 py-3 text-center">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white border border-white text-xl shadow-sm">{item.icon}</div>
+                  <span className="mt-1.5 text-[8px] font-semibold text-slate-600">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        {/* ACTIVITY / RECENT PROJECTS */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 md:gap-4">
+          <section className={`${glassCard} xl:col-span-5 p-4`}>
+            <SectionHeader icon={<Activity className="w-4 h-4" />} title="ACTIVITY" sub="最近の動き" />
+            <div className="mt-3 space-y-2">
+              {profileActivity.map((item, index) => {
+                const Icon = item.icon;
+                return (
+                  <div key={`${item.title}-${index}`} className="flex items-center gap-3 rounded-2xl border border-white/80 bg-white/55 px-3 py-2.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold text-slate-700 truncate">{item.title}</p>
+                      <p className="text-[8px] text-slate-400">{item.meta}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className={`${glassCard} xl:col-span-7 p-4`}>
+            <SectionHeader icon={<Folder className="w-4 h-4" />} title="RECENT PROJECTS" sub="最近のプロジェクト" action="View all" />
+            <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2.5">
+              {projectsData.slice(0, 3).map((project) => (
+                <div key={project.id} className="rounded-2xl border border-white/90 bg-white/65 p-2.5">
+                  <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-slate-200">
+                    <Image
+                      src={project.image}
+                      alt={project.name}
+                      fill
+                      sizes="(max-width: 768px) 90vw, 240px"
+                      loading="lazy"
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="mt-2 flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="text-[10px] font-bold truncate">{project.name}</h3>
+                      <p className="mt-0.5 text-[8px] text-slate-400 truncate">{project.tags.join(" · ")}</p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[7px] font-semibold text-emerald-600">Active</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </div>
+    );
+  }
+);
+
+function SectionHeader({
+  icon,
+  title,
+  sub,
+  action,
+  dot = false,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  sub: string;
+  action?: string;
+  dot?: boolean;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start gap-2">
+        <span className="mt-0.5 text-sky-600">{icon}</span>
+        <div>
+          <div className="flex items-center gap-1.5">
+            <h2 className="text-[11px] md:text-xs font-bold text-slate-700">{title}</h2>
+            {dot && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
+          </div>
+          <p className="text-[8px] text-slate-400">{sub}</p>
+        </div>
+      </div>
+      {action && <button type="button" className="text-[8px] md:text-[9px] font-semibold text-sky-600">{action} →</button>}
+    </div>
+  );
+}
+
+function CurrentRow({
+  icon,
+  title,
+  text,
+}: {
+  icon: string;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="flex items-center gap-2.5 px-3 py-2.5">
+      <span className="w-6 shrink-0 text-base text-center">{icon}</span>
+      <div className="min-w-0">
+        <p className="text-[10px] font-bold text-slate-700">{title}</p>
+        <p className="text-[8px] text-slate-400 truncate">{text}</p>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
    MUSIC VIEW
 ========================================================= */
 
 const MusicView = memo(
-  function MusicView({
-    playlist,
-    onImport,
-  }: {
-    playlist: Song[];
-    onImport: () => void;
-  }) {
+  function MusicView() {
     return (
       <div className="max-w-3xl mx-auto">
-        <div className="rounded-3xl border border-white/80 bg-white/45 backdrop-blur-md md:backdrop-blur-xl p-4 md:p-6 shadow-sm">
-          <div className="flex items-center justify-between gap-3 mb-5">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-teal-100/70 border border-white flex items-center justify-center">
-                <Music className="w-5 h-5 text-teal-600" />
-              </div>
-              <div>
-                <p className="text-[9px] text-slate-400 tracking-[.2em]">MUSIC / 音楽</p>
-                <h2 className="text-xl md:text-2xl font-bold">My Playlist</h2>
-              </div>
+
+        <div
+          className="
+            rounded-3xl
+            border
+            border-white/80
+            bg-white/45
+            backdrop-blur-md
+            md:backdrop-blur-xl
+            p-4
+            md:p-6
+            shadow-sm
+          "
+        >
+
+          <div className="flex items-center gap-3 mb-5">
+
+            <div className="w-11 h-11 rounded-2xl bg-teal-100/70 border border-white flex items-center justify-center">
+
+              <Music className="w-5 h-5 text-teal-600" />
+
             </div>
 
-            <button
-              type="button"
-              onClick={onImport}
-              className="h-9 px-3 rounded-xl bg-teal-500 hover:bg-teal-600 text-white text-[10px] font-bold flex items-center gap-1.5 shadow-sm transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              IMPORT
-            </button>
+            <div>
+
+              <p className="text-[9px] text-slate-400 tracking-[.2em]">
+                MUSIC / 音楽
+              </p>
+
+              <h2 className="text-xl md:text-2xl font-bold">
+                My Playlist
+              </h2>
+
+            </div>
+
           </div>
 
           <div className="space-y-2">
-            {playlist.map((song) => (
-              <div
-                key={song.id}
-                className="flex items-center gap-3 p-3 rounded-2xl bg-white/35 border border-white/60"
-              >
-                <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-slate-200">
-                  <Image
-                    src={song.cover || "/images/music/default.jpg"}
-                    alt={song.title}
-                    fill
-                    sizes="48px"
-                    loading="lazy"
-                    className="object-cover"
-                  />
+
+            {playlist.map(
+              (
+                song
+              ) => (
+
+                <div
+                  key={
+                    song.title
+                  }
+                  className="
+                    flex
+                    items-center
+                    gap-3
+                    p-3
+                    rounded-2xl
+                    bg-white/35
+                    border
+                    border-white/60
+                  "
+                >
+
+                  <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0">
+
+                    <Image
+                      src={
+                        song.cover
+                      }
+                      alt={
+                        song.title
+                      }
+                      fill
+                      sizes="48px"
+                      loading="lazy"
+                      className="object-cover"
+                    />
+
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+
+                    <p className="text-xs font-bold truncate">
+                      {
+                        song.title
+                      }
+                    </p>
+
+                    <p className="text-[10px] text-slate-500 truncate">
+                      {
+                        song.artist
+                      }
+                    </p>
+
+                  </div>
+
+                  <span className="text-[9px] text-slate-400">
+                    {
+                      song.duration
+                    }
+                  </span>
+
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold truncate">{song.title}</p>
-                  <p className="text-[10px] text-slate-500 truncate">{song.artist}</p>
-                </div>
-                <span className="text-[9px] text-slate-400">{song.duration}</span>
-              </div>
-            ))}
+
+              )
+            )}
+
           </div>
+
         </div>
+
       </div>
     );
   }
@@ -2430,44 +3408,14 @@ export default function DashboardDesktop() {
     setMobileMenuOpen,
   ] = useState(false);
 
-  const [playlist, setPlaylist] = useState<Song[]>(DEFAULT_PLAYLIST);
-  const [musicImportOpen, setMusicImportOpen] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadMusic = async () => {
-      try {
-        const response = await fetch("/api/music", { cache: "no-store" });
-        if (!response.ok) return;
-        const data = await response.json();
-        if (!cancelled && Array.isArray(data.songs) && data.songs.length > 0) {
-          setPlaylist(data.songs);
-        }
-      } catch {
-        // Keep bundled fallback playlist when the API is unavailable.
-      }
-    };
-
-    void loadMusic();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const changeTab = useCallback(
-    (tab: string) => {
-      if (tab === activeTab) {
+  const changeTab =
+    useCallback(
+      (tab: string) => {
+        setActiveTab(tab);
         setMobileMenuOpen(false);
-        return;
-      }
-
-      setActiveTab(tab);
-      setMobileMenuOpen(false);
-    },
-    [activeTab]
-  );
+      },
+      []
+    );
 
   /* ============================================
      CLOSE MENU WITH ESC
@@ -2509,7 +3457,7 @@ export default function DashboardDesktop() {
         activeTab
       ) {
         case "music":
-          return <MusicView playlist={playlist} onImport={() => setMusicImportOpen(true)} />;
+          return <MusicView />;
 
         case "projects":
           return <ProjectView />;
@@ -2521,6 +3469,8 @@ export default function DashboardDesktop() {
           return <DiaryView />;
 
         case "profile":
+          return <ProfileView />;
+
         case "home":
         default:
           return <HomeView />;
@@ -3180,8 +4130,7 @@ export default function DashboardDesktop() {
 
         <button
           type="button"
-          aria-label="Import music"
-          onClick={() => setMusicImportOpen(true)}
+          aria-label="Add"
           className="
             w-8
             h-8
@@ -3273,13 +4222,7 @@ export default function DashboardDesktop() {
           Đổi tab không destroy MusicPlayer.
       ================================================= */}
 
-      <MusicPlayer playlist={playlist} />
-
-      <MusicImportModal
-        open={musicImportOpen}
-        onClose={() => setMusicImportOpen(false)}
-        onImported={(song) => setPlaylist((current) => [...current, song])}
-      />
+      <MusicPlayer />
 
     </div>
   );
