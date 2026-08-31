@@ -4,6 +4,7 @@ import React, {
   memo,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -41,7 +42,6 @@ import {
   ArrowRight,
   BookOpen,
 } from "lucide-react";
-import { div } from "framer-motion/client";
 
 /* =========================================================
    TYPES
@@ -65,18 +65,13 @@ type Project = {
 
 type ServerData = {
   online: boolean;
-
   players: {
     online: number;
     max: number;
   };
-
   version: string;
-
   tps: number;
-
   ping: number;
-
   ip: string;
 };
 
@@ -86,13 +81,10 @@ type ServerData = {
 
 const profileData = {
   name: "Trương Chí Lâm",
-
   avatar: "/images/avatar.jpg",
 
   greetingJp: "こんにちは、私は",
-
   titleJp: "ただの人間です。",
-
   tagline: "Just another human being.",
 
   quoteJp:
@@ -102,11 +94,8 @@ const profileData = {
     "Dù chỉ là một bước nhỏ, miễn tiến lên là được.",
 
   status: "Online",
-
   location: "Vietnam",
-
   age: "14 tuổi",
-
   role: "Developer / Student",
 
   aboutJp:
@@ -126,7 +115,6 @@ const profileData = {
 
 const socials = {
   github: "https://github.com/lamdayne123",
-
   discord: "https://discord.gg/EaMaGUuxwK",
 };
 
@@ -137,74 +125,34 @@ const socials = {
 const projectsData: Project[] = [
   {
     id: "craftopia",
-
     name: "Craftopia Survival",
-
-    desc:
-      "Máy chủ Minecraft sinh tồn với cộng đồng tuyệt vời.",
-
-    tags: [
-      "Minecraft",
-      "Paper",
-      "MySQL",
-    ],
-
-    image:
-      "/images/projects/craftopia.jpg",
+    desc: "Máy chủ Minecraft sinh tồn với cộng đồng tuyệt vời.",
+    tags: ["Minecraft", "Paper", "MySQL"],
+    image: "/images/projects/craftopia.jpg",
   },
 
   {
     id: "discord-bot",
-
     name: "Discord AI Assistant",
-
-    desc:
-      "Bot Discord hỗ trợ AI, nhiều tính năng thông minh.",
-
-    tags: [
-      "Node.js",
-      "Discord.AI",
-      "AI",
-    ],
-
-    image:
-      "/images/projects/discord.jpg",
+    desc: "Bot Discord hỗ trợ AI, nhiều tính năng thông minh.",
+    tags: ["Node.js", "Discord.AI", "AI"],
+    image: "/images/projects/discord.jpg",
   },
 
   {
     id: "card-battle-1",
-
     name: "Card Battle System",
-
-    desc:
-      "Hệ thống game thẻ bài lấy cảm hứng từ anime.",
-
-    tags: [
-      "JavaScript",
-      "Vue.js",
-      "DB",
-    ],
-
-    image:
-      "/images/projects/cardgame.jpg",
+    desc: "Hệ thống game thẻ bài lấy cảm hứng từ anime.",
+    tags: ["JavaScript", "Vue.js", "DB"],
+    image: "/images/projects/cardgame.jpg",
   },
 
   {
     id: "card-battle-2",
-
     name: "Card Battle System",
-
-    desc:
-      "Hệ thống game thẻ bài anime.",
-
-    tags: [
-      "JavaScript",
-      "Vue.js",
-      "DB",
-    ],
-
-    image:
-      "/images/projects/cardgame.jpg",
+    desc: "Hệ thống game thẻ bài anime.",
+    tags: ["JavaScript", "Vue.js", "DB"],
+    image: "/images/projects/cardgame.jpg",
   },
 ];
 
@@ -215,99 +163,34 @@ const projectsData: Project[] = [
 const playlist: Song[] = [
   {
     title: "夜に駆ける",
-
     artist: "YOASOBI",
-
     duration: "4:21",
-
-    cover:
-      "/images/music/yoasobi.jpg",
-
-    src:
-      "/music/yoru-ni-kakeru.mp3",
+    cover: "/images/music/yoasobi.jpg",
+    src: "/music/yoru-ni-kakeru.mp3",
   },
 
   {
     title: "花に亡霊",
-
     artist: "ヨルシカ",
-
     duration: "4:01",
-
-    cover:
-      "/images/music/yorushika.jpg",
-
-    src:
-      "/music/hana-ni-bourei.mp3",
+    cover: "/images/music/yorushika.jpg",
+    src: "/music/hana-ni-bourei.mp3",
   },
 
   {
     title: "アイドル",
-
     artist: "YOASOBI",
-
     duration: "3:33",
-
-    cover:
-      "/images/music/idol.jpg",
-
-    src:
-      "/music/idol.mp3",
+    cover: "/images/music/idol.jpg",
+    src: "/music/idol.mp3",
   },
 
   {
     title: "光へ",
-
     artist: "Aimer",
-
     duration: "4:50",
-
-    cover:
-      "/images/music/aimer.jpg",
-
-    src:
-      "/music/hikari-e.mp3",
-  },
-];
-
-/* =========================================================
-   NAVIGATION
-========================================================= */
-
-const navigation = [
-  {
-    id: "profile",
-    jp: "プロフィール",
-    en: "PROFILE",
-    icon: User,
-  },
-
-  {
-    id: "music",
-    jp: "音楽",
-    en: "MUSIC",
-    icon: Music,
-  },
-
-  {
-    id: "projects",
-    jp: "作成",
-    en: "PROJECTS",
-    icon: Folder,
-  },
-
-  {
-    id: "gallery",
-    jp: "ギャラリー",
-    en: "GALLERY",
-    icon: GalleryIcon,
-  },
-
-  {
-    id: "diary",
-    jp: "日記",
-    en: "DIARY",
-    icon: StickyNote,
+    cover: "/images/music/aimer.jpg",
+    src: "/music/hikari-e.mp3",
   },
 ];
 
@@ -316,18 +199,12 @@ const navigation = [
 ========================================================= */
 
 function formatTime(seconds: number) {
-  if (
-    !Number.isFinite(seconds) ||
-    seconds < 0
-  ) {
+  if (!Number.isFinite(seconds) || seconds < 0) {
     return "0:00";
   }
 
-  const minutes =
-    Math.floor(seconds / 60);
-
-  const second =
-    Math.floor(seconds % 60);
+  const minutes = Math.floor(seconds / 60);
+  const second = Math.floor(seconds % 60);
 
   return `${minutes}:${second
     .toString()
@@ -359,317 +236,272 @@ function DiscordIcon({
    LIVE CLOCK
 ========================================================= */
 
-const LiveClock = memo(
-  function LiveClock() {
-    const [now, setNow] =
-      useState(() => new Date());
+const LiveClock = memo(function LiveClock() {
+  const [now, setNow] = useState(() => new Date());
 
-    useEffect(() => {
-      const timer =
-        window.setInterval(() => {
-          setNow(new Date());
-        }, 1000);
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNow(new Date());
+    }, 1000);
 
-      return () => {
-        window.clearInterval(timer);
-      };
-    }, []);
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, []);
 
-    const time =
-      new Intl.DateTimeFormat(
-        "vi-VN",
-        {
-          hour: "2-digit",
-          minute: "2-digit",
-        }
-      ).format(now);
+  const time = new Intl.DateTimeFormat("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(now);
 
-    const date =
-      new Intl.DateTimeFormat(
-        "vi-VN",
-        {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        }
-      ).format(now);
+  const date = new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(now);
 
-    return (
-      <div className="text-center pt-1 select-none">
-        <span className="text-xs font-bold text-slate-700 block">
-          {time}
-        </span>
+  return (
+    <div className="text-center pt-1">
+      <span className="block text-xs font-bold text-slate-700">
+        {time}
+      </span>
 
-        <span className="text-[9px] text-slate-500 block">
-          {date}
-        </span>
-      </div>
-    );
-  }
-);
+      <span className="block text-[9px] text-slate-500">
+        {date}
+      </span>
+    </div>
+  );
+});
 
 /* =========================================================
    SERVER STATUS
 ========================================================= */
 
-const ServerStatus = memo(
-  function ServerStatus() {
-    const [
-      serverData,
-      setServerData,
-    ] =
-      useState<ServerData>({
-        online: false,
+const ServerStatus = memo(function ServerStatus() {
+  const [serverData, setServerData] =
+    useState<ServerData>({
+      online: false,
+
+      players: {
+        online: 0,
+        max: 0,
+      },
+
+      version: "Loading...",
+
+      tps: 20,
+      ping: 0,
+
+      ip: "play.craftopics.online",
+    });
+
+  const [loading, setLoading] = useState(true);
+
+  const loadServer = useCallback(async () => {
+    try {
+      const response = await fetch(
+        "/api/server",
+        {
+          cache: "no-store",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Server API ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+
+      setServerData({
+        online: Boolean(data.online),
 
         players: {
-          online: 0,
-          max: 0,
+          online: Number(
+            data.players?.online ?? 0
+          ),
+
+          max: Number(
+            data.players?.max ?? 0
+          ),
         },
 
-        version: "Loading...",
+        version:
+          data.version ??
+          "Unknown",
+
+        /*
+         * Bạn đang fake TPS + Ping.
+         */
 
         tps: 20,
-
         ping: 0,
 
-        ip:
-          "play.craftopics.online",
+        ip: "play.craftopics.online",
       });
+    } catch (error) {
+      console.error(
+        "Server API error:",
+        error
+      );
 
-    const [loading, setLoading] =
-      useState(true);
+      setServerData((previous) => ({
+        ...previous,
+        online: false,
+      }));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-    const loadServer =
-      useCallback(async () => {
-        try {
-          const response =
-            await fetch(
-              "/api/server",
-              {
-                cache:
-                  "no-store",
-              }
-            );
+  useEffect(() => {
+    loadServer();
 
-          if (!response.ok) {
-            throw new Error(
-              `Server API ${response.status}`
-            );
-          }
+    const timer =
+      window.setInterval(
+        loadServer,
+        30000
+      );
 
-          const data =
-            await response.json();
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [loadServer]);
 
-          setServerData({
-            online:
-              Boolean(
-                data.online
-              ),
+  return (
+    <section
+      id="server"
+      className="
+        rounded-2xl
+        border
+        border-white/80
+        bg-white/45
+        backdrop-blur-md
+        md:backdrop-blur-xl
+        p-3
+        shadow-sm
+      "
+    >
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[10px] font-bold">
+          SERVER STATUS
+        </span>
 
-            players: {
-              online: Number(
-                data.players
-                  ?.online ?? 0
-              ),
+        <span
+          className={`
+            px-1.5
+            py-0.5
+            rounded-full
+            text-[8px]
+            font-bold
+            ${
+              serverData.online
+                ? "bg-emerald-100 text-emerald-700"
+                : "bg-red-100 text-red-600"
+            }
+          `}
+        >
+          ●{" "}
+          {loading
+            ? "CHECKING"
+            : serverData.online
+            ? "ONLINE"
+            : "OFFLINE"}
+        </span>
+      </div>
 
-              max: Number(
-                data.players?.max ??
-                  0
-              ),
-            },
+      <p className="text-xs font-bold">
+        Craftopia Survival
+      </p>
 
-            version:
-              data.version ??
-              "Unknown",
+      <p className="text-[8px] text-slate-400 font-mono truncate">
+        {serverData.ip}
+      </p>
 
-            // Theo yêu cầu:
-            tps: 20,
-            ping: 0,
+      <div className="grid grid-cols-2 gap-1.5 mt-2">
 
-            ip:
-              "play.craftopics.online",
-          });
-        } catch (error) {
-          console.error(
-            "Server API error:",
-            error
-          );
+        <div className="bg-white/45 rounded-lg p-1.5">
+          <div className="flex items-center gap-1 text-[8px] text-slate-400">
+            <Users className="w-2.5 h-2.5" />
+            PLAYERS
+          </div>
 
-          setServerData(
-            (previous) => ({
-              ...previous,
-
-              online: false,
-            })
-          );
-        } finally {
-          setLoading(false);
-        }
-      }, []);
-
-    useEffect(() => {
-      loadServer();
-
-      const timer =
-        window.setInterval(
-          loadServer,
-          30000
-        );
-
-      return () => {
-        window.clearInterval(timer);
-      };
-    }, [loadServer]);
-
-    return (
-      <section
-        id="server"
-        className="
-          rounded-2xl
-          border
-          border-white/80
-          bg-white/45
-          backdrop-blur-md
-          md:backdrop-blur-xl
-          p-3
-          shadow-sm
-        "
-      >
-        <div className="flex items-center justify-between mb-1">
-
-          <span className="text-[10px] font-bold">
-            SERVER STATUS
-          </span>
-
-          <span
-            className={`
-              px-1.5
-              py-0.5
-              rounded-full
-              text-[8px]
-              font-bold
-
-              ${
-                serverData.online
-                  ? "bg-emerald-100 text-emerald-700"
-                  : "bg-red-100 text-red-600"
-              }
-            `}
-          >
-            ●{" "}
+          <p className="text-[10px] font-bold mt-0.5">
             {loading
-              ? "CHECKING"
-              : serverData.online
-              ? "ONLINE"
-              : "OFFLINE"}
-          </span>
-
+              ? "—"
+              : `${serverData.players.online} / ${serverData.players.max}`}
+          </p>
         </div>
 
-        <p className="text-xs font-bold">
-          Craftopia Survival
-        </p>
-
-        <p className="text-[8px] text-slate-400 font-mono truncate">
-          {serverData.ip}
-        </p>
-
-        <div className="grid grid-cols-2 gap-1.5 mt-2">
-
-          <div className="bg-white/45 rounded-lg p-1.5">
-
-            <div className="flex items-center gap-1 text-[8px] text-slate-400">
-              <Users className="w-2.5 h-2.5" />
-              PLAYERS
-            </div>
-
-            <p className="text-[10px] font-bold mt-0.5">
-              {loading
-                ? "—"
-                : `${serverData.players.online} / ${serverData.players.max}`}
-            </p>
-
+        <div className="bg-white/45 rounded-lg p-1.5">
+          <div className="text-[8px] text-slate-400">
+            VERSION
           </div>
 
-          <div className="bg-white/45 rounded-lg p-1.5">
-
-            <div className="text-[8px] text-slate-400">
-              VERSION
-            </div>
-
-            <p className="text-[9px] font-bold mt-0.5 truncate">
-              {loading
-                ? "—"
-                : serverData.version}
-            </p>
-
-          </div>
-
+          <p className="text-[9px] font-bold mt-0.5 truncate">
+            {loading
+              ? "—"
+              : serverData.version}
+          </p>
         </div>
+      </div>
 
-        <div className="mt-2 pt-2 border-t border-white/60">
+      <div className="mt-2 pt-2 border-t border-white/60">
+        <div className="grid grid-cols-2 gap-2">
 
-          <div className="grid grid-cols-2 gap-2">
+          {/* TPS */}
 
-            {/* TPS */}
+          <div>
+            <div className="flex justify-between">
+              <span className="text-[8px] font-bold text-slate-500">
+                TPS
+              </span>
 
-            <div>
-
-              <div className="flex justify-between">
-
-                <span className="text-[8px] font-bold text-slate-500">
-                  TPS
-                </span>
-
-                <span className="text-[9px] text-emerald-600 font-bold">
-                  20.00
-                </span>
-
-              </div>
-
-              <div className="h-1.5 bg-emerald-100 rounded-full overflow-hidden mt-1">
-
-                <div className="h-full w-full bg-emerald-400 rounded-full" />
-
-              </div>
-
+              <span className="text-[9px] text-emerald-600 font-bold">
+                20.00
+              </span>
             </div>
 
-            {/* PING */}
+            <div className="h-1.5 bg-emerald-100 rounded-full overflow-hidden mt-1">
+              <div
+                className="h-full bg-emerald-400 rounded-full"
+                style={{
+                  width: "100%",
+                }}
+              />
+            </div>
+          </div>
 
-            <div>
+          {/* PING */}
 
-              <div className="flex justify-between">
+          <div>
+            <div className="flex justify-between">
+              <span className="text-[8px] font-bold text-slate-500 flex items-center gap-0.5">
+                <Wifi className="w-2.5 h-2.5" />
+                PING
+              </span>
 
-                <span className="text-[8px] font-bold text-slate-500 flex items-center gap-0.5">
-
-                  <Wifi className="w-2.5 h-2.5" />
-
-                  PING
-
-                </span>
-
-                <span className="text-[9px] text-sky-600 font-bold">
-                  0ms
-                </span>
-
-              </div>
-
-              <div className="h-1.5 bg-sky-100 rounded-full overflow-hidden mt-1">
-
-                <div className="h-full w-full bg-sky-400 rounded-full" />
-
-              </div>
-
+              <span className="text-[9px] text-sky-600 font-bold">
+                0ms
+              </span>
             </div>
 
+            <div className="h-1.5 bg-sky-100 rounded-full overflow-hidden mt-1">
+              <div
+                className="h-full bg-sky-400 rounded-full"
+                style={{
+                  width: "100%",
+                }}
+              />
+            </div>
           </div>
 
         </div>
-      </section>
-    );
-  }
-);
+      </div>
+    </section>
+  );
+});
 
 /* =========================================================
    MUSIC PLAYER
@@ -682,11 +514,8 @@ const MusicPlayer = memo(
         null
       );
 
-    const indexRef =
+    const currentIndexRef =
       useRef(0);
-
-    const playingRef =
-      useRef(false);
 
     const repeatRef =
       useRef(false);
@@ -694,62 +523,210 @@ const MusicPlayer = memo(
     const shuffleRef =
       useRef(false);
 
-    const [
-      currentIndex,
-      setCurrentIndex,
-    ] = useState(0);
+    const [currentIndex, setCurrentIndex] =
+      useState(0);
 
-    const [
-      isPlaying,
-      setIsPlaying,
-    ] = useState(false);
+    const [isPlaying, setIsPlaying] =
+      useState(false);
 
-    const [
-      currentTime,
-      setCurrentTime,
-    ] = useState(0);
+    const [currentTime, setCurrentTime] =
+      useState(0);
 
-    const [
-      duration,
-      setDuration,
-    ] = useState(0);
+    const [duration, setDuration] =
+      useState(0);
 
-    const [
-      volume,
-      setVolume,
-    ] = useState(0.8);
+    const [volume, setVolume] =
+      useState(0.8);
 
-    const [
-      shuffle,
-      setShuffle,
-    ] = useState(false);
+    const [shuffle, setShuffle] =
+      useState(false);
 
-    const [
-      repeat,
-      setRepeat,
-    ] = useState(false);
+    const [repeat, setRepeat] =
+      useState(false);
 
-    const [
-      showPlaylist,
-      setShowPlaylist,
-    ] = useState(false);
+    const [showPlaylist, setShowPlaylist] =
+      useState(false);
 
     const currentSong =
       playlist[currentIndex];
 
-    /* ============================================
-       KEEP REFS IN SYNC
-    ============================================ */
+    /* -----------------------------------------
+       CREATE AUDIO ONCE
+    ----------------------------------------- */
 
     useEffect(() => {
-      indexRef.current =
+      const audio =
+        new Audio();
+
+      audio.preload =
+        "metadata";
+
+      audio.volume = 0.8;
+
+      audioRef.current = audio;
+
+      return () => {
+        audio.pause();
+        audio.src = "";
+        audioRef.current = null;
+      };
+    }, []);
+
+    /* -----------------------------------------
+       EVENTS
+    ----------------------------------------- */
+
+    useEffect(() => {
+      const audio =
+        audioRef.current;
+
+      if (!audio) return;
+
+      const handleMetadata = () => {
+        const nextDuration =
+          Number.isFinite(
+            audio.duration
+          )
+            ? audio.duration
+            : 0;
+
+        setDuration(
+          nextDuration
+        );
+      };
+
+      const handleTimeUpdate =
+        () => {
+          const nextSecond =
+            Math.floor(
+              audio.currentTime
+            );
+
+          setCurrentTime(
+            (previous) =>
+              previous ===
+              nextSecond
+                ? previous
+                : nextSecond
+          );
+        };
+
+      const handlePlay = () => {
+        setIsPlaying(true);
+      };
+
+      const handlePause = () => {
+        setIsPlaying(false);
+      };
+
+      const handleEnded = () => {
+        if (
+          repeatRef.current
+        ) {
+          audio.currentTime =
+            0;
+
+          void audio
+            .play()
+            .catch(() => {
+              setIsPlaying(false);
+            });
+
+          return;
+        }
+
+        let nextIndex: number;
+
+        if (
+          shuffleRef.current &&
+          playlist.length > 1
+        ) {
+          do {
+            nextIndex =
+              Math.floor(
+                Math.random() *
+                  playlist.length
+              );
+          } while (
+            nextIndex ===
+            currentIndexRef.current
+          );
+        } else {
+          nextIndex =
+            (currentIndexRef.current +
+              1) %
+            playlist.length;
+        }
+
+        currentIndexRef.current =
+          nextIndex;
+
+        setCurrentIndex(
+          nextIndex
+        );
+      };
+
+      audio.addEventListener(
+        "loadedmetadata",
+        handleMetadata
+      );
+
+      audio.addEventListener(
+        "timeupdate",
+        handleTimeUpdate
+      );
+
+      audio.addEventListener(
+        "play",
+        handlePlay
+      );
+
+      audio.addEventListener(
+        "pause",
+        handlePause
+      );
+
+      audio.addEventListener(
+        "ended",
+        handleEnded
+      );
+
+      return () => {
+        audio.removeEventListener(
+          "loadedmetadata",
+          handleMetadata
+        );
+
+        audio.removeEventListener(
+          "timeupdate",
+          handleTimeUpdate
+        );
+
+        audio.removeEventListener(
+          "play",
+          handlePlay
+        );
+
+        audio.removeEventListener(
+          "pause",
+          handlePause
+        );
+
+        audio.removeEventListener(
+          "ended",
+          handleEnded
+        );
+      };
+    }, []);
+
+    /* -----------------------------------------
+       REFS
+    ----------------------------------------- */
+
+    useEffect(() => {
+      currentIndexRef.current =
         currentIndex;
     }, [currentIndex]);
-
-    useEffect(() => {
-      playingRef.current =
-        isPlaying;
-    }, [isPlaying]);
 
     useEffect(() => {
       repeatRef.current =
@@ -761,183 +738,9 @@ const MusicPlayer = memo(
         shuffle;
     }, [shuffle]);
 
-    /* ============================================
-       CREATE AUDIO ONCE
-    ============================================ */
-
-    useEffect(() => {
-      const audio =
-        new Audio();
-
-      audio.preload =
-        "metadata";
-
-      audio.volume = 0.8;
-
-      audioRef.current =
-        audio;
-
-      const onMetadata =
-        () => {
-          if (
-            Number.isFinite(
-              audio.duration
-            )
-          ) {
-            setDuration(
-              audio.duration
-            );
-          }
-        };
-
-      const onTimeUpdate =
-        () => {
-          const second =
-            Math.floor(
-              audio.currentTime
-            );
-
-          setCurrentTime(
-            (previous) =>
-              previous ===
-              second
-                ? previous
-                : second
-          );
-        };
-
-      const onPlay =
-        () => {
-          playingRef.current =
-            true;
-
-          setIsPlaying(
-            true
-          );
-        };
-
-      const onPause =
-        () => {
-          playingRef.current =
-            false;
-
-          setIsPlaying(
-            false
-          );
-        };
-
-      const onEnded =
-        () => {
-          if (
-            repeatRef.current
-          ) {
-            audio.currentTime =
-              0;
-
-            void audio
-              .play()
-              .catch(() => {
-                setIsPlaying(
-                  false
-                );
-              });
-
-            return;
-          }
-
-          let nextIndex: number;
-
-          if (
-            shuffleRef.current &&
-            playlist.length > 1
-          ) {
-            do {
-              nextIndex =
-                Math.floor(
-                  Math.random() *
-                    playlist.length
-                );
-            } while (
-              nextIndex ===
-              indexRef.current
-            );
-          } else {
-            nextIndex =
-              (indexRef.current +
-                1) %
-              playlist.length;
-          }
-
-          indexRef.current =
-            nextIndex;
-
-          setCurrentIndex(
-            nextIndex
-          );
-        };
-
-      audio.addEventListener(
-        "loadedmetadata",
-        onMetadata
-      );
-
-      audio.addEventListener(
-        "timeupdate",
-        onTimeUpdate
-      );
-
-      audio.addEventListener(
-        "play",
-        onPlay
-      );
-
-      audio.addEventListener(
-        "pause",
-        onPause
-      );
-
-      audio.addEventListener(
-        "ended",
-        onEnded
-      );
-
-      return () => {
-        audio.pause();
-        audio.src = "";
-
-        audio.removeEventListener(
-          "loadedmetadata",
-          onMetadata
-        );
-
-        audio.removeEventListener(
-          "timeupdate",
-          onTimeUpdate
-        );
-
-        audio.removeEventListener(
-          "play",
-          onPlay
-        );
-
-        audio.removeEventListener(
-          "pause",
-          onPause
-        );
-
-        audio.removeEventListener(
-          "ended",
-          onEnded
-        );
-
-        audioRef.current =
-          null;
-      };
-    }, []);
-
-    /* ============================================
-       LOAD CURRENT SONG
-    ============================================ */
+    /* -----------------------------------------
+       CHANGE SONG
+    ----------------------------------------- */
 
     useEffect(() => {
       const audio =
@@ -946,7 +749,8 @@ const MusicPlayer = memo(
       if (!audio) return;
 
       const shouldPlay =
-        playingRef.current;
+        isPlaying ||
+        !audio.paused;
 
       audio.src =
         currentSong.src;
@@ -960,16 +764,14 @@ const MusicPlayer = memo(
         void audio
           .play()
           .catch(() => {
-            setIsPlaying(
-              false
-            );
+            setIsPlaying(false);
           });
       }
-    }, [currentIndex, currentSong.src]);
+    }, [currentIndex]);
 
-    /* ============================================
-       PLAY / PAUSE
-    ============================================ */
+    /* -----------------------------------------
+       CONTROLS
+    ----------------------------------------- */
 
     const togglePlay =
       useCallback(
@@ -993,17 +795,11 @@ const MusicPlayer = memo(
               error
             );
 
-            setIsPlaying(
-              false
-            );
+            setIsPlaying(false);
           }
         },
         []
       );
-
-    /* ============================================
-       NEXT
-    ============================================ */
 
     const playNext =
       useCallback(() => {
@@ -1021,30 +817,21 @@ const MusicPlayer = memo(
               );
           } while (
             next ===
-            indexRef.current
+            currentIndexRef.current
           );
         } else {
           next =
-            (indexRef.current +
+            (currentIndexRef.current +
               1) %
             playlist.length;
         }
 
-        indexRef.current =
+        currentIndexRef.current =
           next;
 
-        setCurrentIndex(
-          next
-        );
-
-        setIsPlaying(
-          true
-        );
+        setCurrentIndex(next);
+        setIsPlaying(true);
       }, []);
-
-    /* ============================================
-       PREVIOUS
-    ============================================ */
 
     const playPrevious =
       useCallback(() => {
@@ -1053,66 +840,51 @@ const MusicPlayer = memo(
 
         if (
           audio &&
-          audio.currentTime > 3
+          audio.currentTime >
+            3
         ) {
           audio.currentTime =
             0;
 
-          setCurrentTime(
-            0
-          );
+          setCurrentTime(0);
 
           return;
         }
 
         const previous =
-          (indexRef.current -
+          (currentIndexRef.current -
             1 +
             playlist.length) %
           playlist.length;
 
-        indexRef.current =
+        currentIndexRef.current =
           previous;
 
         setCurrentIndex(
           previous
         );
 
-        setIsPlaying(
-          true
-        );
+        setIsPlaying(true);
       }, []);
-
-    /* ============================================
-       SELECT
-    ============================================ */
 
     const selectSong =
       useCallback(
         (index: number) => {
           if (
             !playlist[index]
-          ) {
-            return;
-          }
+          ) return;
 
-          indexRef.current =
+          currentIndexRef.current =
             index;
 
           setCurrentIndex(
             index
           );
 
-          setIsPlaying(
-            true
-          );
+          setIsPlaying(true);
         },
         []
       );
-
-    /* ============================================
-       SEEK
-    ============================================ */
 
     const changeProgress =
       (
@@ -1135,10 +907,6 @@ const MusicPlayer = memo(
           Math.floor(value)
         );
       };
-
-    /* ============================================
-       VOLUME
-    ============================================ */
 
     const changeVolume =
       (
@@ -1170,11 +938,9 @@ const MusicPlayer = memo(
           audio.volume > 0
         ) {
           audio.volume = 0;
-
           setVolume(0);
         } else {
           audio.volume = 0.8;
-
           setVolume(0.8);
         }
       };
@@ -1191,9 +957,9 @@ const MusicPlayer = memo(
 
     return (
       <>
-        {/* =================================================
-            PLAYLIST POPUP
-        ================================================= */}
+        {/* =====================================
+            PLAYLIST
+        ===================================== */}
 
         {showPlaylist && (
           <div
@@ -1208,26 +974,23 @@ const MusicPlayer = memo(
               max-w-sm
               rounded-2xl
               overflow-hidden
-              bg-white/70
+              bg-slate-950/90
               backdrop-blur-xl
               border
-              border-white/80
+              border-white/10
               shadow-2xl
             "
           >
-
-            <div className="flex items-center justify-between px-4 py-3 border-b border-white/70">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
 
               <div>
-
-                <p className="text-xs font-bold text-slate-800">
+                <p className="text-xs font-bold text-white">
                   MY PLAYLIST
                 </p>
 
-                <p className="text-[9px] text-slate-500">
+                <p className="text-[9px] text-white/40">
                   {playlist.length} songs
                 </p>
-
               </div>
 
               <button
@@ -1237,7 +1000,7 @@ const MusicPlayer = memo(
                     false
                   )
                 }
-                className="text-slate-400 hover:text-slate-700"
+                className="text-white/40 hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1277,14 +1040,12 @@ const MusicPlayer = memo(
                         transition-colors
                         ${
                           active
-                            ? "bg-white/75 shadow-sm"
-                            : "hover:bg-white/50"
+                            ? "bg-white/10"
+                            : "hover:bg-white/5"
                         }
                       `}
                     >
-
                       <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0">
-
                         <Image
                           src={
                             song.cover
@@ -1296,54 +1057,47 @@ const MusicPlayer = memo(
                         />
 
                         {active && (
-                          <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
-
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                             {isPlaying ? (
                               <Pause className="w-4 h-4 text-white" />
                             ) : (
                               <Play className="w-4 h-4 text-white" />
                             )}
-
                           </div>
                         )}
-
                       </div>
 
                       <div className="min-w-0 flex-1">
-
-                        <p className="text-[11px] font-semibold text-slate-800 truncate">
+                        <p className="text-[11px] font-semibold text-white truncate">
                           {
                             song.title
                           }
                         </p>
 
-                        <p className="text-[9px] text-slate-500 truncate">
+                        <p className="text-[9px] text-white/40 truncate">
                           {
                             song.artist
                           }
                         </p>
-
                       </div>
 
-                      <span className="text-[9px] text-slate-400">
+                      <span className="text-[9px] text-white/30">
                         {
                           song.duration
                         }
                       </span>
-
                     </button>
                   );
                 }
               )}
 
             </div>
-
           </div>
         )}
 
-        {/* =================================================
+        {/* =====================================
             DESKTOP PLAYER
-        ================================================= */}
+        ===================================== */}
 
         <footer
           className="
@@ -1365,12 +1119,9 @@ const MusicPlayer = memo(
           "
         >
 
-          {/* SONG */}
-
           <div className="flex items-center gap-3 w-1/4 min-w-0">
 
             <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0">
-
               <Image
                 src={
                   currentSong.cover
@@ -1382,11 +1133,9 @@ const MusicPlayer = memo(
                 sizes="40px"
                 className="object-cover"
               />
-
             </div>
 
             <div className="min-w-0">
-
               <p className="text-xs font-bold text-slate-800 truncate">
                 {
                   currentSong.title
@@ -1398,12 +1147,9 @@ const MusicPlayer = memo(
                   currentSong.artist
                 }
               </p>
-
             </div>
 
           </div>
-
-          {/* CENTER */}
 
           <div className="flex flex-col items-center gap-1 flex-1">
 
@@ -1459,7 +1205,6 @@ const MusicPlayer = memo(
                   shadow-md
                   active:scale-95
                   transition-transform
-                  duration-150
                 "
               >
                 {isPlaying ? (
@@ -1523,15 +1268,8 @@ const MusicPlayer = memo(
                 onChange={
                   changeProgress
                 }
-                className="flex-1 h-1 accent-teal-500 cursor-pointer"
-                style={{
-                  background: `linear-gradient(
-                    to right,
-                    rgb(45 212 191) ${progress}%,
-                    rgb(226 232 240) ${progress}%
-                  )`,
-                }}
                 aria-label="Progress"
+                className="flex-1 h-1 accent-teal-500 cursor-pointer"
               />
 
               <span className="text-[8px] text-slate-400 w-7">
@@ -1543,10 +1281,7 @@ const MusicPlayer = memo(
               </span>
 
             </div>
-
           </div>
-
-          {/* RIGHT */}
 
           <div className="flex items-center gap-3 w-1/4 justify-end">
 
@@ -1571,16 +1306,13 @@ const MusicPlayer = memo(
                 min="0"
                 max="1"
                 step="0.01"
-                value={
-                  volume
-                }
+                value={volume}
                 onChange={
                   changeVolume
                 }
                 className="w-16 accent-teal-500"
                 aria-label="Volume"
               />
-
             </div>
 
             <button
@@ -1591,12 +1323,12 @@ const MusicPlayer = memo(
                     !value
                 )
               }
+              aria-label="Playlist"
               className={
                 showPlaylist
                   ? "text-teal-500"
                   : "text-slate-500"
               }
-              aria-label="Playlist"
             >
               <ListMusic className="w-4 h-4" />
             </button>
@@ -1606,12 +1338,11 @@ const MusicPlayer = memo(
             <ChevronDown className="hidden lg:block w-4 h-4 text-slate-500" />
 
           </div>
-
         </footer>
 
-        {/* =================================================
+        {/* =====================================
             MOBILE PLAYER
-        ================================================= */}
+        ===================================== */}
 
         <footer
           className="
@@ -1636,7 +1367,6 @@ const MusicPlayer = memo(
         >
 
           <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0">
-
             <Image
               src={
                 currentSong.cover
@@ -1648,7 +1378,6 @@ const MusicPlayer = memo(
               sizes="40px"
               className="object-cover"
             />
-
           </div>
 
           <div className="min-w-0 flex-1">
@@ -1666,14 +1395,12 @@ const MusicPlayer = memo(
             </p>
 
             <div className="h-0.5 bg-white/10 rounded-full overflow-hidden mt-1">
-
               <div
                 className="h-full bg-teal-400 transition-[width] duration-300"
                 style={{
                   width: `${progress}%`,
                 }}
               />
-
             </div>
 
           </div>
@@ -1759,24 +1486,21 @@ const HomeView = memo(
     const [
       selectedGallery,
       setSelectedGallery,
-    ] =
-      useState<
-        number | null
-      >(null);
+    ] = useState<
+      number | null
+    >(null);
 
     return (
       <div
         className="
+          animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)]
           flex
           flex-col
           gap-5
-          animate-[contentEnter_.32s_cubic-bezier(.22,1,.36,1)]
         "
       >
 
-        {/* =================================================
-            HERO
-        ================================================= */}
+        {/* HERO */}
 
         <section
           className="
@@ -1811,7 +1535,6 @@ const HomeView = memo(
                 shadow-lg
               "
             >
-
               <div className="relative w-full h-full rounded-full overflow-hidden border-2 border-white bg-slate-300">
 
                 <Image
@@ -1831,7 +1554,6 @@ const HomeView = memo(
                 />
 
               </div>
-
             </div>
 
             <span
@@ -1879,9 +1601,7 @@ const HomeView = memo(
                 to-sky-500
               "
             >
-              {
-                profileData.name
-              }
+              {profileData.name}
             </h1>
 
             <p className="text-xs text-slate-600 font-medium">
@@ -1899,10 +1619,10 @@ const HomeView = memo(
             <div
               className="
                 flex
-                flex-wrap
                 items-center
                 justify-center
                 md:justify-start
+                flex-wrap
                 gap-1.5
                 pt-1.5
               "
@@ -1917,16 +1637,12 @@ const HomeView = memo(
 
               <span className="text-[9px] bg-white/60 backdrop-blur-md border border-white/80 px-2.5 py-1 rounded-xl">
                 👤{" "}
-                {
-                  profileData.age
-                }
+                {profileData.age}
               </span>
 
               <span className="text-[9px] bg-white/60 backdrop-blur-md border border-white/80 px-2.5 py-1 rounded-xl">
                 💻{" "}
-                {
-                  profileData.role
-                }
+                {profileData.role}
               </span>
 
             </div>
@@ -1945,7 +1661,6 @@ const HomeView = memo(
                 text-slate-600
               "
             >
-
               <p className="font-medium">
                 "{profileData.quoteJp}"
               </p>
@@ -1955,16 +1670,13 @@ const HomeView = memo(
                   profileData.quoteVi
                 }
               </p>
-
             </div>
 
           </div>
 
         </section>
 
-        {/* =================================================
-            GRID
-        ================================================= */}
+        {/* GRID */}
 
         <div
           className="
@@ -1998,29 +1710,22 @@ const HomeView = memo(
           >
 
             <div className="flex items-center gap-1.5 mb-3">
-
               <User className="w-3.5 h-3.5" />
 
               <span className="text-xs font-bold">
                 PROFILE
               </span>
-
             </div>
 
             <div className="space-y-1.5 text-xs">
-
               <p>
                 👤{" "}
-                {
-                  profileData.name
-                }
+                {profileData.name}
               </p>
 
               <p>
                 🎓{" "}
-                {
-                  profileData.age
-                }
+                {profileData.age}
               </p>
 
               <p>
@@ -2030,7 +1735,6 @@ const HomeView = memo(
               <p>
                 💻 Developer
               </p>
-
             </div>
 
             <div className="mt-4 pt-3 border-t border-white/60">
@@ -2056,14 +1760,8 @@ const HomeView = memo(
               <ul className="text-[10px] text-slate-600 space-y-0.5">
 
                 {profileData.hobbies.map(
-                  (
-                    hobby
-                  ) => (
-                    <li
-                      key={
-                        hobby
-                      }
-                    >
+                  (hobby) => (
+                    <li key={hobby}>
                       ・ {hobby}
                     </li>
                   )
@@ -2082,10 +1780,7 @@ const HomeView = memo(
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"
-                className="
-                  hover:text-sky-600
-                  transition-colors
-                "
+                className="hover:text-sky-600 transition-colors"
               >
                 <Github className="w-3.5 h-3.5" />
               </a>
@@ -2097,10 +1792,7 @@ const HomeView = memo(
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Discord"
-                className="
-                  hover:text-indigo-600
-                  transition-colors
-                "
+                className="hover:text-indigo-600 transition-colors"
               >
                 <DiscordIcon className="w-3.5 h-3.5" />
               </a>
@@ -2108,10 +1800,7 @@ const HomeView = memo(
               <a
                 href="mailto:"
                 aria-label="Email"
-                className="
-                  hover:text-sky-600
-                  transition-colors
-                "
+                className="hover:text-sky-600 transition-colors"
               >
                 <Mail className="w-3.5 h-3.5" />
               </a>
@@ -2141,11 +1830,8 @@ const HomeView = memo(
             <div className="flex items-center justify-between mb-3">
 
               <span className="flex items-center gap-1.5 text-xs font-bold">
-
                 <Folder className="w-3.5 h-3.5" />
-
                 PROJECTS
-
               </span>
 
               <button
@@ -2161,10 +1847,7 @@ const HomeView = memo(
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
 
               {projectsData.map(
-                (
-                  project
-                ) => (
-
+                (project) => (
                   <div
                     key={
                       project.id
@@ -2209,14 +1892,9 @@ const HomeView = memo(
                     <div className="flex flex-wrap gap-0.5 my-1.5">
 
                       {project.tags.map(
-                        (
-                          tag
-                        ) => (
-
+                        (tag) => (
                           <span
-                            key={
-                              tag
-                            }
+                            key={tag}
                             className="
                               px-1
                               rounded
@@ -2225,11 +1903,8 @@ const HomeView = memo(
                               text-[7px]
                             "
                           >
-                            {
-                              tag
-                            }
+                            {tag}
                           </span>
-
                         )
                       )}
 
@@ -2259,12 +1934,10 @@ const HomeView = memo(
                     </button>
 
                   </div>
-
                 )
               )}
 
             </div>
-
           </section>
 
           {/* RIGHT SIDE */}
@@ -2308,14 +1981,9 @@ const HomeView = memo(
               <div className="grid grid-cols-2 gap-1.5">
 
                 {[1, 2, 3, 4, 5, 6].map(
-                  (
-                    number
-                  ) => (
-
+                  (number) => (
                     <button
-                      key={
-                        number
-                      }
+                      key={number}
                       type="button"
                       onClick={() =>
                         setSelectedGallery(
@@ -2330,7 +1998,6 @@ const HomeView = memo(
                         bg-slate-200
                       "
                     >
-
                       <Image
                         src={`/images/gallery/${number}.jpg`}
                         alt={`Gallery ${number}`}
@@ -2339,9 +2006,7 @@ const HomeView = memo(
                         loading="lazy"
                         className="object-cover"
                       />
-
                     </button>
-
                   )
                 )}
 
@@ -2353,7 +2018,7 @@ const HomeView = memo(
 
             <ServerStatus />
 
-            {/* NOTE */}
+            {/* TODAY NOTE */}
 
             <section
               id="notes"
@@ -2431,7 +2096,6 @@ const HomeView = memo(
               )
             }
           >
-
             <div
               className="
                 relative
@@ -2449,7 +2113,6 @@ const HomeView = memo(
                 event.stopPropagation()
               }
             >
-
               <Image
                 src={`/images/gallery/${selectedGallery}.jpg`}
                 alt={`Gallery ${selectedGallery}`}
@@ -2465,7 +2128,6 @@ const HomeView = memo(
                     null
                   )
                 }
-                aria-label="Close"
                 className="
                   absolute
                   top-3
@@ -2479,12 +2141,11 @@ const HomeView = memo(
                   items-center
                   justify-center
                 "
+                aria-label="Close"
               >
                 <X className="w-4 h-4" />
               </button>
-
             </div>
-
           </div>
         )}
 
@@ -2500,38 +2161,27 @@ const HomeView = memo(
 const MusicView = memo(
   function MusicView() {
     return (
-      <div
-        className="
-          max-w-3xl
-          mx-auto
-          animate-[contentEnter_.32s_cubic-bezier(.22,1,.36,1)]
-        "
-      >
+      <div className="animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)] max-w-3xl mx-auto">
 
-        <div
-          className="
-            rounded-3xl
-            border
-            border-white/80
-            bg-white/45
-            backdrop-blur-md
-            md:backdrop-blur-xl
-            p-4
-            md:p-6
-            shadow-sm
-          "
-        >
+        <div className="
+          rounded-3xl
+          border
+          border-white/80
+          bg-white/45
+          backdrop-blur-md
+          md:backdrop-blur-xl
+          p-4
+          md:p-6
+          shadow-sm
+        ">
 
           <div className="flex items-center gap-3 mb-5">
 
             <div className="w-11 h-11 rounded-2xl bg-teal-100/70 border border-white flex items-center justify-center">
-
               <Music className="w-5 h-5 text-teal-600" />
-
             </div>
 
             <div>
-
               <p className="text-[9px] text-slate-400 tracking-[.2em]">
                 MUSIC / 音楽
               </p>
@@ -2539,7 +2189,6 @@ const MusicView = memo(
               <h2 className="text-xl md:text-2xl font-bold">
                 My Playlist
               </h2>
-
             </div>
 
           </div>
@@ -2547,10 +2196,7 @@ const MusicView = memo(
           <div className="space-y-2">
 
             {playlist.map(
-              (
-                song
-              ) => (
-
+              (song) => (
                 <div
                   key={
                     song.title
@@ -2607,14 +2253,12 @@ const MusicView = memo(
                   </span>
 
                 </div>
-
               )
             )}
 
           </div>
 
         </div>
-
       </div>
     );
   }
@@ -2627,30 +2271,23 @@ const MusicView = memo(
 const ProjectView = memo(
   function ProjectView() {
     return (
-      <div
-        className="
-          animate-[contentEnter_.32s_cubic-bezier(.22,1,.36,1)]
-        "
-      >
+      <div className="animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)]">
 
-        <div
-          className="
-            rounded-3xl
-            border
-            border-white/80
-            bg-white/45
-            backdrop-blur-md
-            md:backdrop-blur-xl
-            p-4
-            md:p-5
-            shadow-sm
-          "
-        >
+        <div className="
+          rounded-3xl
+          border
+          border-white/80
+          bg-white/45
+          backdrop-blur-md
+          md:backdrop-blur-xl
+          p-4
+          md:p-5
+          shadow-sm
+        ">
 
           <div className="flex items-center justify-between mb-5">
 
             <div>
-
               <p className="text-[9px] text-slate-400 tracking-[.2em]">
                 PROJECTS / プロジェクト
               </p>
@@ -2658,7 +2295,6 @@ const ProjectView = memo(
               <h2 className="text-xl md:text-2xl font-bold">
                 Things I Build
               </h2>
-
             </div>
 
             <Folder className="w-5 h-5 text-sky-500" />
@@ -2668,10 +2304,7 @@ const ProjectView = memo(
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
 
             {projectsData.map(
-              (
-                project
-              ) => (
-
+              (project) => (
                 <div
                   key={
                     project.id
@@ -2721,42 +2354,25 @@ const ProjectView = memo(
                   <div className="flex flex-wrap gap-1 mt-2">
 
                     {project.tags.map(
-                      (
-                        tag
-                      ) => (
-
+                      (tag) => (
                         <span
-                          key={
-                            tag
-                          }
-                          className="
-                            text-[8px]
-                            px-1.5
-                            py-0.5
-                            rounded
-                            bg-sky-100
-                            text-sky-700
-                          "
+                          key={tag}
+                          className="text-[8px] px-1.5 py-0.5 rounded bg-sky-100 text-sky-700"
                         >
-                          {
-                            tag
-                          }
+                          {tag}
                         </span>
-
                       )
                     )}
 
                   </div>
 
                 </div>
-
               )
             )}
 
           </div>
 
         </div>
-
       </div>
     );
   }
@@ -2769,25 +2385,19 @@ const ProjectView = memo(
 const GalleryView = memo(
   function GalleryView() {
     return (
-      <div
-        className="
-          animate-[contentEnter_.32s_cubic-bezier(.22,1,.36,1)]
-        "
-      >
+      <div className="animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)]">
 
-        <div
-          className="
-            rounded-3xl
-            border
-            border-white/80
-            bg-white/45
-            backdrop-blur-md
-            md:backdrop-blur-xl
-            p-4
-            md:p-5
-            shadow-sm
-          "
-        >
+        <div className="
+          rounded-3xl
+          border
+          border-white/80
+          bg-white/45
+          backdrop-blur-md
+          md:backdrop-blur-xl
+          p-4
+          md:p-5
+          shadow-sm
+        ">
 
           <div className="mb-5">
 
@@ -2804,14 +2414,9 @@ const GalleryView = memo(
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
 
             {[1, 2, 3, 4, 5, 6].map(
-              (
-                number
-              ) => (
-
+              (number) => (
                 <div
-                  key={
-                    number
-                  }
+                  key={number}
                   className="
                     relative
                     aspect-video
@@ -2822,7 +2427,6 @@ const GalleryView = memo(
                     border-white/70
                   "
                 >
-
                   <Image
                     src={`/images/gallery/${number}.jpg`}
                     alt={`Gallery ${number}`}
@@ -2839,16 +2443,13 @@ const GalleryView = memo(
                       hover:scale-105
                     "
                   />
-
                 </div>
-
               )
             )}
 
           </div>
 
         </div>
-
       </div>
     );
   }
@@ -2876,48 +2477,40 @@ const DiaryView = memo(
       };
 
     return (
-      <div
-        className="
-          animate-[contentEnter_.32s_cubic-bezier(.22,1,.36,1)]
-          min-h-[60vh]
-          flex
-          items-center
-          justify-center
-        "
-      >
+      <div className="
+        animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)]
+        min-h-[60vh]
+        flex
+        items-center
+        justify-center
+      ">
 
-        <div
-          className="
-            w-full
-            max-w-xl
-            rounded-3xl
-            border
-            border-white/80
-            bg-white/45
-            backdrop-blur-md
-            md:backdrop-blur-xl
-            p-7
-            shadow-sm
-            text-center
-          "
-        >
+        <div className="
+          w-full
+          max-w-xl
+          rounded-3xl
+          border
+          border-white/80
+          bg-white/45
+          backdrop-blur-md
+          md:backdrop-blur-xl
+          p-7
+          shadow-sm
+          text-center
+        ">
 
-          <div
-            className="
-              w-12
-              h-12
-              mx-auto
-              rounded-2xl
-              bg-teal-100/70
-              flex
-              items-center
-              justify-center
-              mb-4
-            "
-          >
-
+          <div className="
+            w-12
+            h-12
+            mx-auto
+            rounded-2xl
+            bg-teal-100/70
+            flex
+            items-center
+            justify-center
+            mb-4
+          ">
             <BookOpen className="w-5 h-5 text-teal-600" />
-
           </div>
 
           <p className="text-[9px] text-slate-400 tracking-[.2em]">
@@ -2936,9 +2529,7 @@ const DiaryView = memo(
 
           <button
             type="button"
-            onClick={
-              openDiary
-            }
+            onClick={openDiary}
             className="
               mt-5
               h-10
@@ -2956,12 +2547,10 @@ const DiaryView = memo(
             "
           >
             Mở Diary
-
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
 
         </div>
-
       </div>
     );
   }
@@ -2972,71 +2561,64 @@ const DiaryView = memo(
 ========================================================= */
 
 export default function DashboardDesktop() {
-  const [
-    activeTab,
-    setActiveTab,
-  ] = useState("home");
+  const [activeTab, setActiveTab] =
+    useState("home");
 
-  const [
-    mobileMenuOpen,
-    setMobileMenuOpen,
-  ] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] =
+    useState(false);
 
-  /* ============================================
-     NAVIGATION
-  ============================================ */
+  const navigation = useMemo(
+    () => [
+      {
+        id: "profile",
+        jp: "プロフィール",
+        en: "PROFILE",
+        icon: User,
+      },
+
+      {
+        id: "music",
+        jp: "音楽",
+        en: "MUSIC",
+        icon: Music,
+      },
+
+      {
+        id: "projects",
+        jp: "作成",
+        en: "PROJECTS",
+        icon: Folder,
+      },
+
+      {
+        id: "gallery",
+        jp: "ギャラリー",
+        en: "GALLERY",
+        icon: GalleryIcon,
+      },
+
+      {
+        id: "diary",
+        jp: "日記",
+        en: "DIARY",
+        icon: StickyNote,
+      },
+    ],
+    []
+  );
 
   const changeTab =
     useCallback(
       (tab: string) => {
         setActiveTab(tab);
-
-        setMobileMenuOpen(
-          false
-        );
+        setMobileMenuOpen(false);
       },
       []
     );
 
-  /* ============================================
-     CLOSE MOBILE MENU WITH ESC
-  ============================================ */
-
-  useEffect(() => {
-    const handleKeyDown =
-      (event: KeyboardEvent) => {
-        if (
-          event.key ===
-          "Escape"
-        ) {
-          setMobileMenuOpen(
-            false
-          );
-        }
-      };
-
-    window.addEventListener(
-      "keydown",
-      handleKeyDown
-    );
-
-    return () => {
-      window.removeEventListener(
-        "keydown",
-        handleKeyDown
-      );
-    };
-  }, []);
-
-  /* ============================================
-     CONTENT
-  ============================================ */
-
   const renderContent =
     () => {
-      switch (
-        activeTab
-      ) {
+      switch (activeTab) {
         case "music":
           return <MusicView />;
 
@@ -3059,31 +2641,19 @@ export default function DashboardDesktop() {
   return (
     <div
       className="
-        fixed
-        inset-0
+        min-h-screen
         w-full
-        h-full
-        overflow-hidden
+        relative
+        overflow-x-hidden
+        bg-slate-200
         font-sans
         text-slate-800
-        antialiased
-        bg-slate-200
         selection:bg-sky-200
-        selection:text-sky-900
       "
     >
 
       {/* =================================================
           RESPONSIVE BACKGROUND
-
-          PC:
-          background-pc.jpg
-
-          MOBILE:
-          background-mobile.jpg
-
-          Đây là phần tối ưu từ bản mới.
-          Không dùng background-attachment: fixed.
       ================================================= */}
 
       <div
@@ -3093,61 +2663,43 @@ export default function DashboardDesktop() {
           z-0
           pointer-events-none
           overflow-hidden
-          transform-gpu
-          [backface-visibility:hidden]
-          [contain:paint]
         "
       >
 
-        {/* PC */}
+        <picture>
 
-        <div
-          className="
-            absolute
-            inset-0
-            hidden
-            md:block
-            bg-[url('/images/background-pc.jpg')]
-            bg-cover
-            bg-center
-            bg-no-repeat
-            transform-gpu
-            [backface-visibility:hidden]
-          "
-        />
+          {/* MOBILE */}
+          <source
+            media="(max-width: 767px)"
+            srcSet="/images/background-mobile.jpg"
+          />
 
-        {/* MOBILE */}
+          {/* DESKTOP */}
+          <img
+            src="/images/background-pc.jpg"
+            alt=""
+            fetchPriority="high"
+            decoding="async"
+            draggable={false}
+            className="
+              absolute
+              inset-0
+              w-full
+              h-full
+              object-cover
+              object-center
+              select-none
+            "
+          />
 
-        <div
-          className="
-            absolute
-            inset-0
-            block
-            md:hidden
-            bg-[url('/images/background-mobile.jpg')]
-            bg-cover
-            bg-center
-            bg-no-repeat
-            transform-gpu
-            [backface-visibility:hidden]
-          "
-        />
+        </picture>
 
-        {/* OVERLAY */}
-
-        <div
-          className="
-            absolute
-            inset-0
-            bg-sky-100/10
-          "
-        />
+        <div className="absolute inset-0 bg-sky-100/10" />
 
       </div>
 
       {/* =================================================
           DESKTOP SIDEBAR
-          GIỮ KIỂU CŨ
       ================================================= */}
 
       <aside
@@ -3175,8 +2727,6 @@ export default function DashboardDesktop() {
 
         <div className="flex flex-col items-center gap-5">
 
-          {/* CLOCK */}
-
           <LiveClock />
 
           {/* HOME */}
@@ -3197,9 +2747,8 @@ export default function DashboardDesktop() {
               flex-col
               items-center
               justify-center
-              shadow-sm
               transition-colors
-              duration-200
+              shadow-sm
               ${
                 activeTab ===
                 "home"
@@ -3219,14 +2768,12 @@ export default function DashboardDesktop() {
 
           </button>
 
-          {/* NAVIGATION */}
+          {/* NAV */}
 
           <nav className="flex flex-col gap-2.5 w-full">
 
             {navigation.map(
-              (
-                item
-              ) => {
+              (item) => {
                 const Icon =
                   item.icon;
 
@@ -3253,7 +2800,6 @@ export default function DashboardDesktop() {
                       py-2
                       px-1
                       transition-colors
-                      duration-200
                       ${
                         active
                           ? "bg-white/80 text-sky-600 shadow-sm font-bold"
@@ -3298,10 +2844,7 @@ export default function DashboardDesktop() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="GitHub"
-              className="
-                transition-colors
-                hover:text-sky-600
-              "
+              className="transition-colors hover:text-sky-600"
             >
               <Github className="w-4 h-4" />
             </a>
@@ -3313,10 +2856,7 @@ export default function DashboardDesktop() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Discord"
-              className="
-                transition-colors
-                hover:text-indigo-600
-              "
+              className="transition-colors hover:text-indigo-600"
             >
               <DiscordIcon className="w-4 h-4" />
             </a>
@@ -3329,10 +2869,7 @@ export default function DashboardDesktop() {
                   "Settings đang được phát triển ⚙️"
                 )
               }
-              className="
-                transition-colors
-                hover:text-sky-600
-              "
+              className="transition-colors hover:text-sky-600"
             >
               <Settings className="w-4 h-4" />
             </button>
@@ -3350,53 +2887,68 @@ export default function DashboardDesktop() {
       </aside>
 
       {/* =================================================
-    MOBILE HEADER
-    GIỮ NGUYÊN BẢN CŨ
-================================================= */}
+          MOBILE HEADER
+      ================================================= */}
 
-<header
-  className="
-    md:hidden
-    fixed
-    top-0
-    left-0
-    right-0
-    h-12
-    z-[70]
-    flex
-    items-center
-    justify-between
-    px-4
-    bg-white/45
-    backdrop-blur-xl
-    border-b
-    border-white/80
-  "
->
-  <LiveClock />
+      <header
+        className="
+          md:hidden
+          fixed
+          top-0
+          left-0
+          right-0
+          z-[70]
+          px-3
+          pt-3
+        "
+      >
 
-  <button
-    type="button"
-    onClick={() =>
-      setMobileMenuOpen(true)
-    }
-    className="
-      p-1
-      rounded-md
-      bg-white/60
-      text-slate-700
-      active:scale-95
-      transition-transform
-    "
-    aria-label="Open menu"
-  >
-    <Menu className="w-4 h-4" />
-  </button>
-</header>
+        <div
+          className="
+            h-12
+            rounded-2xl
+            px-2
+            flex
+            items-center
+            justify-between
+            border
+            border-white/70
+            bg-white/45
+            backdrop-blur-xl
+            shadow-sm
+          "
+        >
+
+          <LiveClock />
+
+          <button
+            type="button"
+            onClick={() =>
+              setMobileMenuOpen(
+                true
+              )
+            }
+            aria-label="Open navigation"
+            className="
+              w-9
+              h-9
+              rounded-xl
+              bg-white/70
+              flex
+              items-center
+              justify-center
+              text-slate-600
+            "
+          >
+            <Menu className="w-4 h-4" />
+          </button>
+
+        </div>
+
+      </header>
 
       {/* =================================================
           MOBILE DRAWER
-          ĐÚNG STYLE BẢN CŨ
       ================================================= */}
 
       {mobileMenuOpen && (
@@ -3406,8 +2958,8 @@ export default function DashboardDesktop() {
             fixed
             inset-0
             z-[100]
-            bg-slate-950/10
-            backdrop-blur-[3px]
+            bg-slate-950/20
+            backdrop-blur-sm
           "
           onClick={() =>
             setMobileMenuOpen(
@@ -3416,77 +2968,36 @@ export default function DashboardDesktop() {
           }
         >
 
-          <aside
+          <div
             className="
               absolute
               top-0
               right-0
               bottom-0
-
               w-[82%]
-              max-w-[720px]
-
-              bg-white/75
-              backdrop-blur-2xl
-
+              max-w-xs
+              p-4
               border-l
               border-white/80
-
-              px-7
-              sm:px-8
-              pt-7
-
+              bg-white/80
+              backdrop-blur-2xl
               shadow-2xl
-
-              overflow-y-auto
-              overscroll-contain
-
-              animate-[mobileMenuIn_.28s_cubic-bezier(.22,1,.36,1)]
             "
             onClick={(event) =>
               event.stopPropagation()
             }
           >
 
-            {/* =================================================
-                DRAWER HEADER
-            ================================================= */}
-
-            <div
-              className="
-                flex
-                items-start
-                justify-between
-                mb-7
-              "
-            >
+            <div className="flex items-center justify-between mb-6">
 
               <div>
-
-                <p
-                  className="
-                    text-[10px]
-                    text-slate-400
-                    tracking-[0.2em]
-                    font-medium
-                  "
-                >
+                <p className="text-[9px] text-slate-400 tracking-[.2em]">
                   NAVIGATION
                 </p>
 
-                <h2
-                  className="
-                    text-[24px]
-                    sm:text-[27px]
-                    leading-tight
-                    font-semibold
-                    text-slate-700
-                    mt-1
-                  "
-                >
+                <h2 className="text-lg font-bold">
                   Trương Chí Lâm
                 </h2>
-
               </div>
 
               <button
@@ -3496,36 +3007,22 @@ export default function DashboardDesktop() {
                     false
                   )
                 }
-                aria-label="Close menu"
                 className="
-                  w-12
-                  h-12
+                  w-8
+                  h-8
                   rounded-full
-                  bg-white/80
-                  border
-                  border-white
+                  bg-white/70
                   flex
                   items-center
                   justify-center
-                  text-slate-500
-                  shadow-sm
-                  shrink-0
-                  active:scale-95
-                  transition-transform
                 "
               >
-
-                <X className="w-5 h-5" />
-
+                <X className="w-4 h-4 text-slate-500" />
               </button>
 
             </div>
 
-            {/* =================================================
-                DRAWER NAV
-            ================================================= */}
-
-            <nav className="space-y-2.5">
+            <div className="space-y-1.5">
 
               {/* HOME */}
 
@@ -3538,67 +3035,39 @@ export default function DashboardDesktop() {
                 }
                 className={`
                   w-full
-                  min-h-[78px]
-                  rounded-[24px]
-                  px-5
-                  sm:px-6
                   flex
                   items-center
-                  gap-5
+                  gap-3
+                  p-3
+                  rounded-2xl
                   text-left
-                  border
-                  border-white/80
-                  transition-colors
-                  duration-200
                   ${
                     activeTab ===
                     "home"
-                      ? `
-                        bg-teal-100/75
-                        text-teal-700
-                        shadow-sm
-                      `
-                      : `
-                        bg-white/50
-                        text-slate-600
-                        hover:bg-white/70
-                      `
+                      ? "bg-teal-100/80 text-teal-700"
+                      : "bg-white/35 text-slate-600"
                   }
                 `}
               >
 
-                <span
-                  className="
-                    w-8
-                    shrink-0
-                    flex
-                    justify-center
-                    text-xl
-                  "
-                >
+                <span className="text-base">
                   🌸
                 </span>
 
                 <div>
-
-                  <p className="text-[17px] sm:text-[19px] font-semibold">
+                  <p className="text-xs font-bold">
                     ホーム
                   </p>
 
-                  <p className="text-[11px] sm:text-[12px] text-slate-400 mt-0.5">
+                  <p className="text-[8px] opacity-60">
                     HOME
                   </p>
-
                 </div>
 
               </button>
 
-              {/* OTHER NAV */}
-
               {navigation.map(
-                (
-                  item
-                ) => {
+                (item) => {
                   const Icon =
                     item.icon;
 
@@ -3619,64 +3088,34 @@ export default function DashboardDesktop() {
                       }
                       className={`
                         w-full
-                        min-h-[78px]
-                        rounded-[24px]
-                        px-5
-                        sm:px-6
                         flex
                         items-center
-                        gap-5
+                        gap-3
+                        p-3
+                        rounded-2xl
                         text-left
-                        border
-                        border-white/80
-                        transition-colors
-                        duration-200
                         ${
                           active
-                            ? `
-                              bg-teal-100/75
-                              text-teal-700
-                              shadow-sm
-                            `
-                            : `
-                              bg-white/50
-                              text-slate-600
-                              hover:bg-white/70
-                            `
+                            ? "bg-white text-sky-600 shadow-sm"
+                            : "bg-white/35 text-slate-600"
                         }
                       `}
                     >
 
-                      <span className="w-8 shrink-0 flex justify-center">
-
-                        <Icon
-                          className={`
-                            w-6
-                            h-6
-                            ${
-                              active
-                                ? "text-teal-600"
-                                : "text-slate-500"
-                            }
-                          `}
-                        />
-
-                      </span>
+                      <Icon className="w-4 h-4" />
 
                       <div>
-
-                        <p className="text-[17px] sm:text-[19px] font-semibold">
+                        <p className="text-xs font-bold">
                           {
                             item.jp
                           }
                         </p>
 
-                        <p className="text-[11px] sm:text-[12px] text-slate-400 mt-0.5">
+                        <p className="text-[8px] opacity-60">
                           {
                             item.en
                           }
                         </p>
-
                       </div>
 
                     </button>
@@ -3684,23 +3123,9 @@ export default function DashboardDesktop() {
                 }
               )}
 
-            </nav>
+            </div>
 
-            {/* =================================================
-                SOCIAL
-            ================================================= */}
-
-            <div
-              className="
-                mt-7
-                pt-6
-                border-t
-                border-white/70
-                flex
-                items-center
-                gap-7
-              "
-            >
+            <div className="mt-6 pt-4 border-t border-white/60 flex gap-4">
 
               <a
                 href={
@@ -3709,13 +3134,9 @@ export default function DashboardDesktop() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"
-                className="
-                  text-slate-500
-                  hover:text-slate-800
-                  transition-colors
-                "
+                className="text-slate-600"
               >
-                <Github className="w-5 h-5" />
+                <Github className="w-4 h-4" />
               </a>
 
               <a
@@ -3725,25 +3146,19 @@ export default function DashboardDesktop() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Discord"
-                className="
-                  text-slate-500
-                  hover:text-indigo-600
-                  transition-colors
-                "
+                className="text-slate-600"
               >
-                <DiscordIcon className="w-5 h-5" />
+                <DiscordIcon className="w-4 h-4" />
               </a>
 
             </div>
 
-          </aside>
-
+          </div>
         </div>
       )}
 
       {/* =================================================
-          DESKTOP TOP RIGHT
-          GIỮ KIỂU CŨ
+          TOP RIGHT
       ================================================= */}
 
       <div
@@ -3774,9 +3189,6 @@ export default function DashboardDesktop() {
             items-center
             justify-center
             text-slate-700
-            shadow-sm
-            hover:bg-white/80
-            transition-colors
           "
         >
           <Search className="w-4 h-4" />
@@ -3797,9 +3209,6 @@ export default function DashboardDesktop() {
             items-center
             justify-center
             text-slate-700
-            shadow-sm
-            hover:bg-white/80
-            transition-colors
           "
         >
           <Bell className="w-4 h-4" />
@@ -3820,9 +3229,6 @@ export default function DashboardDesktop() {
             items-center
             justify-center
             text-slate-700
-            shadow-sm
-            hover:bg-white/80
-            transition-colors
           "
         >
           <Plus className="w-4 h-4" />
@@ -3831,61 +3237,36 @@ export default function DashboardDesktop() {
       </div>
 
       {/* =================================================
-          MAIN CONTENT
-          
-          Chỉ MAIN cuộn.
-          Background đứng ngoài vùng scroll.
-          Đây là phần giữ lại từ bản tối ưu.
+          MAIN
       ================================================= */}
 
       <main
         className="
-          absolute
-          top-[92px]
-          md:top-0
-          bottom-[74px]
-          md:bottom-[68px]
-          left-0
-          md:left-24
-          right-0
-          overflow-y-auto
-          overflow-x-hidden
-          custom-scrollbar
-          [-webkit-overflow-scrolling:touch]
-          overscroll-contain
+          relative
           z-10
+          min-h-screen
+          pt-[68px]
+          md:pt-6
+          md:pl-28
+          pr-3
+          md:pr-6
+          pb-[78px]
+          md:pb-24
         "
       >
 
-        <div
-          className="
-            min-h-full
-            w-full
-            px-3
-            py-3
-            md:px-6
-            md:py-6
-            pb-8
-            md:pb-10
-          "
-        >
-
-          <div className="max-w-[1400px] mx-auto">
-
-            {renderContent()}
-
-          </div>
-
+        <div className="max-w-[1400px] mx-auto">
+          {renderContent()}
         </div>
 
       </main>
 
       {/* =================================================
-          MUSIC PLAYER
-          Nằm ngoài MAIN để đổi tab không destroy audio.
+          MUSIC
       ================================================= */}
 
       <MusicPlayer />
+
     </div>
   );
-}
+            }
