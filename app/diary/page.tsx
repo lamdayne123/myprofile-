@@ -75,13 +75,11 @@ export default function DiaryPage() {
 
       const data = await response.json();
 
-      setEntries(
-        Array.isArray(data)
-          ? data
-          : Array.isArray(data.entries)
-          ? data.entries
-          : []
-      );
+setEntries(
+  Array.isArray(data.entries)
+    ? data.entries
+    : []
+);
     } catch (error) {
       console.error("Diary load error:", error);
       setEntries([]);
