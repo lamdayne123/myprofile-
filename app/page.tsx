@@ -2031,103 +2031,392 @@ export function DashboardDesktop() {
       </div>
 
       {/* MOBILE HEADER */}
-      <header
-        className="
-          md:hidden
-          absolute
-          top-0
-          left-0
-          right-0
-          h-12
-          z-40
-          flex
-          items-center
-          justify-between
-          px-4
-          bg-white/45
-          backdrop-blur-xl
-          border-b
-          border-white/80
-        "
-      >
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-md bg-teal-500/20 flex items-center justify-center">
-            <User className="w-3 h-3 text-teal-600" />
-          </div>
-          <span className="text-[11px] font-bold">
+      {/* =================================================
+    MOBILE TOP BAR
+    Giữ đúng kiểu thanh ngang bản cũ
+================================================= */}
+
+<header
+  className="
+    md:hidden
+    fixed
+    top-0
+    left-0
+    right-0
+    z-[70]
+    px-3
+    pt-3
+    pointer-events-none
+  "
+>
+  <div
+    className="
+      h-[76px]
+      w-full
+      rounded-[24px]
+      border
+      border-white/80
+      bg-white/45
+      backdrop-blur-xl
+      shadow-sm
+      px-5
+      flex
+      items-center
+      justify-between
+      pointer-events-auto
+    "
+  >
+
+    {/* CLOCK */}
+
+    <LiveClock />
+
+    {/* MENU */}
+
+    <button
+      type="button"
+      onClick={() => setMobileMenuOpen(true)}
+      aria-label="Open menu"
+      className="
+        w-12
+        h-12
+        rounded-2xl
+        bg-white/70
+        border
+        border-white/80
+        flex
+        items-center
+        justify-center
+        text-slate-600
+        shadow-sm
+        transition-transform
+        duration-200
+        active:scale-95
+      "
+    >
+      <Menu className="w-5 h-5" />
+    </button>
+
+  </div>
+</header>
+
+      {/* =================================================
+    MOBILE SIDE PANEL
+    Khôi phục đúng thiết kế cũ
+================================================= */}
+
+{mobileMenuOpen && (
+  <div
+    className="
+      md:hidden
+      fixed
+      inset-0
+      z-[100]
+      bg-slate-950/10
+      backdrop-blur-[3px]
+    "
+    onClick={() => setMobileMenuOpen(false)}
+  >
+
+    {/* LEFT DIMMED AREA */}
+
+    <div className="absolute inset-0 pointer-events-none" />
+
+    {/* SIDE PANEL */}
+
+    <aside
+      className="
+        absolute
+        top-0
+        right-0
+        bottom-0
+
+        w-[82%]
+        max-w-[720px]
+
+        bg-white/75
+        backdrop-blur-2xl
+
+        border-l
+        border-white/80
+
+        px-7
+        sm:px-8
+        pt-7
+
+        shadow-2xl
+
+        overflow-y-auto
+        overscroll-contain
+
+        animate-[mobileMenuIn_.32s_cubic-bezier(.22,1,.36,1)]
+      "
+      onClick={(event) => event.stopPropagation()}
+    >
+
+      {/* =========================================
+          PANEL HEADER
+      ========================================= */}
+
+      <div className="flex items-start justify-between mb-7">
+
+        <div>
+          <p
+            className="
+              text-[10px]
+              text-slate-400
+              tracking-[0.2em]
+              font-medium
+            "
+          >
+            NAVIGATION
+          </p>
+
+          <h2
+            className="
+              text-[24px]
+              sm:text-[27px]
+              leading-tight
+              font-semibold
+              text-slate-700
+              mt-1
+            "
+          >
             Trương Chí Lâm
-          </span>
+          </h2>
         </div>
+
         <button
           type="button"
-          onClick={() => setMobileMenuOpen(true)}
-          className="p-1 rounded-md bg-white/60 text-slate-700"
-          aria-label="Menu"
-        >
-          <Menu className="w-4 h-4" />
-        </button>
-      </header>
-
-      {/* MOBILE NAV MODAL */}
-      {mobileMenuOpen && (
-        <div
+          onClick={() => setMobileMenuOpen(false)}
+          aria-label="Close menu"
           className="
-            md:hidden
-            fixed
-            inset-0
-            z-[100]
-            bg-slate-900/40
-            backdrop-blur-sm
+            w-12
+            h-12
+            rounded-full
+            bg-white/80
+            border
+            border-white
+            flex
+            items-center
+            justify-center
+            text-slate-500
+            shadow-sm
+            transition-transform
+            duration-200
+            active:scale-95
           "
         >
-          <div className="absolute top-0 right-0 bottom-0 w-64 bg-white/95 p-4 shadow-2xl flex flex-col">
-            <div className="flex items-center justify-between mb-6">
-              <span className="text-xs font-bold text-slate-800">
-                MENU
-              </span>
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-1 text-slate-500 bg-slate-100 rounded-md"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <nav className="flex flex-col gap-1 flex-1">
-              <NavItem
-                icon={User}
-                label="HOME"
-                active={activeTab === "home"}
-                onClick={() => setActiveTab("home")}
-              />
-              <NavItem
-                icon={Music}
-                label="MUSIC"
-                active={activeTab === "music"}
-                onClick={() => setActiveTab("music")}
-              />
-              <NavItem
-                icon={Folder}
-                label="PROJECTS"
-                active={activeTab === "projects"}
-                onClick={() => setActiveTab("projects")}
-              />
-              <NavItem
-                icon={GalleryIcon}
-                label="GALLERY"
-                active={activeTab === "gallery"}
-                onClick={() => setActiveTab("gallery")}
-              />
-              <NavItem
-                icon={StickyNote}
-                label="DIARY"
-                active={activeTab === "diary"}
-                onClick={() => setActiveTab("diary")}
-              />
-            </nav>
+          <X className="w-5 h-5" />
+        </button>
+
+      </div>
+
+
+      {/* =========================================
+          NAVIGATION
+      ========================================= */}
+
+      <nav className="space-y-2.5">
+
+        {/* HOME */}
+
+        <button
+          type="button"
+          onClick={() => changeTab("home")}
+          className={`
+            w-full
+            min-h-[78px]
+            rounded-[24px]
+
+            px-5
+            sm:px-6
+
+            flex
+            items-center
+            gap-5
+
+            text-left
+
+            border
+            border-white/80
+
+            transition-all
+            duration-200
+
+            ${
+              activeTab === "home"
+                ? `
+                  bg-teal-100/75
+                  text-teal-700
+                  shadow-sm
+                `
+                : `
+                  bg-white/50
+                  text-slate-600
+                  hover:bg-white/70
+                `
+            }
+          `}
+        >
+
+          <span
+            className="
+              w-8
+              shrink-0
+              flex
+              justify-center
+              text-xl
+            "
+          >
+            🌸
+          </span>
+
+          <div className="min-w-0">
+
+            <p className="text-[17px] sm:text-[19px] font-semibold">
+              ホーム
+            </p>
+
+            <p className="text-[11px] sm:text-[12px] text-slate-400 mt-0.5">
+              HOME
+            </p>
+
           </div>
-        </div>
-      )}
+
+        </button>
+
+
+        {/* OTHER ITEMS */}
+
+        {navigation.map((item) => {
+          const Icon = item.icon;
+          const active = activeTab === item.id;
+
+          return (
+            <button
+              type="button"
+              key={item.id}
+              onClick={() => changeTab(item.id)}
+              className={`
+                w-full
+                min-h-[78px]
+                rounded-[24px]
+
+                px-5
+                sm:px-6
+
+                flex
+                items-center
+                gap-5
+
+                text-left
+
+                border
+                border-white/80
+
+                transition-all
+                duration-200
+
+                ${
+                  active
+                    ? `
+                      bg-teal-100/75
+                      text-teal-700
+                      shadow-sm
+                    `
+                    : `
+                      bg-white/50
+                      text-slate-600
+                      hover:bg-white/70
+                    `
+                }
+              `}
+            >
+
+              <span className="w-8 shrink-0 flex justify-center">
+                <Icon
+                  className={`
+                    w-6
+                    h-6
+                    ${
+                      active
+                        ? "text-teal-600"
+                        : "text-slate-500"
+                    }
+                  `}
+                />
+              </span>
+
+              <div className="min-w-0">
+
+                <p className="text-[17px] sm:text-[19px] font-semibold">
+                  {item.jp}
+                </p>
+
+                <p className="text-[11px] sm:text-[12px] text-slate-400 mt-0.5">
+                  {item.en}
+                </p>
+
+              </div>
+
+            </button>
+          );
+        })}
+
+      </nav>
+
+
+      {/* =========================================
+          SOCIAL
+      ========================================= */}
+
+      <div
+        className="
+          mt-7
+          pt-6
+          border-t
+          border-white/70
+          flex
+          items-center
+          gap-7
+        "
+      >
+
+        <a
+          href={socials.github}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="GitHub"
+          className="
+            text-slate-500
+            hover:text-slate-800
+            transition-colors
+          "
+        >
+          <Github className="w-5 h-5" />
+        </a>
+
+        <a
+          href={socials.discord}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Discord"
+          className="
+            text-slate-500
+            hover:text-indigo-600
+            transition-colors
+          "
+        >
+          <DiscordIcon className="w-5 h-5" />
+        </a>
+
+      </div>
+
+    </aside>
+
+  </div>
+)}
 
       {/* DESKTOP SIDEBAR */}
       <aside
