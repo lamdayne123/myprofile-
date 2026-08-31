@@ -29,6 +29,7 @@ import {
   Github,
   Settings,
   Mail,
+  MessageSquare,
   ExternalLink,
   Play,
   Pause,
