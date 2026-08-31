@@ -58,8 +58,7 @@ export default function DiaryDetailPage() {
         }
 
         const data = await response.json();
-
-        setEntry(data);
+setEntry(data.entry);
       } catch (err) {
         console.error(err);
         setError("Có lỗi xảy ra khi tải nhật ký.");
