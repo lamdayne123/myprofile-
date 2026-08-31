@@ -281,13 +281,17 @@ const ServerStatus = memo(function ServerStatus() {
   const [serverData, setServerData] =
     useState<ServerData>({
       online: false,
+
       players: {
         online: 0,
         max: 0,
       },
+
       version: "Loading...",
+
       tps: 20,
       ping: 0,
+
       ip: "play.craftopics.online",
     });
 
@@ -312,19 +316,28 @@ const ServerStatus = memo(function ServerStatus() {
 
       setServerData({
         online: Boolean(data.online),
+
         players: {
           online: Number(
             data.players?.online ?? 0
           ),
+
           max: Number(
             data.players?.max ?? 0
           ),
         },
+
         version:
           data.version ??
           "Unknown",
+
+        /*
+         * Bạn đang fake TPS + Ping.
+         */
+
         tps: 20,
         ping: 0,
+
         ip: "play.craftopics.online",
       });
     } catch (error) {
@@ -332,6 +345,7 @@ const ServerStatus = memo(function ServerStatus() {
         "Server API error:",
         error
       );
+
       setServerData((previous) => ({
         ...previous,
         online: false,
@@ -359,18 +373,14 @@ const ServerStatus = memo(function ServerStatus() {
     <section
       id="server"
       className="
-        h-full
-        flex
-        flex-col
         rounded-2xl
         border
         border-white/80
         bg-white/45
-        backdrop-blur-sm
+        backdrop-blur-md
         md:backdrop-blur-xl
         p-3
         shadow-sm
-        [contain:content]
       "
     >
       <div className="flex items-center justify-between mb-1">
@@ -410,6 +420,7 @@ const ServerStatus = memo(function ServerStatus() {
       </p>
 
       <div className="grid grid-cols-2 gap-1.5 mt-2">
+
         <div className="bg-white/45 rounded-lg p-1.5">
           <div className="flex items-center gap-1 text-[8px] text-slate-400">
             <Users className="w-2.5 h-2.5" />
@@ -436,14 +447,17 @@ const ServerStatus = memo(function ServerStatus() {
         </div>
       </div>
 
-      <div className="mt-2 pt-2 border-t border-white/60 mt-auto">
+      <div className="mt-2 pt-2 border-t border-white/60">
         <div className="grid grid-cols-2 gap-2">
+
           {/* TPS */}
+
           <div>
             <div className="flex justify-between">
               <span className="text-[8px] font-bold text-slate-500">
                 TPS
               </span>
+
               <span className="text-[9px] text-emerald-600 font-bold">
                 20.00
               </span>
@@ -460,12 +474,14 @@ const ServerStatus = memo(function ServerStatus() {
           </div>
 
           {/* PING */}
+
           <div>
             <div className="flex justify-between">
               <span className="text-[8px] font-bold text-slate-500 flex items-center gap-0.5">
                 <Wifi className="w-2.5 h-2.5" />
                 PING
               </span>
+
               <span className="text-[9px] text-sky-600 font-bold">
                 0ms
               </span>
@@ -480,6 +496,7 @@ const ServerStatus = memo(function ServerStatus() {
               />
             </div>
           </div>
+
         </div>
       </div>
     </section>
@@ -492,29 +509,60 @@ const ServerStatus = memo(function ServerStatus() {
 
 const MusicPlayer = memo(
   function MusicPlayer() {
-    const audioRef = useRef<HTMLAudioElement | null>(null);
-    const currentIndexRef = useRef(0);
-    const repeatRef = useRef(false);
-    const shuffleRef = useRef(false);
+    const audioRef =
+      useRef<HTMLAudioElement | null>(
+        null
+      );
 
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [currentTime, setCurrentTime] = useState(0);
-    const [duration, setDuration] = useState(0);
-    const [volume, setVolume] = useState(0.8);
-    const [shuffle, setShuffle] = useState(false);
-    const [repeat, setRepeat] = useState(false);
-    const [showPlaylist, setShowPlaylist] = useState(false);
+    const currentIndexRef =
+      useRef(0);
 
-    const currentSong = playlist[currentIndex];
+    const repeatRef =
+      useRef(false);
+
+    const shuffleRef =
+      useRef(false);
+
+    const [currentIndex, setCurrentIndex] =
+      useState(0);
+
+    const [isPlaying, setIsPlaying] =
+      useState(false);
+
+    const [currentTime, setCurrentTime] =
+      useState(0);
+
+    const [duration, setDuration] =
+      useState(0);
+
+    const [volume, setVolume] =
+      useState(0.8);
+
+    const [shuffle, setShuffle] =
+      useState(false);
+
+    const [repeat, setRepeat] =
+      useState(false);
+
+    const [showPlaylist, setShowPlaylist] =
+      useState(false);
+
+    const currentSong =
+      playlist[currentIndex];
 
     /* -----------------------------------------
        CREATE AUDIO ONCE
     ----------------------------------------- */
+
     useEffect(() => {
-      const audio = new Audio();
-      audio.preload = "metadata";
+      const audio =
+        new Audio();
+
+      audio.preload =
+        "metadata";
+
       audio.volume = 0.8;
+
       audioRef.current = audio;
 
       return () => {
@@ -527,184 +575,392 @@ const MusicPlayer = memo(
     /* -----------------------------------------
        EVENTS
     ----------------------------------------- */
+
     useEffect(() => {
-      const audio = audioRef.current;
+      const audio =
+        audioRef.current;
+
       if (!audio) return;
 
       const handleMetadata = () => {
-        const nextDuration = Number.isFinite(audio.duration) ? audio.duration : 0;
-        setDuration(nextDuration);
-      };
+        const nextDuration =
+          Number.isFinite(
+            audio.duration
+          )
+            ? audio.duration
+            : 0;
 
-      const handleTimeUpdate = () => {
-        const nextSecond = Math.floor(audio.currentTime);
-        setCurrentTime((previous) =>
-          previous === nextSecond ? previous : nextSecond
+        setDuration(
+          nextDuration
         );
       };
 
-      const handlePlay = () => setIsPlaying(true);
-      const handlePause = () => setIsPlaying(false);
+      const handleTimeUpdate =
+        () => {
+          const nextSecond =
+            Math.floor(
+              audio.currentTime
+            );
+
+          setCurrentTime(
+            (previous) =>
+              previous ===
+              nextSecond
+                ? previous
+                : nextSecond
+          );
+        };
+
+      const handlePlay = () => {
+        setIsPlaying(true);
+      };
+
+      const handlePause = () => {
+        setIsPlaying(false);
+      };
 
       const handleEnded = () => {
-        if (repeatRef.current) {
-          audio.currentTime = 0;
-          void audio.play().catch(() => {
-            setIsPlaying(false);
-          });
+        if (
+          repeatRef.current
+        ) {
+          audio.currentTime =
+            0;
+
+          void audio
+            .play()
+            .catch(() => {
+              setIsPlaying(false);
+            });
+
           return;
         }
 
         let nextIndex: number;
-        if (shuffleRef.current && playlist.length > 1) {
+
+        if (
+          shuffleRef.current &&
+          playlist.length > 1
+        ) {
           do {
-            nextIndex = Math.floor(Math.random() * playlist.length);
-          } while (nextIndex === currentIndexRef.current);
+            nextIndex =
+              Math.floor(
+                Math.random() *
+                  playlist.length
+              );
+          } while (
+            nextIndex ===
+            currentIndexRef.current
+          );
         } else {
-          nextIndex = (currentIndexRef.current + 1) % playlist.length;
+          nextIndex =
+            (currentIndexRef.current +
+              1) %
+            playlist.length;
         }
 
-        currentIndexRef.current = nextIndex;
-        setCurrentIndex(nextIndex);
+        currentIndexRef.current =
+          nextIndex;
+
+        setCurrentIndex(
+          nextIndex
+        );
       };
 
-      audio.addEventListener("loadedmetadata", handleMetadata);
-      audio.addEventListener("timeupdate", handleTimeUpdate);
-      audio.addEventListener("play", handlePlay);
-      audio.addEventListener("pause", handlePause);
-      audio.addEventListener("ended", handleEnded);
+      audio.addEventListener(
+        "loadedmetadata",
+        handleMetadata
+      );
+
+      audio.addEventListener(
+        "timeupdate",
+        handleTimeUpdate
+      );
+
+      audio.addEventListener(
+        "play",
+        handlePlay
+      );
+
+      audio.addEventListener(
+        "pause",
+        handlePause
+      );
+
+      audio.addEventListener(
+        "ended",
+        handleEnded
+      );
 
       return () => {
-        audio.removeEventListener("loadedmetadata", handleMetadata);
-        audio.removeEventListener("timeupdate", handleTimeUpdate);
-        audio.removeEventListener("play", handlePlay);
-        audio.removeEventListener("pause", handlePause);
-        audio.removeEventListener("ended", handleEnded);
+        audio.removeEventListener(
+          "loadedmetadata",
+          handleMetadata
+        );
+
+        audio.removeEventListener(
+          "timeupdate",
+          handleTimeUpdate
+        );
+
+        audio.removeEventListener(
+          "play",
+          handlePlay
+        );
+
+        audio.removeEventListener(
+          "pause",
+          handlePause
+        );
+
+        audio.removeEventListener(
+          "ended",
+          handleEnded
+        );
       };
     }, []);
 
     /* -----------------------------------------
        REFS
     ----------------------------------------- */
+
     useEffect(() => {
-      currentIndexRef.current = currentIndex;
+      currentIndexRef.current =
+        currentIndex;
     }, [currentIndex]);
 
     useEffect(() => {
-      repeatRef.current = repeat;
+      repeatRef.current =
+        repeat;
     }, [repeat]);
 
     useEffect(() => {
-      shuffleRef.current = shuffle;
+      shuffleRef.current =
+        shuffle;
     }, [shuffle]);
 
     /* -----------------------------------------
        CHANGE SONG
     ----------------------------------------- */
+
     useEffect(() => {
-      const audio = audioRef.current;
+      const audio =
+        audioRef.current;
+
       if (!audio) return;
 
-      const shouldPlay = isPlaying || !audio.paused;
-      audio.src = currentSong.src;
+      const shouldPlay =
+        isPlaying ||
+        !audio.paused;
+
+      audio.src =
+        currentSong.src;
+
       audio.load();
+
       setCurrentTime(0);
       setDuration(0);
 
       if (shouldPlay) {
-        void audio.play().catch(() => {
-          setIsPlaying(false);
-        });
+        void audio
+          .play()
+          .catch(() => {
+            setIsPlaying(false);
+          });
       }
     }, [currentIndex]);
 
     /* -----------------------------------------
        CONTROLS
     ----------------------------------------- */
-    const togglePlay = useCallback(async () => {
-      const audio = audioRef.current;
-      if (!audio) return;
-      try {
-        if (audio.paused) {
-          await audio.play();
+
+    const togglePlay =
+      useCallback(
+        async () => {
+          const audio =
+            audioRef.current;
+
+          if (!audio) return;
+
+          try {
+            if (
+              audio.paused
+            ) {
+              await audio.play();
+            } else {
+              audio.pause();
+            }
+          } catch (error) {
+            console.error(
+              "Audio error:",
+              error
+            );
+
+            setIsPlaying(false);
+          }
+        },
+        []
+      );
+
+    const playNext =
+      useCallback(() => {
+        let next: number;
+
+        if (
+          shuffleRef.current &&
+          playlist.length > 1
+        ) {
+          do {
+            next =
+              Math.floor(
+                Math.random() *
+                  playlist.length
+              );
+          } while (
+            next ===
+            currentIndexRef.current
+          );
         } else {
-          audio.pause();
+          next =
+            (currentIndexRef.current +
+              1) %
+            playlist.length;
         }
-      } catch (error) {
-        console.error("Audio error:", error);
-        setIsPlaying(false);
-      }
-    }, []);
 
-    const playNext = useCallback(() => {
-      let next: number;
-      if (shuffleRef.current && playlist.length > 1) {
-        do {
-          next = Math.floor(Math.random() * playlist.length);
-        } while (next === currentIndexRef.current);
-      } else {
-        next = (currentIndexRef.current + 1) % playlist.length;
-      }
-      currentIndexRef.current = next;
-      setCurrentIndex(next);
-      setIsPlaying(true);
-    }, []);
+        currentIndexRef.current =
+          next;
 
-    const playPrevious = useCallback(() => {
-      const audio = audioRef.current;
-      if (audio && audio.currentTime > 3) {
-        audio.currentTime = 0;
-        setCurrentTime(0);
-        return;
-      }
-      const previous = (currentIndexRef.current - 1 + playlist.length) % playlist.length;
-      currentIndexRef.current = previous;
-      setCurrentIndex(previous);
-      setIsPlaying(true);
-    }, []);
+        setCurrentIndex(next);
+        setIsPlaying(true);
+      }, []);
 
-    const selectSong = useCallback((index: number) => {
-      if (!playlist[index]) return;
-      currentIndexRef.current = index;
-      setCurrentIndex(index);
-      setIsPlaying(true);
-    }, []);
+    const playPrevious =
+      useCallback(() => {
+        const audio =
+          audioRef.current;
 
-    const changeProgress = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const value = Number(event.target.value);
-      const audio = audioRef.current;
-      if (!audio) return;
-      audio.currentTime = value;
-      setCurrentTime(Math.floor(value));
-    };
+        if (
+          audio &&
+          audio.currentTime >
+            3
+        ) {
+          audio.currentTime =
+            0;
 
-    const changeVolume = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const value = Number(event.target.value);
-      setVolume(value);
-      if (audioRef.current) {
-        audioRef.current.volume = value;
-      }
-    };
+          setCurrentTime(0);
 
-    const toggleMute = () => {
-      const audio = audioRef.current;
-      if (!audio) return;
-      if (audio.volume > 0) {
-        audio.volume = 0;
-        setVolume(0);
-      } else {
-        audio.volume = 0.8;
-        setVolume(0.8);
-      }
-    };
+          return;
+        }
 
-    const progress = duration > 0 ? Math.min((currentTime / duration) * 100, 100) : 0;
+        const previous =
+          (currentIndexRef.current -
+            1 +
+            playlist.length) %
+          playlist.length;
+
+        currentIndexRef.current =
+          previous;
+
+        setCurrentIndex(
+          previous
+        );
+
+        setIsPlaying(true);
+      }, []);
+
+    const selectSong =
+      useCallback(
+        (index: number) => {
+          if (
+            !playlist[index]
+          ) return;
+
+          currentIndexRef.current =
+            index;
+
+          setCurrentIndex(
+            index
+          );
+
+          setIsPlaying(true);
+        },
+        []
+      );
+
+    const changeProgress =
+      (
+        event: React.ChangeEvent<HTMLInputElement>
+      ) => {
+        const value =
+          Number(
+            event.target.value
+          );
+
+        const audio =
+          audioRef.current;
+
+        if (!audio) return;
+
+        audio.currentTime =
+          value;
+
+        setCurrentTime(
+          Math.floor(value)
+        );
+      };
+
+    const changeVolume =
+      (
+        event: React.ChangeEvent<HTMLInputElement>
+      ) => {
+        const value =
+          Number(
+            event.target.value
+          );
+
+        setVolume(value);
+
+        if (
+          audioRef.current
+        ) {
+          audioRef.current.volume =
+            value;
+        }
+      };
+
+    const toggleMute =
+      () => {
+        const audio =
+          audioRef.current;
+
+        if (!audio) return;
+
+        if (
+          audio.volume > 0
+        ) {
+          audio.volume = 0;
+          setVolume(0);
+        } else {
+          audio.volume = 0.8;
+          setVolume(0.8);
+        }
+      };
+
+    const progress =
+      duration > 0
+        ? Math.min(
+            (currentTime /
+              duration) *
+              100,
+            100
+          )
+        : 0;
 
     return (
       <>
         {/* =====================================
             PLAYLIST
         ===================================== */}
+
         {showPlaylist && (
           <div
             className="
@@ -718,89 +974,124 @@ const MusicPlayer = memo(
               max-w-sm
               rounded-2xl
               overflow-hidden
-              bg-white/55
-              backdrop-blur-xl
+              bg-white/70
+              backdrop-blur-md
+              md:backdrop-blur-xl
               border
               border-white/80
-              shadow-2xl
+              shadow-lg
             "
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/60">
+
               <div>
                 <p className="text-xs font-bold text-slate-800">
                   MY PLAYLIST
                 </p>
+
                 <p className="text-[9px] text-slate-500">
                   {playlist.length} songs
                 </p>
               </div>
+
               <button
                 type="button"
-                onClick={() => setShowPlaylist(false)}
-                className="text-slate-400 hover:text-slate-600"
+                onClick={() =>
+                  setShowPlaylist(
+                    false
+                  )
+                }
+                className="text-slate-500 hover:text-slate-800"
               >
                 <X className="w-4 h-4" />
               </button>
+
             </div>
 
             <div className="p-2 max-h-72 overflow-y-auto">
-              {playlist.map((song, index) => {
-                const active = index === currentIndex;
-                return (
-                  <button
-                    type="button"
-                    key={song.title}
-                    onClick={() => selectSong(index)}
-                    className={`
-                      w-full
-                      flex
-                      items-center
-                      gap-3
-                      p-2
-                      rounded-xl
-                      text-left
-                      transition-colors
-                      ${
-                        active
-                          ? "bg-white/60 shadow-sm"
-                          : "hover:bg-white/40"
+
+              {playlist.map(
+                (
+                  song,
+                  index
+                ) => {
+                  const active =
+                    index ===
+                    currentIndex;
+
+                  return (
+                    <button
+                      type="button"
+                      key={
+                        song.title
                       }
-                    `}
-                  >
-                    <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0">
-                      <Image
-                        src={song.cover}
-                        alt=""
-                        fill
-                        sizes="40px"
-                        className="object-cover"
-                      />
-                      {active && (
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                          {isPlaying ? (
-                            <Pause className="w-4 h-4 text-white" />
-                          ) : (
-                            <Play className="w-4 h-4 text-white" />
-                          )}
-                        </div>
-                      )}
-                    </div>
+                      onClick={() =>
+                        selectSong(
+                          index
+                        )
+                      }
+                      className={`
+                        w-full
+                        flex
+                        items-center
+                        gap-3
+                        p-2
+                        rounded-xl
+                        text-left
+                        transition-colors
+                        ${
+                          active
+                            ? "bg-white/60"
+                            : "hover:bg-white/30"
+                        }
+                      `}
+                    >
+                      <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0">
+                        <Image
+                          src={
+                            song.cover
+                          }
+                          alt=""
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                        />
 
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[11px] font-semibold text-slate-800 truncate">
-                        {song.title}
-                      </p>
-                      <p className="text-[9px] text-slate-500 truncate">
-                        {song.artist}
-                      </p>
-                    </div>
+                        {active && (
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            {isPlaying ? (
+                              <Pause className="w-4 h-4 text-white" />
+                            ) : (
+                              <Play className="w-4 h-4 text-white" />
+                            )}
+                          </div>
+                        )}
+                      </div>
 
-                    <span className="text-[9px] text-slate-400">
-                      {song.duration}
-                    </span>
-                  </button>
-                );
-              })}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[11px] font-semibold text-slate-800 truncate">
+                          {
+                            song.title
+                          }
+                        </p>
+
+                        <p className="text-[9px] text-slate-500 truncate">
+                          {
+                            song.artist
+                          }
+                        </p>
+                      </div>
+
+                      <span className="text-[9px] text-slate-400">
+                        {
+                          song.duration
+                        }
+                      </span>
+                    </button>
+                  );
+                }
+              )}
+
             </div>
           </div>
         )}
@@ -808,6 +1099,7 @@ const MusicPlayer = memo(
         {/* =====================================
             DESKTOP PLAYER
         ===================================== */}
+
         <footer
           className="
             hidden
@@ -827,47 +1119,81 @@ const MusicPlayer = memo(
             shadow-lg
           "
         >
+
           <div className="flex items-center gap-3 w-1/4 min-w-0">
+
             <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0">
               <Image
-                src={currentSong.cover}
-                alt={currentSong.title}
+                src={
+                  currentSong.cover
+                }
+                alt={
+                  currentSong.title
+                }
                 fill
                 sizes="40px"
                 className="object-cover"
               />
             </div>
+
             <div className="min-w-0">
               <p className="text-xs font-bold text-slate-800 truncate">
-                {currentSong.title}
+                {
+                  currentSong.title
+                }
               </p>
+
               <p className="text-[10px] text-slate-500 truncate">
-                {currentSong.artist}
+                {
+                  currentSong.artist
+                }
               </p>
             </div>
+
           </div>
 
           <div className="flex flex-col items-center gap-1 flex-1">
+
             <div className="flex items-center gap-4 text-slate-600">
+
               <button
                 type="button"
-                onClick={() => setShuffle((value) => !value)}
-                className={shuffle ? "text-sky-500" : "text-slate-500"}
+                onClick={() =>
+                  setShuffle(
+                    (value) =>
+                      !value
+                  )
+                }
+                className={
+                  shuffle
+                    ? "text-sky-500"
+                    : "text-slate-500"
+                }
                 aria-label="Shuffle"
               >
                 <Shuffle className="w-3.5 h-3.5" />
               </button>
+
               <button
                 type="button"
-                onClick={playPrevious}
+                onClick={
+                  playPrevious
+                }
                 aria-label="Previous"
               >
                 <SkipBack className="w-4 h-4" />
               </button>
+
               <button
                 type="button"
-                onClick={togglePlay}
-                aria-label={isPlaying ? "Pause" : "Play"}
+                onClick={
+                  togglePlay
+                }
+                aria-label={
+                  isPlaying
+                    ? "Pause"
+                    : "Play"
+                }
                 className="
                   w-9
                   h-9
@@ -888,55 +1214,103 @@ const MusicPlayer = memo(
                   <Play className="w-4 h-4 fill-current ml-0.5" />
                 )}
               </button>
-              <button type="button" onClick={playNext} aria-label="Next">
-                <SkipForward className="w-4 h-4" />
-              </button>
+
               <button
                 type="button"
-                onClick={() => setRepeat((value) => !value)}
-                className={repeat ? "text-sky-500" : "text-slate-500"}
+                onClick={
+                  playNext
+                }
+                aria-label="Next"
+              >
+                <SkipForward className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setRepeat(
+                    (value) =>
+                      !value
+                  )
+                }
+                className={
+                  repeat
+                    ? "text-sky-500"
+                    : "text-slate-500"
+                }
                 aria-label="Repeat"
               >
                 <Repeat className="w-3.5 h-3.5" />
               </button>
+
             </div>
 
             <div className="flex items-center gap-2 w-full max-w-md">
+
               <span className="text-[8px] text-slate-400 w-7 text-right">
-                {formatTime(currentTime)}
+                {
+                  formatTime(
+                    currentTime
+                  )
+                }
               </span>
+
               <input
                 type="range"
                 min="0"
-                max={duration || 0}
+                max={
+                  duration || 0
+                }
                 step="0.1"
-                value={Math.min(currentTime, duration || 0)}
-                onChange={changeProgress}
+                value={Math.min(
+                  currentTime,
+                  duration || 0
+                )}
+                onChange={
+                  changeProgress
+                }
                 aria-label="Progress"
                 className="flex-1 h-1 accent-teal-500 cursor-pointer"
               />
+
               <span className="text-[8px] text-slate-400 w-7">
-                {formatTime(duration)}
+                {
+                  formatTime(
+                    duration
+                  )
+                }
               </span>
+
             </div>
           </div>
 
           <div className="flex items-center gap-3 w-1/4 justify-end">
+
             <div className="hidden lg:flex items-center gap-2">
-              <button type="button" onClick={toggleMute} aria-label="Mute">
+
+              <button
+                type="button"
+                onClick={
+                  toggleMute
+                }
+                aria-label="Mute"
+              >
                 {volume > 0 ? (
                   <Volume2 className="w-4 h-4 text-slate-500" />
                 ) : (
                   <VolumeX className="w-4 h-4 text-slate-500" />
                 )}
               </button>
+
               <input
                 type="range"
                 min="0"
                 max="1"
                 step="0.01"
                 value={volume}
-                onChange={changeVolume}
+                onChange={
+                  changeVolume
+                }
                 className="w-16 accent-teal-500"
                 aria-label="Volume"
               />
@@ -944,20 +1318,33 @@ const MusicPlayer = memo(
 
             <button
               type="button"
-              onClick={() => setShowPlaylist((value) => !value)}
+              onClick={() =>
+                setShowPlaylist(
+                  (value) =>
+                    !value
+                )
+              }
               aria-label="Playlist"
-              className={showPlaylist ? "text-teal-500" : "text-slate-500"}
+              className={
+                showPlaylist
+                  ? "text-teal-500"
+                  : "text-slate-500"
+              }
             >
               <ListMusic className="w-4 h-4" />
             </button>
+
             <Maximize2 className="hidden lg:block w-4 h-4 text-slate-500" />
+
             <ChevronDown className="hidden lg:block w-4 h-4 text-slate-500" />
+
           </div>
         </footer>
 
         {/* =====================================
             MOBILE PLAYER
         ===================================== */}
+
         <footer
           className="
             md:hidden
@@ -972,18 +1359,22 @@ const MusicPlayer = memo(
             flex
             items-center
             gap-2
-            bg-white/55
+            bg-white/60
             backdrop-blur-md
             border
             border-white/80
-            shadow-xl
-            transform-gpu
+            shadow-lg
           "
         >
+
           <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0">
             <Image
-              src={currentSong.cover}
-              alt={currentSong.title}
+              src={
+                currentSong.cover
+              }
+              alt={
+                currentSong.title
+              }
               fill
               sizes="40px"
               className="object-cover"
@@ -991,23 +1382,35 @@ const MusicPlayer = memo(
           </div>
 
           <div className="min-w-0 flex-1">
+
             <p className="text-[10px] font-bold text-slate-800 truncate">
-              {currentSong.title}
+              {
+                currentSong.title
+              }
             </p>
+
             <p className="text-[8px] text-slate-500 truncate">
-              {currentSong.artist}
+              {
+                currentSong.artist
+              }
             </p>
-            <div className="h-0.5 bg-slate-200/80 rounded-full overflow-hidden mt-1">
+
+            <div className="h-0.5 bg-slate-200/70 rounded-full overflow-hidden mt-1">
               <div
                 className="h-full bg-teal-400 transition-[width] duration-300"
-                style={{ width: `${progress}%` }}
+                style={{
+                  width: `${progress}%`,
+                }}
               />
             </div>
+
           </div>
 
           <button
             type="button"
-            onClick={playPrevious}
+            onClick={
+              playPrevious
+            }
             className="text-slate-500 shrink-0"
             aria-label="Previous"
           >
@@ -1016,7 +1419,9 @@ const MusicPlayer = memo(
 
           <button
             type="button"
-            onClick={togglePlay}
+            onClick={
+              togglePlay
+            }
             className="
               w-8
               h-8
@@ -1029,7 +1434,11 @@ const MusicPlayer = memo(
               shrink-0
               active:scale-95
             "
-            aria-label={isPlaying ? "Pause" : "Play"}
+            aria-label={
+              isPlaying
+                ? "Pause"
+                : "Play"
+            }
           >
             {isPlaying ? (
               <Pause className="w-3.5 h-3.5 fill-current" />
@@ -1040,7 +1449,9 @@ const MusicPlayer = memo(
 
           <button
             type="button"
-            onClick={playNext}
+            onClick={
+              playNext
+            }
             className="text-slate-500 shrink-0"
             aria-label="Next"
           >
@@ -1049,12 +1460,18 @@ const MusicPlayer = memo(
 
           <button
             type="button"
-            onClick={() => setShowPlaylist((value) => !value)}
+            onClick={() =>
+              setShowPlaylist(
+                (value) =>
+                  !value
+              )
+            }
             className="text-slate-500 shrink-0"
             aria-label="Playlist"
           >
             <ListMusic className="w-4 h-4" />
           </button>
+
         </footer>
       </>
     );
@@ -1067,7 +1484,12 @@ const MusicPlayer = memo(
 
 const HomeView = memo(
   function HomeView() {
-    const [selectedGallery, setSelectedGallery] = useState<number | null>(null);
+    const [
+      selectedGallery,
+      setSelectedGallery,
+    ] = useState<
+      number | null
+    >(null);
 
     return (
       <div
@@ -1078,7 +1500,9 @@ const HomeView = memo(
           gap-5
         "
       >
+
         {/* HERO */}
+
         <section
           className="
             flex
@@ -1093,7 +1517,9 @@ const HomeView = memo(
             md:text-left
           "
         >
+
           <div className="relative shrink-0">
+
             <div
               className="
                 relative
@@ -1111,14 +1537,23 @@ const HomeView = memo(
               "
             >
               <div className="relative w-full h-full rounded-full overflow-hidden border-2 border-white bg-slate-300">
+
                 <Image
-                  src={profileData.avatar}
-                  alt={profileData.name}
+                  src={
+                    profileData.avatar
+                  }
+                  alt={
+                    profileData.name
+                  }
                   fill
                   priority
-                  sizes="(max-width: 768px) 112px, 144px"
+                  sizes="
+                    (max-width: 768px) 112px,
+                    144px
+                  "
                   className="object-cover"
                 />
+
               </div>
             </div>
 
@@ -1140,12 +1575,17 @@ const HomeView = memo(
             >
               ● Online
             </span>
+
           </div>
 
           <div className="space-y-1.5 max-w-lg">
+
             <p className="text-xs md:text-sm text-slate-600 font-medium">
-              {profileData.greetingJp}
+              {
+                profileData.greetingJp
+              }
             </p>
+
             <h1
               className="
                 text-3xl
@@ -1164,11 +1604,17 @@ const HomeView = memo(
             >
               {profileData.name}
             </h1>
+
             <p className="text-xs text-slate-600 font-medium">
-              {profileData.titleJp}
+              {
+                profileData.titleJp
+              }
             </p>
+
             <p className="text-[10px] text-slate-400">
-              {profileData.tagline}
+              {
+                profileData.tagline
+              }
             </p>
 
             <div
@@ -1182,22 +1628,31 @@ const HomeView = memo(
                 pt-1.5
               "
             >
-              <span className="text-[9px] bg-white/60 backdrop-blur-sm border border-white/80 px-2.5 py-1 rounded-xl">
-                🇻🇳 {profileData.location}
+
+              <span className="text-[9px] bg-white/60 backdrop-blur-md border border-white/80 px-2.5 py-1 rounded-xl">
+                🇻🇳{" "}
+                {
+                  profileData.location
+                }
               </span>
-              <span className="text-[9px] bg-white/60 backdrop-blur-sm border border-white/80 px-2.5 py-1 rounded-xl">
-                👤 {profileData.age}
+
+              <span className="text-[9px] bg-white/60 backdrop-blur-md border border-white/80 px-2.5 py-1 rounded-xl">
+                👤{" "}
+                {profileData.age}
               </span>
-              <span className="text-[9px] bg-white/60 backdrop-blur-sm border border-white/80 px-2.5 py-1 rounded-xl">
-                💻 {profileData.role}
+
+              <span className="text-[9px] bg-white/60 backdrop-blur-md border border-white/80 px-2.5 py-1 rounded-xl">
+                💻{" "}
+                {profileData.role}
               </span>
+
             </div>
 
             <div
               className="
                 mt-2
                 bg-white/50
-                backdrop-blur-sm
+                backdrop-blur-md
                 border
                 border-white/80
                 px-3.5
@@ -1207,21 +1662,23 @@ const HomeView = memo(
                 text-slate-600
               "
             >
-              <p className="font-medium">"{profileData.quoteJp}"</p>
+              <p className="font-medium">
+                "{profileData.quoteJp}"
+              </p>
+
               <p className="mt-0.5 text-slate-500">
-                {profileData.quoteVi}
+                {
+                  profileData.quoteVi
+                }
               </p>
             </div>
+
           </div>
+
         </section>
 
-        {/* GRID
-            Fix: items-stretch (instead of items-start) so the Profile /
-            Projects / right-side columns line up to the same height in
-            each row instead of leaving ragged, "lệch" gaps. Each section
-            below is made a flex column with h-full so its own content can
-            fill that stretched height cleanly.
-        */}
+        {/* GRID */}
+
         <div
           className="
             grid
@@ -1229,65 +1686,98 @@ const HomeView = memo(
             md:grid-cols-2
             xl:grid-cols-12
             gap-4
-            items-stretch
+            items-start
             max-w-7xl
             mx-auto
             w-full
           "
         >
+
           {/* PROFILE */}
+
           <section
             id="profile"
             className="
               xl:col-span-3
-              h-full
-              flex
-              flex-col
               rounded-2xl
               border
               border-white/80
               bg-white/45
-              backdrop-blur-sm
+              backdrop-blur-md
               md:backdrop-blur-xl
               p-4
               shadow-sm
-              [contain:content]
             "
           >
+
             <div className="flex items-center gap-1.5 mb-3">
               <User className="w-3.5 h-3.5" />
-              <span className="text-xs font-bold">PROFILE</span>
-            </div>
-            <div className="space-y-1.5 text-xs">
-              <p>👤 {profileData.name}</p>
-              <p>🎓 {profileData.age}</p>
-              <p>🎒 Student</p>
-              <p>💻 Developer</p>
+
+              <span className="text-xs font-bold">
+                PROFILE
+              </span>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-white/60">
-              <h4 className="text-[10px] font-bold text-slate-500 mb-1">
-                ABOUT ME
-              </h4>
-              <p className="text-[10px] text-slate-600 leading-relaxed">
-                {profileData.aboutJp}
+            <div className="space-y-1.5 text-xs">
+              <p>
+                👤{" "}
+                {profileData.name}
+              </p>
+
+              <p>
+                🎓{" "}
+                {profileData.age}
+              </p>
+
+              <p>
+                🎒 Student
+              </p>
+
+              <p>
+                💻 Developer
               </p>
             </div>
 
+            <div className="mt-4 pt-3 border-t border-white/60">
+
+              <h4 className="text-[10px] font-bold text-slate-500 mb-1">
+                ABOUT ME
+              </h4>
+
+              <p className="text-[10px] text-slate-600 leading-relaxed">
+                {
+                  profileData.aboutJp
+                }
+              </p>
+
+            </div>
+
             <div className="mt-3">
+
               <h4 className="text-[10px] font-bold text-slate-500 mb-1">
                 好きなこと:
               </h4>
+
               <ul className="text-[10px] text-slate-600 space-y-0.5">
-                {profileData.hobbies.map((hobby) => (
-                  <li key={hobby}>・ {hobby}</li>
-                ))}
+
+                {profileData.hobbies.map(
+                  (hobby) => (
+                    <li key={hobby}>
+                      ・ {hobby}
+                    </li>
+                  )
+                )}
+
               </ul>
+
             </div>
 
-            <div className="flex items-center gap-3 mt-4 pt-3 border-t border-white/60 mt-auto">
+            <div className="flex items-center gap-3 mt-4 pt-3 border-t border-white/60">
+
               <a
-                href={socials.github}
+                href={
+                  socials.github
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"
@@ -1295,8 +1785,11 @@ const HomeView = memo(
               >
                 <Github className="w-3.5 h-3.5" />
               </a>
+
               <a
-                href={socials.discord}
+                href={
+                  socials.discord
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Discord"
@@ -1304,6 +1797,7 @@ const HomeView = memo(
               >
                 <DiscordIcon className="w-3.5 h-3.5" />
               </a>
+
               <a
                 href="mailto:"
                 aria-label="Email"
@@ -1311,34 +1805,36 @@ const HomeView = memo(
               >
                 <Mail className="w-3.5 h-3.5" />
               </a>
+
             </div>
+
           </section>
 
           {/* PROJECTS */}
+
           <section
             id="projects"
             className="
               md:col-span-2
               xl:col-span-5
-              h-full
-              flex
-              flex-col
               rounded-2xl
               border
               border-white/80
               bg-white/45
-              backdrop-blur-sm
+              backdrop-blur-md
               md:backdrop-blur-xl
               p-4
               shadow-sm
-              [contain:content]
             "
           >
+
             <div className="flex items-center justify-between mb-3">
+
               <span className="flex items-center gap-1.5 text-xs font-bold">
                 <Folder className="w-3.5 h-3.5" />
                 PROJECTS
               </span>
+
               <button
                 type="button"
                 className="flex items-center gap-0.5 text-[9px] text-sky-600 font-bold"
@@ -1346,144 +1842,185 @@ const HomeView = memo(
                 VIEW ALL
                 <ExternalLink className="w-2.5 h-2.5" />
               </button>
+
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 items-stretch">
-              {projectsData.map((project) => (
-                <div
-                  key={project.id}
-                  className="
-                    min-w-0
-                    h-full
-                    flex
-                    flex-col
-                    rounded-xl
-                    border
-                    border-white/90
-                    bg-white/60
-                    p-2
-                  "
-                >
-                  <div className="relative aspect-[1.55] rounded-lg overflow-hidden bg-slate-200 mb-2">
-                    <Image
-                      src={project.image}
-                      alt={project.name}
-                      fill
-                      sizes="(max-width: 640px) 42vw, (max-width: 1280px) 20vw, 200px"
-                      loading="lazy"
-                      className="object-cover"
-                    />
-                  </div>
-                  <h3 className="text-[10px] font-bold leading-tight">
-                    {project.name}
-                  </h3>
-                  <div className="flex flex-wrap gap-0.5 my-1.5">
-                    {project.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="
-                          px-1
-                          rounded
-                          bg-sky-100/80
-                          text-sky-700
-                          text-[7px]
-                        "
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <p className="text-[8px] text-slate-500 line-clamp-2 leading-tight">
-                    {project.desc}
-                  </p>
-                  <button
-                    type="button"
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+
+              {projectsData.map(
+                (project) => (
+                  <div
+                    key={
+                      project.id
+                    }
                     className="
-                      mt-2
-                      px-2
-                      py-1
-                      rounded-md
+                      min-w-0
+                      rounded-xl
                       border
-                      border-slate-200
-                      bg-white/80
-                      text-[8px]
-                      text-slate-700
-                      mt-auto
+                      border-white/90
+                      bg-white/60
+                      p-2
                     "
                   >
-                    Xem thêm →
-                  </button>
-                </div>
-              ))}
+
+                    <div className="relative aspect-[1.55] rounded-lg overflow-hidden bg-slate-200 mb-2">
+
+                      <Image
+                        src={
+                          project.image
+                        }
+                        alt={
+                          project.name
+                        }
+                        fill
+                        sizes="
+                          (max-width: 640px) 42vw,
+                          (max-width: 1280px) 20vw,
+                          200px
+                        "
+                        loading="lazy"
+                        className="object-cover"
+                      />
+
+                    </div>
+
+                    <h3 className="text-[10px] font-bold leading-tight">
+                      {
+                        project.name
+                      }
+                    </h3>
+
+                    <div className="flex flex-wrap gap-0.5 my-1.5">
+
+                      {project.tags.map(
+                        (tag) => (
+                          <span
+                            key={tag}
+                            className="
+                              px-1
+                              rounded
+                              bg-sky-100/80
+                              text-sky-700
+                              text-[7px]
+                            "
+                          >
+                            {tag}
+                          </span>
+                        )
+                      )}
+
+                    </div>
+
+                    <p className="text-[8px] text-slate-500 line-clamp-2 leading-tight">
+                      {
+                        project.desc
+                      }
+                    </p>
+
+                    <button
+                      type="button"
+                      className="
+                        mt-2
+                        px-2
+                        py-1
+                        rounded-md
+                        border
+                        border-slate-200
+                        bg-white/80
+                        text-[8px]
+                        text-slate-700
+                      "
+                    >
+                      Xem thêm →
+                    </button>
+
+                  </div>
+                )
+              )}
+
             </div>
           </section>
 
           {/* RIGHT SIDE */}
+
           <div
             className="
               xl:col-span-4
-              h-full
               grid
               grid-cols-1
               sm:grid-cols-2
               gap-3
-              items-stretch
-              auto-rows-fr
             "
           >
+
             {/* GALLERY */}
+
             <section
               id="gallery"
               className="
-                h-full
-                flex
-                flex-col
                 rounded-2xl
                 border
                 border-white/80
                 bg-white/45
-                backdrop-blur-sm
+                backdrop-blur-md
                 md:backdrop-blur-xl
                 p-3
                 shadow-sm
-                [contain:content]
               "
             >
+
               <div className="flex items-center gap-1 mb-2">
+
                 <GalleryIcon className="w-3 h-3" />
-                <span className="text-[11px] font-bold">GALLERY</span>
+
+                <span className="text-[11px] font-bold">
+                  GALLERY
+                </span>
+
               </div>
+
               <div className="grid grid-cols-2 gap-1.5">
-                {[1, 2, 3, 4, 5, 6].map((number) => (
-                  <button
-                    key={number}
-                    type="button"
-                    onClick={() => setSelectedGallery(number)}
-                    className="
-                      relative
-                      h-14
-                      rounded-lg
-                      overflow-hidden
-                      bg-slate-200
-                    "
-                  >
-                    <Image
-                      src={`/images/gallery/${number}.jpg`}
-                      alt={`Gallery ${number}`}
-                      fill
-                      sizes="80px"
-                      loading="lazy"
-                      className="object-cover"
-                    />
-                  </button>
-                ))}
+
+                {[1, 2, 3, 4, 5, 6].map(
+                  (number) => (
+                    <button
+                      key={number}
+                      type="button"
+                      onClick={() =>
+                        setSelectedGallery(
+                          number
+                        )
+                      }
+                      className="
+                        relative
+                        h-14
+                        rounded-lg
+                        overflow-hidden
+                        bg-slate-200
+                      "
+                    >
+                      <Image
+                        src={`/images/gallery/${number}.jpg`}
+                        alt={`Gallery ${number}`}
+                        fill
+                        sizes="80px"
+                        loading="lazy"
+                        className="object-cover"
+                      />
+                    </button>
+                  )
+                )}
+
               </div>
+
             </section>
 
             {/* SERVER */}
+
             <ServerStatus />
 
             {/* TODAY NOTE */}
+
             <section
               id="notes"
               className="
@@ -1492,42 +2029,55 @@ const HomeView = memo(
                 border
                 border-white/80
                 bg-white/45
-                backdrop-blur-sm
+                backdrop-blur-md
                 md:backdrop-blur-xl
                 p-3
                 shadow-sm
                 relative
                 overflow-hidden
-                [contain:content]
               "
             >
+
               <div className="flex justify-between mb-1.5">
+
                 <span className="text-[10px] font-bold">
+
                   ✏️ 今日の言霊
+
                   <span className="ml-1 text-slate-400 font-normal">
                     TODAY'S NOTE
                   </span>
+
                 </span>
+
                 <ChevronDown className="w-3 h-3 text-slate-400" />
+
               </div>
+
               <p className="text-[10px] text-slate-600 italic">
                 夢を見ることができれば、
                 <br />
                 それは実現できる。
               </p>
+
               <p className="mt-1 text-[9px] text-slate-500">
                 Nếu có thể mơ,
                 <br />
                 bạn có thể làm được.
               </p>
+
               <div className="absolute right-2 bottom-1 opacity-40 text-2xl pointer-events-none">
                 🌸
               </div>
+
             </section>
+
           </div>
+
         </div>
 
         {/* GALLERY MODAL */}
+
         {selectedGallery && (
           <div
             className="
@@ -1541,7 +2091,11 @@ const HomeView = memo(
               bg-black/40
               backdrop-blur-sm
             "
-            onClick={() => setSelectedGallery(null)}
+            onClick={() =>
+              setSelectedGallery(
+                null
+              )
+            }
           >
             <div
               className="
@@ -1556,7 +2110,9 @@ const HomeView = memo(
                 bg-slate-950
                 shadow-2xl
               "
-              onClick={(event) => event.stopPropagation()}
+              onClick={(event) =>
+                event.stopPropagation()
+              }
             >
               <Image
                 src={`/images/gallery/${selectedGallery}.jpg`}
@@ -1565,9 +2121,14 @@ const HomeView = memo(
                 sizes="90vw"
                 className="object-contain"
               />
+
               <button
                 type="button"
-                onClick={() => setSelectedGallery(null)}
+                onClick={() =>
+                  setSelectedGallery(
+                    null
+                  )
+                }
                 className="
                   absolute
                   top-3
@@ -1588,6 +2149,7 @@ const HomeView = memo(
             </div>
           </div>
         )}
+
       </div>
     );
   }
@@ -1601,70 +2163,102 @@ const MusicView = memo(
   function MusicView() {
     return (
       <div className="animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)] max-w-3xl mx-auto">
+
         <div className="
           rounded-3xl
           border
           border-white/80
           bg-white/45
-          backdrop-blur-sm
+          backdrop-blur-md
           md:backdrop-blur-xl
           p-4
           md:p-6
           shadow-sm
         ">
+
           <div className="flex items-center gap-3 mb-5">
+
             <div className="w-11 h-11 rounded-2xl bg-teal-100/70 border border-white flex items-center justify-center">
               <Music className="w-5 h-5 text-teal-600" />
             </div>
+
             <div>
               <p className="text-[9px] text-slate-400 tracking-[.2em]">
                 MUSIC / 音楽
               </p>
+
               <h2 className="text-xl md:text-2xl font-bold">
                 My Playlist
               </h2>
             </div>
+
           </div>
 
           <div className="space-y-2">
-            {playlist.map((song) => (
-              <div
-                key={song.title}
-                className="
-                  flex
-                  items-center
-                  gap-3
-                  p-3
-                  rounded-2xl
-                  bg-white/35
-                  border
-                  border-white/60
-                "
-              >
-                <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0">
-                  <Image
-                    src={song.cover}
-                    alt={song.title}
-                    fill
-                    sizes="48px"
-                    loading="lazy"
-                    className="object-cover"
-                  />
+
+            {playlist.map(
+              (song) => (
+                <div
+                  key={
+                    song.title
+                  }
+                  className="
+                    flex
+                    items-center
+                    gap-3
+                    p-3
+                    rounded-2xl
+                    bg-white/35
+                    border
+                    border-white/60
+                  "
+                >
+
+                  <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0">
+
+                    <Image
+                      src={
+                        song.cover
+                      }
+                      alt={
+                        song.title
+                      }
+                      fill
+                      sizes="48px"
+                      loading="lazy"
+                      className="object-cover"
+                    />
+
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+
+                    <p className="text-xs font-bold truncate">
+                      {
+                        song.title
+                      }
+                    </p>
+
+                    <p className="text-[10px] text-slate-500 truncate">
+                      {
+                        song.artist
+                      }
+                    </p>
+
+                  </div>
+
+                  <span className="text-[9px] text-slate-400">
+                    {
+                      song.duration
+                    }
+                  </span>
+
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold truncate">
-                    {song.title}
-                  </p>
-                  <p className="text-[10px] text-slate-500 truncate">
-                    {song.artist}
-                  </p>
-                </div>
-                <span className="text-[9px] text-slate-400">
-                  {song.duration}
-                </span>
-              </div>
-            ))}
+              )
+            )}
+
           </div>
+
         </div>
       </div>
     );
@@ -1679,73 +2273,106 @@ const ProjectView = memo(
   function ProjectView() {
     return (
       <div className="animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)]">
+
         <div className="
           rounded-3xl
           border
           border-white/80
           bg-white/45
-          backdrop-blur-sm
+          backdrop-blur-md
           md:backdrop-blur-xl
           p-4
           md:p-5
           shadow-sm
         ">
+
           <div className="flex items-center justify-between mb-5">
+
             <div>
               <p className="text-[9px] text-slate-400 tracking-[.2em]">
                 PROJECTS / プロジェクト
               </p>
+
               <h2 className="text-xl md:text-2xl font-bold">
                 Things I Build
               </h2>
             </div>
+
             <Folder className="w-5 h-5 text-sky-500" />
+
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-stretch">
-            {projectsData.map((project) => (
-              <div
-                key={project.id}
-                className="
-                  h-full
-                  flex
-                  flex-col
-                  rounded-2xl
-                  border
-                  border-white/80
-                  bg-white/55
-                  p-3
-                "
-              >
-                <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-slate-200">
-                  <Image
-                    src={project.image}
-                    alt={project.name}
-                    fill
-                    sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 240px"
-                    loading="lazy"
-                    className="object-cover"
-                  />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+
+            {projectsData.map(
+              (project) => (
+                <div
+                  key={
+                    project.id
+                  }
+                  className="
+                    rounded-2xl
+                    border
+                    border-white/80
+                    bg-white/55
+                    p-3
+                  "
+                >
+
+                  <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-slate-200">
+
+                    <Image
+                      src={
+                        project.image
+                      }
+                      alt={
+                        project.name
+                      }
+                      fill
+                      sizes="
+                        (max-width: 640px) 90vw,
+                        (max-width: 1024px) 45vw,
+                        240px
+                      "
+                      loading="lazy"
+                      className="object-cover"
+                    />
+
+                  </div>
+
+                  <h3 className="text-xs font-bold mt-3">
+                    {
+                      project.name
+                    }
+                  </h3>
+
+                  <p className="text-[10px] text-slate-500 mt-1 line-clamp-3">
+                    {
+                      project.desc
+                    }
+                  </p>
+
+                  <div className="flex flex-wrap gap-1 mt-2">
+
+                    {project.tags.map(
+                      (tag) => (
+                        <span
+                          key={tag}
+                          className="text-[8px] px-1.5 py-0.5 rounded bg-sky-100 text-sky-700"
+                        >
+                          {tag}
+                        </span>
+                      )
+                    )}
+
+                  </div>
+
                 </div>
-                <h3 className="text-xs font-bold mt-3">
-                  {project.name}
-                </h3>
-                <p className="text-[10px] text-slate-500 mt-1 line-clamp-3">
-                  {project.desc}
-                </p>
-                <div className="flex flex-wrap gap-1 mt-2 mt-auto">
-                  {project.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-[8px] px-1.5 py-0.5 rounded bg-sky-100 text-sky-700"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
+              )
+            )}
+
           </div>
+
         </div>
       </div>
     );
@@ -1760,55 +2387,69 @@ const GalleryView = memo(
   function GalleryView() {
     return (
       <div className="animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)]">
+
         <div className="
           rounded-3xl
           border
           border-white/80
           bg-white/45
-          backdrop-blur-sm
+          backdrop-blur-md
           md:backdrop-blur-xl
           p-4
           md:p-5
           shadow-sm
         ">
+
           <div className="mb-5">
+
             <p className="text-[9px] text-slate-400 tracking-[.2em]">
               GALLERY / ギャラリー
             </p>
+
             <h2 className="text-xl md:text-2xl font-bold">
               Little Moments
             </h2>
+
           </div>
+
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {[1, 2, 3, 4, 5, 6].map((number) => (
-              <div
-                key={number}
-                className="
-                  relative
-                  aspect-video
-                  rounded-2xl
-                  overflow-hidden
-                  bg-slate-200
-                  border
-                  border-white/70
-                "
-              >
-                <Image
-                  src={`/images/gallery/${number}.jpg`}
-                  alt={`Gallery ${number}`}
-                  fill
-                  sizes="(max-width: 768px) 45vw, 30vw"
-                  loading="lazy"
+
+            {[1, 2, 3, 4, 5, 6].map(
+              (number) => (
+                <div
+                  key={number}
                   className="
-                    object-cover
-                    transition-transform
-                    duration-300
-                    hover:scale-105
+                    relative
+                    aspect-video
+                    rounded-2xl
+                    overflow-hidden
+                    bg-slate-200
+                    border
+                    border-white/70
                   "
-                />
-              </div>
-            ))}
+                >
+                  <Image
+                    src={`/images/gallery/${number}.jpg`}
+                    alt={`Gallery ${number}`}
+                    fill
+                    sizes="
+                      (max-width: 768px) 45vw,
+                      30vw
+                    "
+                    loading="lazy"
+                    className="
+                      object-cover
+                      transition-transform
+                      duration-300
+                      hover:scale-105
+                    "
+                  />
+                </div>
+              )
+            )}
+
           </div>
+
         </div>
       </div>
     );
@@ -1821,10 +2462,20 @@ const GalleryView = memo(
 
 const DiaryView = memo(
   function DiaryView() {
-    const openDiary = () => {
-      window.history.pushState({}, "", "/diary");
-      window.dispatchEvent(new PopStateEvent("popstate"));
-    };
+    const openDiary =
+      () => {
+        window.history.pushState(
+          {},
+          "",
+          "/diary"
+        );
+
+        window.dispatchEvent(
+          new PopStateEvent(
+            "popstate"
+          )
+        );
+      };
 
     return (
       <div className="
@@ -1834,6 +2485,7 @@ const DiaryView = memo(
         items-center
         justify-center
       ">
+
         <div className="
           w-full
           max-w-xl
@@ -1841,20 +2493,19 @@ const DiaryView = memo(
           border
           border-white/80
           bg-white/45
-          backdrop-blur-sm
+          backdrop-blur-md
           md:backdrop-blur-xl
           p-7
           shadow-sm
           text-center
         ">
+
           <div className="
             w-12
             h-12
             mx-auto
             rounded-2xl
             bg-teal-100/70
-            border
-            border-white
             flex
             items-center
             justify-center
@@ -1863,43 +2514,43 @@ const DiaryView = memo(
             <BookOpen className="w-5 h-5 text-teal-600" />
           </div>
 
-          <p className="text-[10px] text-slate-400 tracking-[.2em] mb-1">
-            DIARY / 日記
+          <p className="text-[9px] text-slate-400 tracking-[.2em]">
+            PERSONAL SPACE
           </p>
 
-          <h2 className="text-xl md:text-2xl font-bold mb-3">
-            Những Kỷ Niệm
+          <h2 className="text-2xl font-bold mt-1">
+            My Diary
           </h2>
 
-          <p className="text-[11px] md:text-xs text-slate-600 mb-6">
-            Nơi mình ghi lại những câu chuyện,
-            <br />
-            suy nghĩ và kỉ niệm đáng nhớ...
+          <p className="text-[10px] text-slate-500 mt-2 max-w-sm mx-auto">
+            Nơi lưu lại những ngày đã đi qua,
+            những điều đã nghĩ và những khoảnh khắc
+            không muốn quên.
           </p>
 
           <button
             type="button"
             onClick={openDiary}
             className="
-              inline-flex
-              items-center
-              gap-2
-              px-5
-              py-2.5
+              mt-5
+              h-10
+              px-4
               rounded-xl
               bg-teal-500
               text-white
               text-xs
-              font-bold
-              shadow-lg
-              hover:bg-teal-600
+              font-semibold
+              inline-flex
+              items-center
+              gap-2
               active:scale-95
-              transition-all
+              transition-transform
             "
           >
-            Đọc Nhật Ký Của Mình
+            Mở Diary
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
+
         </div>
       </div>
     );
@@ -1907,124 +2558,127 @@ const DiaryView = memo(
 );
 
 /* =========================================================
-   SIDEBAR NAV
+   MAIN APP
 ========================================================= */
 
-const NavItem = memo(function NavItem({
-  icon: Icon,
-  label,
-  active,
-  onClick,
-}: {
-  icon: React.ElementType;
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`
-        w-full
-        flex
-        items-center
-        gap-3
-        px-3
-        py-2.5
-        rounded-xl
-        text-[10px]
-        font-bold
-        transition-colors
-        ${
-          active
-            ? "bg-slate-900 text-white shadow-sm"
-            : "text-slate-500 hover:bg-slate-200/50 hover:text-slate-800"
-        }
-      `}
-    >
-      <Icon
-        className={`w-4 h-4 ${
-          active ? "text-white" : "text-slate-400"
-        }`}
-      />
-      {label}
-    </button>
+export default function DashboardDesktop() {
+  const [activeTab, setActiveTab] =
+    useState("home");
+
+  const [mobileMenuOpen, setMobileMenuOpen] =
+    useState(false);
+
+  const navigation = useMemo(
+    () => [
+      {
+        id: "profile",
+        jp: "プロフィール",
+        en: "PROFILE",
+        icon: User,
+      },
+
+      {
+        id: "music",
+        jp: "音楽",
+        en: "MUSIC",
+        icon: Music,
+      },
+
+      {
+        id: "projects",
+        jp: "作成",
+        en: "PROJECTS",
+        icon: Folder,
+      },
+
+      {
+        id: "gallery",
+        jp: "ギャラリー",
+        en: "GALLERY",
+        icon: GalleryIcon,
+      },
+
+      {
+        id: "diary",
+        jp: "日記",
+        en: "DIARY",
+        icon: StickyNote,
+      },
+    ],
+    []
   );
-});
 
-/* =========================================================
-   DESKTOP APP
-========================================================= */
+  const changeTab =
+    useCallback(
+      (tab: string) => {
+        setActiveTab(tab);
+        setMobileMenuOpen(false);
+      },
+      []
+    );
 
-export function DashboardDesktop() {
-  const [activeTab, setActiveTab] = useState("home");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const renderContent =
+    () => {
+      switch (activeTab) {
+        case "music":
+          return <MusicView />;
 
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [activeTab]);
+        case "projects":
+          return <ProjectView />;
 
-  useEffect(() => {
-    const handlePopState = () => {
-      const path = window.location.pathname;
-      if (path === "/diary") {
-        setActiveTab("diary");
+        case "gallery":
+          return <GalleryView />;
+
+        case "diary":
+          return <DiaryView />;
+
+        case "profile":
+        case "home":
+        default:
+          return <HomeView />;
       }
     };
-    window.addEventListener("popstate", handlePopState);
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case "music":
-        return <MusicView />;
-      case "projects":
-        return <ProjectView />;
-      case "gallery":
-        return <GalleryView />;
-      case "diary":
-        return <DiaryView />;
-      case "home":
-      default:
-        return <HomeView />;
-    }
-  };
 
   return (
     <div
       className="
-        fixed
-        inset-0
+        min-h-screen
         w-full
-        h-full
-        overflow-hidden
+        relative
+        overflow-x-hidden
+        bg-slate-200
+        font-sans
         text-slate-800
-        antialiased
         selection:bg-sky-200
-        selection:text-sky-900
       "
     >
-      {/* BACKGROUND (Hardware Accelerated) */}
+
+      {/* =================================================
+          RESPONSIVE BACKGROUND
+      ================================================= */}
+
       <div
         className="
           fixed
           inset-0
-          -z-10
+          z-0
           pointer-events-none
           overflow-hidden
-          transform-gpu
-          bg-slate-200
+          will-change-transform
+          [transform:translateZ(0)]
+          [backface-visibility:hidden]
         "
       >
+
         <picture>
+
+          {/* MOBILE */}
           <source
             media="(max-width: 767px)"
             srcSet="/images/background-mobile.jpg"
           />
+
+          {/* DESKTOP */}
           <img
             src="/images/background-pc.jpg"
             alt=""
@@ -2039,57 +2693,270 @@ export function DashboardDesktop() {
               object-cover
               object-center
               select-none
-              transform-gpu
               will-change-transform
+              [transform:translateZ(0)]
             "
-            style={{
-              transform: "translate3d(0, 0, 0)",
-              backfaceVisibility: "hidden",
-            }}
           />
+
         </picture>
+
         <div className="absolute inset-0 bg-sky-100/10" />
+
       </div>
 
-      {/* MOBILE HEADER */}
+      {/* =================================================
+          DESKTOP SIDEBAR
+      ================================================= */}
+
+      <aside
+        className="
+          hidden
+          md:flex
+          fixed
+          left-0
+          top-0
+          bottom-0
+          w-24
+          z-[70]
+          flex-col
+          justify-between
+          px-2
+          py-4
+          border-r
+          border-white/60
+          bg-white/40
+          backdrop-blur-md
+          md:backdrop-blur-xl
+          shadow-sm
+        "
+      >
+
+        <div className="flex flex-col items-center gap-5">
+
+          <LiveClock />
+
+          {/* HOME */}
+
+          <button
+            type="button"
+            onClick={() =>
+              changeTab(
+                "home"
+              )
+            }
+            className={`
+              w-12
+              h-12
+              rounded-2xl
+              border
+              flex
+              flex-col
+              items-center
+              justify-center
+              transition-colors
+              shadow-sm
+              ${
+                activeTab ===
+                "home"
+                  ? "bg-teal-100/80 border-white text-teal-600"
+                  : "bg-white/40 border-white/60 text-slate-600 hover:bg-white/70"
+              }
+            `}
+          >
+
+            <span className="text-lg">
+              🌸
+            </span>
+
+            <span className="text-[9px] font-bold">
+              ホーム
+            </span>
+
+          </button>
+
+          {/* NAV */}
+
+          <nav className="flex flex-col gap-2.5 w-full">
+
+            {navigation.map(
+              (item) => {
+                const Icon =
+                  item.icon;
+
+                const active =
+                  activeTab ===
+                  item.id;
+
+                return (
+                  <button
+                    type="button"
+                    key={
+                      item.id
+                    }
+                    onClick={() =>
+                      changeTab(
+                        item.id
+                      )
+                    }
+                    className={`
+                      flex
+                      flex-col
+                      items-center
+                      rounded-xl
+                      py-2
+                      px-1
+                      transition-colors
+                      ${
+                        active
+                          ? "bg-white/80 text-sky-600 shadow-sm font-bold"
+                          : "text-slate-600 hover:bg-white/50"
+                      }
+                    `}
+                  >
+
+                    <Icon className="w-4 h-4 mb-0.5" />
+
+                    <span className="text-[9px] leading-tight">
+                      {
+                        item.jp
+                      }
+                    </span>
+
+                    <span className="text-[7px] text-slate-400 font-semibold tracking-wider">
+                      {
+                        item.en
+                      }
+                    </span>
+
+                  </button>
+                );
+              }
+            )}
+
+          </nav>
+
+        </div>
+
+        {/* SOCIAL */}
+
+        <div className="flex flex-col items-center gap-3 text-slate-600">
+
+          <div className="flex flex-col gap-2.5">
+
+            <a
+              href={
+                socials.github
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="GitHub"
+              className="transition-colors hover:text-sky-600"
+            >
+              <Github className="w-4 h-4" />
+            </a>
+
+            <a
+              href={
+                socials.discord
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Discord"
+              className="transition-colors hover:text-indigo-600"
+            >
+              <DiscordIcon className="w-4 h-4" />
+            </a>
+
+            <button
+              type="button"
+              aria-label="Settings"
+              onClick={() =>
+                alert(
+                  "Settings đang được phát triển ⚙️"
+                )
+              }
+              className="transition-colors hover:text-sky-600"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+
+          </div>
+
+          <span className="text-[8px] text-slate-400 text-center leading-tight">
+            Designed with
+            <br />
+            30/08 Lâm
+          </span>
+
+        </div>
+
+      </aside>
+
+      {/* =================================================
+          MOBILE HEADER
+      ================================================= */}
+
       <header
         className="
           md:hidden
-          absolute
+          fixed
           top-0
           left-0
           right-0
-          h-12
-          z-40
-          flex
-          items-center
-          justify-between
-          px-4
-          bg-white/45
-          backdrop-blur-md
-          border-b
-          border-white/80
+          z-[70]
+          px-3
+          pt-3
         "
       >
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-md bg-teal-500/20 flex items-center justify-center">
-            <User className="w-3 h-3 text-teal-600" />
-          </div>
-          <span className="text-[11px] font-bold">
-            Trương Chí Lâm
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={() => setMobileMenuOpen(true)}
-          className="p-1 rounded-md bg-white/60 text-slate-700"
-          aria-label="Menu"
+
+        <div
+          className="
+            h-12
+            rounded-2xl
+            px-2
+            flex
+            items-center
+            justify-between
+            border
+            border-white/70
+            bg-white/45
+            backdrop-blur-xl
+            shadow-sm
+          "
         >
-          <Menu className="w-4 h-4" />
-        </button>
+
+          <LiveClock />
+
+          <button
+            type="button"
+            onClick={() =>
+              setMobileMenuOpen(
+                true
+              )
+            }
+            aria-label="Open navigation"
+            className="
+              w-9
+              h-9
+              rounded-xl
+              bg-white/70
+              flex
+              items-center
+              justify-center
+              text-slate-600
+            "
+          >
+            <Menu className="w-4 h-4" />
+          </button>
+
+        </div>
+
       </header>
 
-      {/* MOBILE NAV MODAL */}
+      {/* =================================================
+          MOBILE DRAWER
+      ================================================= */}
+
       {mobileMenuOpen && (
         <div
           className="
@@ -2097,278 +2964,315 @@ export function DashboardDesktop() {
             fixed
             inset-0
             z-[100]
-            bg-slate-900/40
+            bg-slate-950/20
             backdrop-blur-sm
           "
+          onClick={() =>
+            setMobileMenuOpen(
+              false
+            )
+          }
         >
-          <div className="absolute top-0 right-0 bottom-0 w-64 bg-white/95 p-4 shadow-2xl flex flex-col">
+
+          <div
+            className="
+              absolute
+              top-0
+              right-0
+              bottom-0
+              w-[82%]
+              max-w-xs
+              p-4
+              border-l
+              border-white/80
+              bg-white/80
+              backdrop-blur-2xl
+              shadow-2xl
+            "
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+          >
+
             <div className="flex items-center justify-between mb-6">
-              <span className="text-xs font-bold text-slate-800">
-                MENU
-              </span>
+
+              <div>
+                <p className="text-[9px] text-slate-400 tracking-[.2em]">
+                  NAVIGATION
+                </p>
+
+                <h2 className="text-lg font-bold">
+                  Trương Chí Lâm
+                </h2>
+              </div>
+
               <button
                 type="button"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-1 text-slate-500 bg-slate-100 rounded-md"
+                onClick={() =>
+                  setMobileMenuOpen(
+                    false
+                  )
+                }
+                className="
+                  w-8
+                  h-8
+                  rounded-full
+                  bg-white/70
+                  flex
+                  items-center
+                  justify-center
+                "
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4 text-slate-500" />
               </button>
+
             </div>
-            <nav className="flex flex-col gap-1 flex-1">
-              <NavItem
-                icon={User}
-                label="HOME"
-                active={activeTab === "home"}
-                onClick={() => setActiveTab("home")}
-              />
-              <NavItem
-                icon={Music}
-                label="MUSIC"
-                active={activeTab === "music"}
-                onClick={() => setActiveTab("music")}
-              />
-              <NavItem
-                icon={Folder}
-                label="PROJECTS"
-                active={activeTab === "projects"}
-                onClick={() => setActiveTab("projects")}
-              />
-              <NavItem
-                icon={GalleryIcon}
-                label="GALLERY"
-                active={activeTab === "gallery"}
-                onClick={() => setActiveTab("gallery")}
-              />
-              <NavItem
-                icon={StickyNote}
-                label="DIARY"
-                active={activeTab === "diary"}
-                onClick={() => setActiveTab("diary")}
-              />
-            </nav>
+
+            <div className="space-y-1.5">
+
+              {/* HOME */}
+
+              <button
+                type="button"
+                onClick={() =>
+                  changeTab(
+                    "home"
+                  )
+                }
+                className={`
+                  w-full
+                  flex
+                  items-center
+                  gap-3
+                  p-3
+                  rounded-2xl
+                  text-left
+                  ${
+                    activeTab ===
+                    "home"
+                      ? "bg-teal-100/80 text-teal-700"
+                      : "bg-white/35 text-slate-600"
+                  }
+                `}
+              >
+
+                <span className="text-base">
+                  🌸
+                </span>
+
+                <div>
+                  <p className="text-xs font-bold">
+                    ホーム
+                  </p>
+
+                  <p className="text-[8px] opacity-60">
+                    HOME
+                  </p>
+                </div>
+
+              </button>
+
+              {navigation.map(
+                (item) => {
+                  const Icon =
+                    item.icon;
+
+                  const active =
+                    activeTab ===
+                    item.id;
+
+                  return (
+                    <button
+                      type="button"
+                      key={
+                        item.id
+                      }
+                      onClick={() =>
+                        changeTab(
+                          item.id
+                        )
+                      }
+                      className={`
+                        w-full
+                        flex
+                        items-center
+                        gap-3
+                        p-3
+                        rounded-2xl
+                        text-left
+                        ${
+                          active
+                            ? "bg-white text-sky-600 shadow-sm"
+                            : "bg-white/35 text-slate-600"
+                        }
+                      `}
+                    >
+
+                      <Icon className="w-4 h-4" />
+
+                      <div>
+                        <p className="text-xs font-bold">
+                          {
+                            item.jp
+                          }
+                        </p>
+
+                        <p className="text-[8px] opacity-60">
+                          {
+                            item.en
+                          }
+                        </p>
+                      </div>
+
+                    </button>
+                  );
+                }
+              )}
+
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-white/60 flex gap-4">
+
+              <a
+                href={
+                  socials.github
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="GitHub"
+                className="text-slate-600"
+              >
+                <Github className="w-4 h-4" />
+              </a>
+
+              <a
+                href={
+                  socials.discord
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Discord"
+                className="text-slate-600"
+              >
+                <DiscordIcon className="w-4 h-4" />
+              </a>
+
+            </div>
+
           </div>
         </div>
       )}
 
-      {/* DESKTOP SIDEBAR */}
-      <aside
+      {/* =================================================
+          TOP RIGHT
+      ================================================= */}
+
+      <div
         className="
           hidden
           md:flex
-          absolute
-          top-5
-          bottom-[88px]
-          left-5
-          w-56
-          z-40
-          flex-col
-          rounded-3xl
-          border
-          border-white/80
-          bg-white/45
-          backdrop-blur-xl
-          p-4
-          shadow-lg
-        "
-      >
-        <div className="flex items-center gap-2.5 mb-6 px-1">
-          <div
-            className="
-              relative
-              w-9
-              h-9
-              rounded-xl
-              overflow-hidden
-              border
-              border-white
-              bg-slate-300
-              shrink-0
-            "
-          >
-            <Image
-              src={profileData.avatar}
-              alt=""
-              fill
-              sizes="36px"
-              className="object-cover"
-            />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[11px] font-bold text-slate-800 truncate">
-              {profileData.name}
-            </p>
-            <p className="text-[9px] text-slate-500 truncate">
-              {profileData.role}
-            </p>
-          </div>
-        </div>
-
-        <nav className="flex-1 space-y-1">
-          <NavItem
-            icon={User}
-            label="HOME"
-            active={activeTab === "home"}
-            onClick={() => setActiveTab("home")}
-          />
-          <NavItem
-            icon={Music}
-            label="MUSIC"
-            active={activeTab === "music"}
-            onClick={() => setActiveTab("music")}
-          />
-          <NavItem
-            icon={Folder}
-            label="PROJECTS"
-            active={activeTab === "projects"}
-            onClick={() => setActiveTab("projects")}
-          />
-          <NavItem
-            icon={GalleryIcon}
-            label="GALLERY"
-            active={activeTab === "gallery"}
-            onClick={() => setActiveTab("gallery")}
-          />
-          <NavItem
-            icon={StickyNote}
-            label="DIARY"
-            active={activeTab === "diary"}
-            onClick={() => setActiveTab("diary")}
-          />
-        </nav>
-
-        <div className="pt-4 border-t border-white/60">
-          <LiveClock />
-        </div>
-      </aside>
-
-      {/* TOP BAR DESKTOP */}
-      <header
-        className="
-          hidden
-          md:flex
-          absolute
-          top-5
-          right-5
-          left-[264px]
-          h-14
+          fixed
+          top-4
+          right-6
           z-40
           items-center
-          justify-between
-          px-5
-          rounded-2xl
-          border
-          border-white/80
-          bg-white/45
-          backdrop-blur-xl
-          shadow-sm
+          gap-2
         "
       >
-        <div
+
+        <button
+          type="button"
+          aria-label="Search"
           className="
-            flex
-            items-center
-            gap-2
-            px-3
-            py-1.5
-            rounded-xl
-            bg-white/60
+            w-8
+            h-8
+            rounded-full
             border
             border-white/80
-            w-64
+            bg-white/50
+            backdrop-blur-md
+            flex
+            items-center
+            justify-center
+            text-slate-700
           "
         >
-          <Search className="w-3.5 h-3.5 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Tìm kiếm..."
-            className="
-              bg-transparent
-              border-none
-              outline-none
-              text-[10px]
-              text-slate-700
-              placeholder:text-slate-400
-              w-full
-            "
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="
-              w-8
-              h-8
-              rounded-xl
-              bg-white/60
-              border
-              border-white/80
-              flex
-              items-center
-              justify-center
-              text-slate-600
-              hover:text-slate-900
-            "
-          >
-            <Bell className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            className="
-              flex
-              items-center
-              gap-1.5
-              px-3
-              h-8
-              rounded-xl
-              bg-slate-900
-              text-white
-              text-[10px]
-              font-bold
-              shadow-md
-            "
-          >
-            <Plus className="w-3 h-3" />
-            CONNECT
-          </button>
-        </div>
-      </header>
+          <Search className="w-4 h-4" />
+        </button>
 
-      {/* MAIN CONTENT AREA
-          Fix: transform-gpu promotes this scroller to its own compositor
-          layer so scrolling doesn't repaint the fixed background / sidebar
-          every frame (the main source of "giật" on mobile). The inline
-          WebkitOverflowScrolling + overscrollBehaviorY keep native
-          momentum scrolling smooth on iOS/Android.
-      */}
+        <button
+          type="button"
+          aria-label="Notifications"
+          className="
+            w-8
+            h-8
+            rounded-full
+            border
+            border-white/80
+            bg-white/50
+            backdrop-blur-md
+            flex
+            items-center
+            justify-center
+            text-slate-700
+          "
+        >
+          <Bell className="w-4 h-4" />
+        </button>
+
+        <button
+          type="button"
+          aria-label="Add"
+          className="
+            w-8
+            h-8
+            rounded-full
+            border
+            border-white/80
+            bg-white/50
+            backdrop-blur-md
+            flex
+            items-center
+            justify-center
+            text-slate-700
+          "
+        >
+          <Plus className="w-4 h-4" />
+        </button>
+
+      </div>
+
+      {/* =================================================
+          MAIN
+      ================================================= */}
+
       <main
         className="
-          absolute
-          top-12
-          md:top-[92px]
-          bottom-[72px]
-          md:bottom-[88px]
-          left-0
-          md:left-[264px]
-          right-0
-          md:right-5
-          overflow-y-auto
-          overflow-x-hidden
-          custom-scrollbar
-          transform-gpu
+          relative
+          z-10
+          min-h-screen
+          pt-[68px]
+          md:pt-6
+          md:pl-28
+          pr-3
+          md:pr-6
+          pb-[78px]
+          md:pb-24
         "
-        style={{
-          overscrollBehaviorY: "none",
-          WebkitOverflowScrolling: "touch",
-        }}
       >
-        <div className="p-3 md:p-1 w-full max-w-7xl mx-auto pb-20">
+
+        <div className="max-w-[1400px] mx-auto">
           {renderContent()}
         </div>
+
       </main>
 
+      {/* =================================================
+          MUSIC
+      ================================================= */}
+
       <MusicPlayer />
+
     </div>
   );
 }
-
-export default DashboardDesktop;
