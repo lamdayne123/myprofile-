@@ -79,18 +79,6 @@ type ServerData = {
   ip: string;
 };
 
-type ViewTransitionCapableElement = HTMLElement & {
-  startViewTransition?: (
-    callback: () => void | Promise<void>
-  ) => unknown;
-};
-
-type ViewTransitionCapableDocument = Document & {
-  startViewTransition?: (
-    callback: () => void | Promise<void>
-  ) => unknown;
-};
-
 /* =========================================================
    PROFILE
 ========================================================= */
@@ -223,8 +211,9 @@ const projectsData: Project[] = [
    MUSIC
 ========================================================= */
 
-const playlist: Song[] = [
+const DEFAULT_PLAYLIST: Song[] = [
   {
+    id: "yoru-ni-kakeru",
     title: "夜に駆ける",
 
     artist: "YOASOBI",
@@ -239,6 +228,7 @@ const playlist: Song[] = [
   },
 
   {
+    id: "hana-ni-bourei",
     title: "花に亡霊",
 
     artist: "ヨルシカ",
@@ -253,6 +243,7 @@ const playlist: Song[] = [
   },
 
   {
+    id: "idol",
     title: "アイドル",
 
     artist: "YOASOBI",
@@ -267,6 +258,7 @@ const playlist: Song[] = [
   },
 
   {
+    id: "hikari-e",
     title: "光へ",
 
     artist: "Aimer",
@@ -696,1095 +688,593 @@ const ServerStatus = memo(
 
 /* =========================================================
    MUSIC PLAYER
+   Stable audio engine. The audio element lives outside the
+   scrolling content and does not depend on the active tab.
 ========================================================= */
 
-const MusicPlayer = memo(
-  function MusicPlayer() {
-    const audioRef =
-      useRef<HTMLAudioElement | null>(
-        null
+function MusicImportModal({
+  open,
+  onClose,
+  onImported,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onImported: (song: Song) => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [artist, setArtist] = useState("");
+  const [src, setSrc] = useState("");
+  const [cover, setCover] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!open) {
+      setTitle("");
+      setArtist("");
+      setSrc("");
+      setCover("");
+      setLoading(false);
+      setError("");
+    }
+  }, [open]);
+
+  if (!open) return null;
+
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+
+    const cleanTitle = title.trim();
+    const cleanArtist = artist.trim();
+    const cleanSrc = src.trim();
+    const cleanCover = cover.trim();
+
+    try {
+      const audioUrl = new URL(cleanSrc);
+      if (audioUrl.protocol !== "https:" && audioUrl.protocol !== "http:") {
+        throw new Error("Chỉ hỗ trợ URL http/https.");
+      }
+    } catch {
+      setError("Audio URL không hợp lệ.");
+      return;
+    }
+
+    if (!cleanTitle || !cleanArtist) {
+      setError("Vui lòng nhập tên bài và nghệ sĩ.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/music", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: cleanTitle,
+          artist: cleanArtist,
+          src: cleanSrc,
+          cover: cleanCover,
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error || "Không thể thêm bài hát."
+        );
+      }
+
+      onImported(data.song as Song);
+      onClose();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Không thể kết nối tới music API."
       );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const indexRef =
-      useRef(0);
+  return (
+    <div
+      className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/20 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <form
+        onSubmit={submit}
+        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-lg rounded-[28px] border border-white/90 bg-white/88 shadow-2xl p-5 text-slate-800"
+      >
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center">
+              <Music className="w-5 h-5 text-teal-600" />
+            </div>
+            <div>
+              <p className="text-[9px] tracking-[.2em] text-slate-400">
+                MUSIC LIBRARY
+              </p>
+              <h2 className="text-lg font-bold">Import nhạc</h2>
+            </div>
+          </div>
 
-    const playingRef =
-      useRef(false);
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center text-slate-500"
+            aria-label="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
 
-    const repeatRef =
-      useRef(false);
+        <div className="space-y-3">
+          <label className="block">
+            <span className="text-[10px] font-semibold">AUDIO URL</span>
+            <input
+              value={src}
+              onChange={(event) => setSrc(event.target.value)}
+              placeholder="https://cdn.example.com/song.mp3"
+              className="w-full mt-1.5 h-11 rounded-xl bg-white/75 border border-white px-3 outline-none text-xs"
+            />
+          </label>
 
-    const shuffleRef =
-      useRef(false);
+          <label className="block">
+            <span className="text-[10px] font-semibold">TÊN BÀI</span>
+            <input
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="Tên bài hát"
+              className="w-full mt-1.5 h-11 rounded-xl bg-white/75 border border-white px-3 outline-none text-xs"
+            />
+          </label>
 
-    const [
-      currentIndex,
-      setCurrentIndex,
-    ] = useState(0);
+          <label className="block">
+            <span className="text-[10px] font-semibold">NGHỆ SĨ</span>
+            <input
+              value={artist}
+              onChange={(event) => setArtist(event.target.value)}
+              placeholder="Tên nghệ sĩ"
+              className="w-full mt-1.5 h-11 rounded-xl bg-white/75 border border-white px-3 outline-none text-xs"
+            />
+          </label>
 
-    const [
-      isPlaying,
-      setIsPlaying,
-    ] = useState(false);
+          <label className="block">
+            <span className="text-[10px] font-semibold">COVER URL</span>
+            <input
+              value={cover}
+              onChange={(event) => setCover(event.target.value)}
+              placeholder="https://cdn.example.com/cover.jpg"
+              className="w-full mt-1.5 h-11 rounded-xl bg-white/75 border border-white px-3 outline-none text-xs"
+            />
+          </label>
+        </div>
 
-    const [
-      currentTime,
-      setCurrentTime,
-    ] = useState(0);
+        <p className="text-[9px] text-slate-400 leading-relaxed mt-4">
+          Chỉ lưu metadata + URL. File audio không được upload lên Vercel.
+        </p>
 
-    const [
-      duration,
-      setDuration,
-    ] = useState(0);
+        {error && (
+          <p className="mt-3 rounded-xl bg-rose-50 text-rose-600 text-[9px] px-3 py-2">
+            {error}
+          </p>
+        )}
 
-    const [
-      volume,
-      setVolume,
-    ] = useState(0.8);
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full h-11 mt-4 rounded-xl bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          {loading ? "ĐANG LƯU..." : "THÊM VÀO PLAYLIST"}
+        </button>
+      </form>
+    </div>
+  );
+}
 
-    const [
-      shuffle,
-      setShuffle,
-    ] = useState(false);
+const MusicPlayer = memo(
+  function MusicPlayer({
+    playlist,
+  }: {
+    playlist: Song[];
+  }) {
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const indexRef = useRef(0);
+    const playingRef = useRef(false);
+    const repeatRef = useRef(false);
+    const shuffleRef = useRef(false);
+    const playlistRef = useRef<Song[]>(playlist);
 
-    const [
-      repeat,
-      setRepeat,
-    ] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
+    const [volume, setVolume] = useState(0.8);
+    const [shuffle, setShuffle] = useState(false);
+    const [repeat, setRepeat] = useState(false);
+    const [showPlaylist, setShowPlaylist] = useState(false);
 
-    const [
-      showPlaylist,
-      setShowPlaylist,
-    ] = useState(false);
-
-    const currentSong =
-      playlist[currentIndex];
-
-    /* ============================================
-       REFS
-    ============================================ */
+    const currentSong = playlist[currentIndex] ?? playlist[0];
+    const currentSongSrc = currentSong?.src ?? "";
 
     useEffect(() => {
-      indexRef.current =
-        currentIndex;
+      indexRef.current = currentIndex;
     }, [currentIndex]);
 
     useEffect(() => {
-      playingRef.current =
-        isPlaying;
+      playingRef.current = isPlaying;
     }, [isPlaying]);
 
     useEffect(() => {
-      repeatRef.current =
-        repeat;
+      repeatRef.current = repeat;
     }, [repeat]);
 
     useEffect(() => {
-      shuffleRef.current =
-        shuffle;
+      shuffleRef.current = shuffle;
     }, [shuffle]);
 
-    /* ============================================
-       CREATE ONE AUDIO INSTANCE
-    ============================================ */
+    useEffect(() => {
+      playlistRef.current = playlist;
+
+      if (currentIndex >= playlist.length && playlist.length > 0) {
+        setCurrentIndex(playlist.length - 1);
+      }
+    }, [playlist, currentIndex]);
 
     useEffect(() => {
-      const audio =
-        new Audio();
-
-      audio.preload =
-        "metadata";
-
+      const audio = new Audio();
+      audio.preload = "metadata";
       audio.volume = 0.8;
+      audioRef.current = audio;
 
-      audioRef.current =
-        audio;
+      const onMetadata = () => {
+        setDuration(
+          Number.isFinite(audio.duration) ? audio.duration : 0
+        );
+      };
 
-      const handleMetadata =
-        () => {
-          if (
-            Number.isFinite(
-              audio.duration
-            )
-          ) {
-            setDuration(
-              audio.duration
-            );
-          }
-        };
+      const onTimeUpdate = () => {
+        const second = Math.floor(audio.currentTime);
+        setCurrentTime((previous) =>
+          previous === second ? previous : second
+        );
+      };
 
-      const handleTimeUpdate =
-        () => {
-          const nextSecond =
-            Math.floor(
-              audio.currentTime
-            );
+      const onPlay = () => {
+        playingRef.current = true;
+        setIsPlaying(true);
+      };
 
-          setCurrentTime(
-            (previous) =>
-              previous ===
-              nextSecond
-                ? previous
-                : nextSecond
-          );
-        };
+      const onPause = () => {
+        playingRef.current = false;
+        setIsPlaying(false);
+      };
 
-      const handlePlay =
-        () => {
-          playingRef.current =
-            true;
+      const onEnded = () => {
+        const songs = playlistRef.current;
+        if (!songs.length) return;
 
-          setIsPlaying(
-            true
-          );
-        };
+        if (repeatRef.current) {
+          audio.currentTime = 0;
+          void audio.play().catch(() => setIsPlaying(false));
+          return;
+        }
 
-      const handlePause =
-        () => {
-          playingRef.current =
-            false;
+        let next = (indexRef.current + 1) % songs.length;
 
-          setIsPlaying(
-            false
-          );
-        };
+        if (shuffleRef.current && songs.length > 1) {
+          do {
+            next = Math.floor(Math.random() * songs.length);
+          } while (next === indexRef.current);
+        }
 
-      const handleEnded =
-        () => {
-          if (
-            repeatRef.current
-          ) {
-            audio.currentTime =
-              0;
+        indexRef.current = next;
+        setCurrentIndex(next);
+      };
 
-            void audio
-              .play()
-              .catch(() => {
-                setIsPlaying(
-                  false
-                );
-              });
-
-            return;
-          }
-
-          let nextIndex: number;
-
-          if (
-            shuffleRef.current &&
-            playlist.length > 1
-          ) {
-            do {
-              nextIndex =
-                Math.floor(
-                  Math.random() *
-                    playlist.length
-                );
-            } while (
-              nextIndex ===
-              indexRef.current
-            );
-          } else {
-            nextIndex =
-              (indexRef.current +
-                1) %
-              playlist.length;
-          }
-
-          indexRef.current =
-            nextIndex;
-
-          setCurrentIndex(
-            nextIndex
-          );
-        };
-
-      audio.addEventListener(
-        "loadedmetadata",
-        handleMetadata
-      );
-
-      audio.addEventListener(
-        "timeupdate",
-        handleTimeUpdate
-      );
-
-      audio.addEventListener(
-        "play",
-        handlePlay
-      );
-
-      audio.addEventListener(
-        "pause",
-        handlePause
-      );
-
-      audio.addEventListener(
-        "ended",
-        handleEnded
-      );
+      audio.addEventListener("loadedmetadata", onMetadata);
+      audio.addEventListener("timeupdate", onTimeUpdate);
+      audio.addEventListener("play", onPlay);
+      audio.addEventListener("pause", onPause);
+      audio.addEventListener("ended", onEnded);
 
       return () => {
         audio.pause();
-
-        audio.removeAttribute(
-          "src"
-        );
-
+        audio.removeAttribute("src");
         audio.load();
-
-        audio.removeEventListener(
-          "loadedmetadata",
-          handleMetadata
-        );
-
-        audio.removeEventListener(
-          "timeupdate",
-          handleTimeUpdate
-        );
-
-        audio.removeEventListener(
-          "play",
-          handlePlay
-        );
-
-        audio.removeEventListener(
-          "pause",
-          handlePause
-        );
-
-        audio.removeEventListener(
-          "ended",
-          handleEnded
-        );
-
-        audioRef.current =
-          null;
+        audio.removeEventListener("loadedmetadata", onMetadata);
+        audio.removeEventListener("timeupdate", onTimeUpdate);
+        audio.removeEventListener("play", onPlay);
+        audio.removeEventListener("pause", onPause);
+        audio.removeEventListener("ended", onEnded);
+        audioRef.current = null;
       };
     }, []);
 
-    /* ============================================
-       LOAD SONG
-    ============================================ */
-
     useEffect(() => {
-      const audio =
-        audioRef.current;
+      const audio = audioRef.current;
+      if (!audio || !currentSong) return;
 
-      if (!audio) return;
-
-      const shouldPlay =
-        playingRef.current;
-
-      audio.src =
-        currentSong.src;
-
+      const shouldPlay = playingRef.current;
+      audio.src = currentSong.src;
+      audio.preload = "metadata";
       audio.load();
-
       setCurrentTime(0);
       setDuration(0);
 
       if (shouldPlay) {
-        void audio
-          .play()
-          .catch(() => {
-            setIsPlaying(
-              false
-            );
-          });
+        void audio.play().catch(() => setIsPlaying(false));
       }
-    }, [
-      currentIndex,
-      currentSong.src,
-    ]);
+    }, [currentIndex, currentSongSrc]);
 
-    /* ============================================
-       PLAY / PAUSE
-    ============================================ */
+    const togglePlay = useCallback(async () => {
+      const audio = audioRef.current;
+      if (!audio) return;
 
-    const togglePlay =
-      useCallback(
-        async () => {
-          const audio =
-            audioRef.current;
-
-          if (!audio) return;
-
-          try {
-            if (
-              audio.paused
-            ) {
-              await audio.play();
-            } else {
-              audio.pause();
-            }
-          } catch (error) {
-            console.error(
-              "Audio error:",
-              error
-            );
-
-            setIsPlaying(
-              false
-            );
-          }
-        },
-        []
-      );
-
-    /* ============================================
-       NEXT
-    ============================================ */
-
-    const playNext =
-      useCallback(() => {
-        let next: number;
-
-        if (
-          shuffleRef.current &&
-          playlist.length > 1
-        ) {
-          do {
-            next =
-              Math.floor(
-                Math.random() *
-                  playlist.length
-              );
-          } while (
-            next ===
-            indexRef.current
-          );
+      try {
+        if (audio.paused) {
+          await audio.play();
         } else {
-          next =
-            (indexRef.current +
-              1) %
-            playlist.length;
+          audio.pause();
         }
+      } catch {
+        setIsPlaying(false);
+      }
+    }, []);
 
-        indexRef.current =
-          next;
+    const playNext = useCallback(() => {
+      if (playlist.length <= 1) return;
 
-        setCurrentIndex(
-          next
-        );
+      let next = (indexRef.current + 1) % playlist.length;
 
-        setIsPlaying(
-          true
-        );
-      }, []);
+      if (shuffleRef.current && playlist.length > 1) {
+        do {
+          next = Math.floor(Math.random() * playlist.length);
+        } while (next === indexRef.current);
+      }
 
-    /* ============================================
-       PREVIOUS
-    ============================================ */
+      indexRef.current = next;
+      setCurrentIndex(next);
+      setIsPlaying(true);
+    }, [playlist]);
 
-    const playPrevious =
-      useCallback(() => {
-        const audio =
-          audioRef.current;
+    const playPrevious = useCallback(() => {
+      const audio = audioRef.current;
 
-        if (
-          audio &&
-          audio.currentTime >
-            3
-        ) {
-          audio.currentTime =
-            0;
+      if (audio && audio.currentTime > 3) {
+        audio.currentTime = 0;
+        setCurrentTime(0);
+        return;
+      }
 
-          setCurrentTime(
-            0
-          );
+      if (!playlist.length) return;
 
-          return;
-        }
+      const previous =
+        (indexRef.current - 1 + playlist.length) % playlist.length;
 
-        const previous =
-          (indexRef.current -
-            1 +
-            playlist.length) %
-          playlist.length;
+      indexRef.current = previous;
+      setCurrentIndex(previous);
+      setIsPlaying(true);
+    }, [playlist]);
 
-        indexRef.current =
-          previous;
+    const selectSong = useCallback(
+      (index: number) => {
+        if (!playlist[index]) return;
+        indexRef.current = index;
+        setCurrentIndex(index);
+        setIsPlaying(true);
+        setShowPlaylist(false);
+      },
+      [playlist]
+    );
 
-        setCurrentIndex(
-          previous
-        );
+    const changeProgress = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = Number(event.target.value);
+      const audio = audioRef.current;
+      if (!audio) return;
+      audio.currentTime = value;
+      setCurrentTime(Math.floor(value));
+    };
 
-        setIsPlaying(
-          true
-        );
-      }, []);
+    const changeVolume = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = Number(event.target.value);
+      setVolume(value);
+      if (audioRef.current) audioRef.current.volume = value;
+    };
 
-    /* ============================================
-       SELECT
-    ============================================ */
+    const toggleMute = () => {
+      const audio = audioRef.current;
+      if (!audio) return;
 
-    const selectSong =
-      useCallback(
-        (index: number) => {
-          if (
-            !playlist[index]
-          ) {
-            return;
-          }
-
-          indexRef.current =
-            index;
-
-          setCurrentIndex(
-            index
-          );
-
-          setIsPlaying(
-            true
-          );
-        },
-        []
-      );
-
-    /* ============================================
-       SEEK
-    ============================================ */
-
-    const changeProgress =
-      (
-        event: React.ChangeEvent<HTMLInputElement>
-      ) => {
-        const value =
-          Number(
-            event.target.value
-          );
-
-        const audio =
-          audioRef.current;
-
-        if (!audio) return;
-
-        audio.currentTime =
-          value;
-
-        setCurrentTime(
-          Math.floor(value)
-        );
-      };
-
-    /* ============================================
-       VOLUME
-    ============================================ */
-
-    const changeVolume =
-      (
-        event: React.ChangeEvent<HTMLInputElement>
-      ) => {
-        const value =
-          Number(
-            event.target.value
-          );
-
-        setVolume(value);
-
-        if (
-          audioRef.current
-        ) {
-          audioRef.current.volume =
-            value;
-        }
-      };
-
-    const toggleMute =
-      () => {
-        const audio =
-          audioRef.current;
-
-        if (!audio) return;
-
-        if (
-          audio.volume > 0
-        ) {
-          audio.volume = 0;
-
-          setVolume(0);
-        } else {
-          audio.volume = 0.8;
-
-          setVolume(0.8);
-        }
-      };
+      if (audio.volume > 0) {
+        audio.volume = 0;
+        setVolume(0);
+      } else {
+        audio.volume = 0.8;
+        setVolume(0.8);
+      }
+    };
 
     const progress =
       duration > 0
-        ? Math.min(
-            (currentTime /
-              duration) *
-              100,
-            100
-          )
+        ? Math.min((currentTime / duration) * 100, 100)
         : 0;
+
+    if (!currentSong) return null;
 
     return (
       <>
-        {/* =================================================
-            PLAYLIST POPUP
-        ================================================= */}
-
         {showPlaylist && (
-          <div
-            className="
-              fixed
-              z-[90]
-              bottom-[76px]
-              md:bottom-[80px]
-              right-3
-              md:right-5
-              w-[calc(100vw-24px)]
-              max-w-sm
-              rounded-2xl
-              overflow-hidden
-              bg-white/80
-              backdrop-blur-xl
-              border
-              border-white/80
-              shadow-2xl
-            "
-          >
-
+          <div className="fixed z-[90] bottom-[76px] md:bottom-[80px] right-3 md:right-5 w-[calc(100vw-24px)] max-w-sm rounded-2xl overflow-hidden bg-white/88 backdrop-blur-xl border border-white/80 shadow-2xl">
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/70">
-
               <div>
-
-                <p className="text-xs font-bold text-slate-800">
-                  MY PLAYLIST
-                </p>
-
-                <p className="text-[9px] text-slate-500">
-                  {playlist.length} songs
-                </p>
-
+                <p className="text-xs font-bold text-slate-800">MY PLAYLIST</p>
+                <p className="text-[9px] text-slate-500">{playlist.length} songs</p>
               </div>
-
               <button
                 type="button"
-                onClick={() =>
-                  setShowPlaylist(
-                    false
-                  )
-                }
+                onClick={() => setShowPlaylist(false)}
                 className="text-slate-400 hover:text-slate-700"
               >
                 <X className="w-4 h-4" />
               </button>
-
             </div>
 
             <div className="p-2 max-h-72 overflow-y-auto">
-
-              {playlist.map(
-                (
-                  song,
-                  index
-                ) => {
-
-                  const active =
-                    index ===
-                    currentIndex;
-
-                  return (
-                    <button
-                      type="button"
-                      key={
-                        song.title
-                      }
-                      onClick={() =>
-                        selectSong(
-                          index
-                        )
-                      }
-                      className={`
-                        w-full
-                        flex
-                        items-center
-                        gap-3
-                        p-2
-                        rounded-xl
-                        text-left
-                        transition-colors
-                        ${
-                          active
-                            ? "bg-white/80 shadow-sm"
-                            : "hover:bg-white/55"
-                        }
-                      `}
-                    >
-
-                      <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0">
-
-                        <Image
-                          src={
-                            song.cover
-                          }
-                          alt=""
-                          fill
-                          sizes="40px"
-                          className="object-cover"
-                        />
-
-                        {active && (
-                          <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
-
-                            {isPlaying ? (
-                              <Pause className="w-4 h-4 text-white" />
-                            ) : (
-                              <Play className="w-4 h-4 text-white" />
-                            )}
-
-                          </div>
-                        )}
-
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-
-                        <p className="text-[11px] font-semibold text-slate-800 truncate">
-                          {
-                            song.title
-                          }
-                        </p>
-
-                        <p className="text-[9px] text-slate-500 truncate">
-                          {
-                            song.artist
-                          }
-                        </p>
-
-                      </div>
-
-                      <span className="text-[9px] text-slate-400">
-                        {
-                          song.duration
-                        }
-                      </span>
-
-                    </button>
-                  );
-                }
-              )}
-
+              {playlist.map((song, index) => {
+                const active = index === currentIndex;
+                return (
+                  <button
+                    type="button"
+                    key={song.id}
+                    onClick={() => selectSong(index)}
+                    className={`w-full flex items-center gap-3 p-2 rounded-xl text-left transition-colors ${
+                      active ? "bg-white/75 shadow-sm" : "hover:bg-white/50"
+                    }`}
+                  >
+                    <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-slate-200">
+                      <Image
+                        src={song.cover || "/images/music/default.jpg"}
+                        alt=""
+                        fill
+                        sizes="40px"
+                        className="object-cover"
+                      />
+                      {active && (
+                        <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
+                          {isPlaying ? (
+                            <Pause className="w-4 h-4 text-white" />
+                          ) : (
+                            <Play className="w-4 h-4 text-white" />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-semibold text-slate-800 truncate">
+                        {song.title}
+                      </p>
+                      <p className="text-[9px] text-slate-500 truncate">
+                        {song.artist}
+                      </p>
+                    </div>
+                    <span className="text-[9px] text-slate-400">
+                      {song.duration}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-
           </div>
         )}
 
-        {/* =================================================
-            DESKTOP PLAYER
-        ================================================= */}
-
-        <footer
-          className="
-            hidden
-            md:flex
-            fixed
-            bottom-0
-            left-24
-            right-0
-            h-[68px]
-            z-[80]
-            items-center
-            px-5
-            bg-white/80
-            backdrop-blur-xl
-            border-t
-            border-white/80
-            shadow-lg
-          "
-        >
-
+        <footer className="hidden md:flex fixed bottom-0 left-24 right-0 h-[68px] z-[80] items-center px-5 bg-white/80 backdrop-blur-xl border-t border-white/80 shadow-lg">
           <div className="flex items-center gap-3 w-1/4 min-w-0">
-
-            <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0">
-
+            <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-slate-200">
               <Image
-                src={
-                  currentSong.cover
-                }
-                alt={
-                  currentSong.title
-                }
+                src={currentSong.cover || "/images/music/default.jpg"}
+                alt={currentSong.title}
                 fill
                 sizes="40px"
                 className="object-cover"
               />
-
             </div>
-
             <div className="min-w-0">
-
-              <p className="text-xs font-bold text-slate-800 truncate">
-                {
-                  currentSong.title
-                }
-              </p>
-
-              <p className="text-[10px] text-slate-500 truncate">
-                {
-                  currentSong.artist
-                }
-              </p>
-
+              <p className="text-xs font-bold text-slate-800 truncate">{currentSong.title}</p>
+              <p className="text-[10px] text-slate-500 truncate">{currentSong.artist}</p>
             </div>
-
           </div>
 
           <div className="flex flex-col items-center gap-1 flex-1">
-
             <div className="flex items-center gap-4 text-slate-600">
-
-              <button
-                type="button"
-                onClick={() =>
-                  setShuffle(
-                    (value) =>
-                      !value
-                  )
-                }
-                className={
-                  shuffle
-                    ? "text-sky-500"
-                    : "text-slate-500"
-                }
-                aria-label="Shuffle"
-              >
+              <button type="button" onClick={() => setShuffle((value) => !value)} className={shuffle ? "text-sky-500" : "text-slate-500"} aria-label="Shuffle">
                 <Shuffle className="w-3.5 h-3.5" />
               </button>
-
-              <button
-                type="button"
-                onClick={
-                  playPrevious
-                }
-                aria-label="Previous"
-              >
+              <button type="button" onClick={playPrevious} aria-label="Previous">
                 <SkipBack className="w-4 h-4" />
               </button>
-
-              <button
-                type="button"
-                onClick={
-                  togglePlay
-                }
-                aria-label={
-                  isPlaying
-                    ? "Pause"
-                    : "Play"
-                }
-                className="
-                  w-9
-                  h-9
-                  rounded-full
-                  bg-teal-500
-                  text-white
-                  flex
-                  items-center
-                  justify-center
-                  shadow-md
-                  active:scale-95
-                  transition-transform
-                  duration-150
-                "
-              >
-
-                {isPlaying ? (
-                  <Pause className="w-4 h-4 fill-current" />
-                ) : (
-                  <Play className="w-4 h-4 fill-current ml-0.5" />
-                )}
-
+              <button type="button" onClick={togglePlay} aria-label={isPlaying ? "Pause" : "Play"} className="w-9 h-9 rounded-full bg-teal-500 text-white flex items-center justify-center shadow-md active:scale-95 transition-transform duration-150">
+                {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
               </button>
-
-              <button
-                type="button"
-                onClick={
-                  playNext
-                }
-                aria-label="Next"
-              >
+              <button type="button" onClick={playNext} aria-label="Next">
                 <SkipForward className="w-4 h-4" />
               </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setRepeat(
-                    (value) =>
-                      !value
-                  )
-                }
-                className={
-                  repeat
-                    ? "text-sky-500"
-                    : "text-slate-500"
-                }
-                aria-label="Repeat"
-              >
+              <button type="button" onClick={() => setRepeat((value) => !value)} className={repeat ? "text-sky-500" : "text-slate-500"} aria-label="Repeat">
                 <Repeat className="w-3.5 h-3.5" />
               </button>
-
             </div>
 
             <div className="flex items-center gap-2 w-full max-w-md">
-
-              <span className="text-[8px] text-slate-400 w-7 text-right">
-                {
-                  formatTime(
-                    currentTime
-                  )
-                }
-              </span>
-
+              <span className="text-[8px] text-slate-400 w-7 text-right">{formatTime(currentTime)}</span>
               <input
                 type="range"
                 min="0"
-                max={
-                  duration || 0
-                }
+                max={duration || 0}
                 step="0.1"
-                value={Math.min(
-                  currentTime,
-                  duration || 0
-                )}
-                onChange={
-                  changeProgress
-                }
+                value={Math.min(currentTime, duration || 0)}
+                onChange={changeProgress}
+                aria-label="Progress"
                 className="flex-1 h-1 accent-teal-500 cursor-pointer"
                 style={{
-                  background: `linear-gradient(
-                    to right,
-                    rgb(45 212 191) ${progress}%,
-                    rgb(226 232 240) ${progress}%
-                  )`,
+                  background: `linear-gradient(to right, rgb(45 212 191) ${progress}%, rgb(226 232 240) ${progress}%)`,
                 }}
-                aria-label="Progress"
               />
-
-              <span className="text-[8px] text-slate-400 w-7">
-                {
-                  formatTime(
-                    duration
-                  )
-                }
-              </span>
-
+              <span className="text-[8px] text-slate-400 w-7">{formatTime(duration)}</span>
             </div>
-
           </div>
 
           <div className="flex items-center gap-3 w-1/4 justify-end">
-
             <div className="hidden lg:flex items-center gap-2">
-
-              <button
-                type="button"
-                onClick={
-                  toggleMute
-                }
-                aria-label="Mute"
-              >
-
-                {volume > 0 ? (
-                  <Volume2 className="w-4 h-4 text-slate-500" />
-                ) : (
-                  <VolumeX className="w-4 h-4 text-slate-500" />
-                )}
-
+              <button type="button" onClick={toggleMute} aria-label="Mute">
+                {volume > 0 ? <Volume2 className="w-4 h-4 text-slate-500" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
               </button>
-
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={
-                  volume
-                }
-                onChange={
-                  changeVolume
-                }
-                className="w-16 accent-teal-500"
-                aria-label="Volume"
-              />
-
+              <input type="range" min="0" max="1" step="0.01" value={volume} onChange={changeVolume} className="w-16 accent-teal-500" aria-label="Volume" />
             </div>
-
-            <button
-              type="button"
-              onClick={() =>
-                setShowPlaylist(
-                  (value) =>
-                    !value
-                )
-              }
-              aria-label="Playlist"
-              className={
-                showPlaylist
-                  ? "text-teal-500"
-                  : "text-slate-500"
-              }
-            >
+            <button type="button" onClick={() => setShowPlaylist((value) => !value)} className={showPlaylist ? "text-teal-500" : "text-slate-500"} aria-label="Playlist">
               <ListMusic className="w-4 h-4" />
             </button>
-
             <Maximize2 className="hidden lg:block w-4 h-4 text-slate-500" />
-
             <ChevronDown className="hidden lg:block w-4 h-4 text-slate-500" />
-
           </div>
-
         </footer>
 
-        {/* =================================================
-            MOBILE PLAYER
-            TRẮNG ĐỒNG BỘ UI
-        ================================================= */}
-
-        <footer
-          className="
-            md:hidden
-            fixed
-            bottom-2
-            left-2
-            right-2
-            z-[80]
-
-            h-[58px]
-
-            rounded-2xl
-
-            px-2
-
-            flex
-            items-center
-            gap-2
-
-            bg-white/75
-            backdrop-blur-xl
-
-            border
-            border-white/85
-
-            shadow-lg
-          "
-        >
-
-          <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0">
-
+        <footer className="md:hidden fixed bottom-2 left-2 right-2 z-[80] h-[58px] rounded-2xl px-2 flex items-center gap-2 bg-slate-950/88 backdrop-blur-xl border border-white/10 shadow-2xl">
+          <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-slate-800">
             <Image
-              src={
-                currentSong.cover
-              }
-              alt={
-                currentSong.title
-              }
+              src={currentSong.cover || "/images/music/default.jpg"}
+              alt={currentSong.title}
               fill
               sizes="40px"
               className="object-cover"
             />
-
           </div>
-
           <div className="min-w-0 flex-1">
-
-            <p className="text-[10px] font-bold text-slate-800 truncate">
-              {
-                currentSong.title
-              }
-            </p>
-
-            <p className="text-[8px] text-slate-500 truncate">
-              {
-                currentSong.artist
-              }
-            </p>
-
-            <div className="h-0.5 bg-slate-200 rounded-full overflow-hidden mt-1">
-
-              <div
-                className="h-full bg-teal-400 transition-[width] duration-200"
-                style={{
-                  width: `${progress}%`,
-                }}
-              />
-
+            <p className="text-[10px] font-bold text-white truncate">{currentSong.title}</p>
+            <p className="text-[8px] text-white/45 truncate">{currentSong.artist}</p>
+            <div className="h-0.5 bg-white/10 rounded-full overflow-hidden mt-1">
+              <div className="h-full bg-teal-400 transition-[width] duration-300" style={{ width: `${progress}%` }} />
             </div>
-
           </div>
-
-          <button
-            type="button"
-            onClick={
-              playPrevious
-            }
-            className="text-slate-500 shrink-0"
-            aria-label="Previous"
-          >
+          <button type="button" onClick={playPrevious} className="text-white/60 shrink-0" aria-label="Previous">
             <SkipBack className="w-3.5 h-3.5" />
           </button>
-
-          <button
-            type="button"
-            onClick={
-              togglePlay
-            }
-            className="
-              w-8
-              h-8
-              rounded-full
-              bg-teal-500
-              text-white
-              flex
-              items-center
-              justify-center
-              shrink-0
-              active:scale-95
-            "
-            aria-label={
-              isPlaying
-                ? "Pause"
-                : "Play"
-            }
-          >
-
-            {isPlaying ? (
-              <Pause className="w-3.5 h-3.5 fill-current" />
-            ) : (
-              <Play className="w-3.5 h-3.5 fill-current" />
-            )}
-
+          <button type="button" onClick={togglePlay} className="w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center shrink-0 active:scale-95" aria-label={isPlaying ? "Pause" : "Play"}>
+            {isPlaying ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current" />}
           </button>
-
-          <button
-            type="button"
-            onClick={
-              playNext
-            }
-            className="text-slate-500 shrink-0"
-            aria-label="Next"
-          >
+          <button type="button" onClick={playNext} className="text-white/60 shrink-0" aria-label="Next">
             <SkipForward className="w-3.5 h-3.5" />
           </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              setShowPlaylist(
-                (value) =>
-                  !value
-              )
-            }
-            className="text-slate-500 shrink-0"
-            aria-label="Playlist"
-          >
+          <button type="button" onClick={() => setShowPlaylist((value) => !value)} className="text-white/50 shrink-0" aria-label="Playlist">
             <ListMusic className="w-4 h-4" />
           </button>
-
         </footer>
       </>
     );
@@ -2533,117 +2023,62 @@ const HomeView = memo(
 ========================================================= */
 
 const MusicView = memo(
-  function MusicView() {
+  function MusicView({
+    playlist,
+    onImport,
+  }: {
+    playlist: Song[];
+    onImport: () => void;
+  }) {
     return (
       <div className="max-w-3xl mx-auto">
-
-        <div
-          className="
-            rounded-3xl
-            border
-            border-white/80
-            bg-white/45
-            backdrop-blur-md
-            md:backdrop-blur-xl
-            p-4
-            md:p-6
-            shadow-sm
-          "
-        >
-
-          <div className="flex items-center gap-3 mb-5">
-
-            <div className="w-11 h-11 rounded-2xl bg-teal-100/70 border border-white flex items-center justify-center">
-
-              <Music className="w-5 h-5 text-teal-600" />
-
+        <div className="rounded-3xl border border-white/80 bg-white/45 backdrop-blur-md md:backdrop-blur-xl p-4 md:p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-3 mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-teal-100/70 border border-white flex items-center justify-center">
+                <Music className="w-5 h-5 text-teal-600" />
+              </div>
+              <div>
+                <p className="text-[9px] text-slate-400 tracking-[.2em]">MUSIC / 音楽</p>
+                <h2 className="text-xl md:text-2xl font-bold">My Playlist</h2>
+              </div>
             </div>
 
-            <div>
-
-              <p className="text-[9px] text-slate-400 tracking-[.2em]">
-                MUSIC / 音楽
-              </p>
-
-              <h2 className="text-xl md:text-2xl font-bold">
-                My Playlist
-              </h2>
-
-            </div>
-
+            <button
+              type="button"
+              onClick={onImport}
+              className="h-9 px-3 rounded-xl bg-teal-500 hover:bg-teal-600 text-white text-[10px] font-bold flex items-center gap-1.5 shadow-sm transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              IMPORT
+            </button>
           </div>
 
           <div className="space-y-2">
-
-            {playlist.map(
-              (
-                song
-              ) => (
-
-                <div
-                  key={
-                    song.title
-                  }
-                  className="
-                    flex
-                    items-center
-                    gap-3
-                    p-3
-                    rounded-2xl
-                    bg-white/35
-                    border
-                    border-white/60
-                  "
-                >
-
-                  <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0">
-
-                    <Image
-                      src={
-                        song.cover
-                      }
-                      alt={
-                        song.title
-                      }
-                      fill
-                      sizes="48px"
-                      loading="lazy"
-                      className="object-cover"
-                    />
-
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-
-                    <p className="text-xs font-bold truncate">
-                      {
-                        song.title
-                      }
-                    </p>
-
-                    <p className="text-[10px] text-slate-500 truncate">
-                      {
-                        song.artist
-                      }
-                    </p>
-
-                  </div>
-
-                  <span className="text-[9px] text-slate-400">
-                    {
-                      song.duration
-                    }
-                  </span>
-
+            {playlist.map((song) => (
+              <div
+                key={song.id}
+                className="flex items-center gap-3 p-3 rounded-2xl bg-white/35 border border-white/60"
+              >
+                <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-slate-200">
+                  <Image
+                    src={song.cover || "/images/music/default.jpg"}
+                    alt={song.title}
+                    fill
+                    sizes="48px"
+                    loading="lazy"
+                    className="object-cover"
+                  />
                 </div>
-
-              )
-            )}
-
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold truncate">{song.title}</p>
+                  <p className="text-[10px] text-slate-500 truncate">{song.artist}</p>
+                </div>
+                <span className="text-[9px] text-slate-400">{song.duration}</span>
+              </div>
+            ))}
           </div>
-
         </div>
-
       </div>
     );
   }
@@ -2995,97 +2430,44 @@ export default function DashboardDesktop() {
     setMobileMenuOpen,
   ] = useState(false);
 
-  const contentRef =
-    useRef<HTMLDivElement | null>(
-      null
-    );
+  const [playlist, setPlaylist] = useState<Song[]>(DEFAULT_PLAYLIST);
+  const [musicImportOpen, setMusicImportOpen] = useState(false);
 
-  /* ============================================
-     TAB CHANGE
-     
-     Ưu tiên element-scoped View Transition.
-     Nếu không hỗ trợ thì document-scoped.
-     Nếu cũng không hỗ trợ thì setState bình thường.
-  ============================================ */
+  useEffect(() => {
+    let cancelled = false;
 
-  const changeTab =
-    useCallback(
-      (tab: string) => {
-        if (
-          tab === activeTab
-        ) {
-          setMobileMenuOpen(
-            false
-          );
-
-          return;
+    const loadMusic = async () => {
+      try {
+        const response = await fetch("/api/music", { cache: "no-store" });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!cancelled && Array.isArray(data.songs) && data.songs.length > 0) {
+          setPlaylist(data.songs);
         }
+      } catch {
+        // Keep bundled fallback playlist when the API is unavailable.
+      }
+    };
 
-        const updateUI =
-          () => {
-            setActiveTab(
-              tab
-            );
+    void loadMusic();
 
-            setMobileMenuOpen(
-              false
-            );
-          };
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-        const reducedMotion =
-          window.matchMedia(
-            "(prefers-reduced-motion: reduce)"
-          ).matches;
+  const changeTab = useCallback(
+    (tab: string) => {
+      if (tab === activeTab) {
+        setMobileMenuOpen(false);
+        return;
+      }
 
-        if (reducedMotion) {
-          updateUI();
-          return;
-        }
-
-        /* ----------------------------------------
-           ELEMENT-SCOPED
-        ---------------------------------------- */
-
-        const contentElement =
-          contentRef.current as
-            | ViewTransitionCapableElement
-            | null;
-
-        if (
-          contentElement?.startViewTransition
-        ) {
-          contentElement.startViewTransition(
-            updateUI
-          );
-
-          return;
-        }
-
-        /* ----------------------------------------
-           DOCUMENT-SCOPED FALLBACK
-        ---------------------------------------- */
-
-        const transitionDocument =
-          document as ViewTransitionCapableDocument;
-
-        if (
-          transitionDocument.startViewTransition
-        ) {
-          transitionDocument.startViewTransition(
-            updateUI
-          );
-
-          return;
-        }
-
-        /* ----------------------------------------
-           NORMAL FALLBACK
-        ---------------------------------------- */
-
-        updateUI();
-      },
-      [activeTab]
-    );
+      setActiveTab(tab);
+      setMobileMenuOpen(false);
+    },
+    [activeTab]
+  );
 
   /* ============================================
      CLOSE MENU WITH ESC
@@ -3127,7 +2509,7 @@ export default function DashboardDesktop() {
         activeTab
       ) {
         case "music":
-          return <MusicView />;
+          return <MusicView playlist={playlist} onImport={() => setMusicImportOpen(true)} />;
 
         case "projects":
           return <ProjectView />;
@@ -3798,7 +3180,8 @@ export default function DashboardDesktop() {
 
         <button
           type="button"
-          aria-label="Add"
+          aria-label="Import music"
+          onClick={() => setMusicImportOpen(true)}
           className="
             w-8
             h-8
@@ -3856,7 +3239,6 @@ export default function DashboardDesktop() {
       >
 
         <div
-          ref={contentRef}
           className="
             page-content
 
@@ -3891,7 +3273,13 @@ export default function DashboardDesktop() {
           Đổi tab không destroy MusicPlayer.
       ================================================= */}
 
-      <MusicPlayer />
+      <MusicPlayer playlist={playlist} />
+
+      <MusicImportModal
+        open={musicImportOpen}
+        onClose={() => setMusicImportOpen(false)}
+        onImported={(song) => setPlaylist((current) => [...current, song])}
+      />
 
     </div>
   );
