@@ -8,7 +8,9 @@ import React, {
   useRef,
   useState,
 } from "react";
+
 import Image from "next/image";
+
 import {
   User,
   Music,
@@ -17,9 +19,7 @@ import {
   StickyNote,
   Github,
   Settings,
-  Globe,
   Mail,
-  MessageSquare,
   ExternalLink,
   Play,
   Pause,
@@ -130,6 +130,7 @@ const projectsData: Project[] = [
     tags: ["Minecraft", "Paper", "MySQL"],
     image: "/images/projects/craftopia.jpg",
   },
+
   {
     id: "discord-bot",
     name: "Discord AI Assistant",
@@ -137,6 +138,7 @@ const projectsData: Project[] = [
     tags: ["Node.js", "Discord.AI", "AI"],
     image: "/images/projects/discord.jpg",
   },
+
   {
     id: "card-battle-1",
     name: "Card Battle System",
@@ -144,6 +146,7 @@ const projectsData: Project[] = [
     tags: ["JavaScript", "Vue.js", "DB"],
     image: "/images/projects/cardgame.jpg",
   },
+
   {
     id: "card-battle-2",
     name: "Card Battle System",
@@ -165,6 +168,7 @@ const playlist: Song[] = [
     cover: "/images/music/yoasobi.jpg",
     src: "/music/yoru-ni-kakeru.mp3",
   },
+
   {
     title: "花に亡霊",
     artist: "ヨルシカ",
@@ -172,6 +176,7 @@ const playlist: Song[] = [
     cover: "/images/music/yorushika.jpg",
     src: "/music/hana-ni-bourei.mp3",
   },
+
   {
     title: "アイドル",
     artist: "YOASOBI",
@@ -179,6 +184,7 @@ const playlist: Song[] = [
     cover: "/images/music/idol.jpg",
     src: "/music/idol.mp3",
   },
+
   {
     title: "光へ",
     artist: "Aimer",
@@ -197,10 +203,12 @@ function formatTime(seconds: number) {
     return "0:00";
   }
 
-  const min = Math.floor(seconds / 60);
-  const sec = Math.floor(seconds % 60);
+  const minutes = Math.floor(seconds / 60);
+  const second = Math.floor(seconds % 60);
 
-  return `${min}:${sec.toString().padStart(2, "0")}`;
+  return `${minutes}:${second
+    .toString()
+    .padStart(2, "0")}`;
 }
 
 /* =========================================================
@@ -236,7 +244,9 @@ const LiveClock = memo(function LiveClock() {
       setNow(new Date());
     }, 1000);
 
-    return () => window.clearInterval(timer);
+    return () => {
+      window.clearInterval(timer);
+    };
   }, []);
 
   const time = new Intl.DateTimeFormat("vi-VN", {
@@ -252,11 +262,11 @@ const LiveClock = memo(function LiveClock() {
 
   return (
     <div className="text-center pt-1">
-      <span className="text-xs font-bold text-slate-700 block">
+      <span className="block text-xs font-bold text-slate-700">
         {time}
       </span>
 
-      <span className="text-[9px] text-slate-500 block">
+      <span className="block text-[9px] text-slate-500">
         {date}
       </span>
     </div>
@@ -268,35 +278,73 @@ const LiveClock = memo(function LiveClock() {
 ========================================================= */
 
 const ServerStatus = memo(function ServerStatus() {
-  const [serverData, setServerData] = useState<ServerData>({
-    online: false,
-    players: {
-      online: 0,
-      max: 0,
-    },
-    version: "Loading...",
-    tps: 20,
-    ping: 0,
-    ip: "play.craftopics.online",
-  });
+  const [serverData, setServerData] =
+    useState<ServerData>({
+      online: false,
+
+      players: {
+        online: 0,
+        max: 0,
+      },
+
+      version: "Loading...",
+
+      tps: 20,
+      ping: 0,
+
+      ip: "play.craftopics.online",
+    });
 
   const [loading, setLoading] = useState(true);
 
   const loadServer = useCallback(async () => {
     try {
-      const response = await fetch("/api/server", {
-        cache: "no-store",
-      });
+      const response = await fetch(
+        "/api/server",
+        {
+          cache: "no-store",
+        }
+      );
 
       if (!response.ok) {
-        throw new Error(`API ${response.status}`);
+        throw new Error(
+          `Server API ${response.status}`
+        );
       }
 
-      const data: ServerData = await response.json();
+      const data = await response.json();
 
-      setServerData(data);
+      setServerData({
+        online: Boolean(data.online),
+
+        players: {
+          online: Number(
+            data.players?.online ?? 0
+          ),
+
+          max: Number(
+            data.players?.max ?? 0
+          ),
+        },
+
+        version:
+          data.version ??
+          "Unknown",
+
+        /*
+         * Bạn đang fake TPS + Ping.
+         */
+
+        tps: 20,
+        ping: 0,
+
+        ip: "play.craftopics.online",
+      });
     } catch (error) {
-      console.error("Server API error:", error);
+      console.error(
+        "Server API error:",
+        error
+      );
 
       setServerData((previous) => ({
         ...previous,
@@ -310,36 +358,42 @@ const ServerStatus = memo(function ServerStatus() {
   useEffect(() => {
     loadServer();
 
-    const timer = window.setInterval(loadServer, 30000);
+    const timer =
+      window.setInterval(
+        loadServer,
+        30000
+      );
 
-    return () => window.clearInterval(timer);
+    return () => {
+      window.clearInterval(timer);
+    };
   }, [loadServer]);
 
   return (
-    <div
+    <section
       id="server"
       className="
+        rounded-2xl
+        border
+        border-white/80
         bg-white/45
         backdrop-blur-md
         md:backdrop-blur-xl
-        border
-        border-white/80
-        rounded-2xl
         p-3
         shadow-sm
       "
     >
-      <div className="flex justify-between items-center mb-1">
+      <div className="flex items-center justify-between mb-1">
         <span className="text-[10px] font-bold">
           SERVER STATUS
         </span>
 
         <span
           className={`
-            text-[8px]
             px-1.5
             py-0.5
             rounded-full
+            text-[8px]
             font-bold
             ${
               serverData.online
@@ -352,8 +406,8 @@ const ServerStatus = memo(function ServerStatus() {
           {loading
             ? "CHECKING"
             : serverData.online
-              ? "ONLINE"
-              : "OFFLINE"}
+            ? "ONLINE"
+            : "OFFLINE"}
         </span>
       </div>
 
@@ -366,6 +420,7 @@ const ServerStatus = memo(function ServerStatus() {
       </p>
 
       <div className="grid grid-cols-2 gap-1.5 mt-2">
+
         <div className="bg-white/45 rounded-lg p-1.5">
           <div className="flex items-center gap-1 text-[8px] text-slate-400">
             <Users className="w-2.5 h-2.5" />
@@ -385,7 +440,9 @@ const ServerStatus = memo(function ServerStatus() {
           </div>
 
           <p className="text-[9px] font-bold mt-0.5 truncate">
-            {loading ? "—" : serverData.version}
+            {loading
+              ? "—"
+              : serverData.version}
           </p>
         </div>
       </div>
@@ -402,7 +459,7 @@ const ServerStatus = memo(function ServerStatus() {
               </span>
 
               <span className="text-[9px] text-emerald-600 font-bold">
-                {serverData.tps.toFixed(2)}
+                20.00
               </span>
             </div>
 
@@ -410,10 +467,7 @@ const ServerStatus = memo(function ServerStatus() {
               <div
                 className="h-full bg-emerald-400 rounded-full"
                 style={{
-                  width: `${Math.min(
-                    (serverData.tps / 20) * 100,
-                    100
-                  )}%`,
+                  width: "100%",
                 }}
               />
             </div>
@@ -429,18 +483,15 @@ const ServerStatus = memo(function ServerStatus() {
               </span>
 
               <span className="text-[9px] text-sky-600 font-bold">
-                {serverData.ping}ms
+                0ms
               </span>
             </div>
 
             <div className="h-1.5 bg-sky-100 rounded-full overflow-hidden mt-1">
               <div
-                className="h-full bg-sky-400 rounded-full transition-[width] duration-500"
+                className="h-full bg-sky-400 rounded-full"
                 style={{
-                  width: `${Math.min(
-                    Math.max(serverData.ping / 200, 0) * 100,
-                    100
-                  )}%`,
+                  width: "100%",
                 }}
               />
             </div>
@@ -448,1546 +499,2065 @@ const ServerStatus = memo(function ServerStatus() {
 
         </div>
       </div>
-    </div>
+    </section>
   );
 });
 
 /* =========================================================
    MUSIC PLAYER
-   IMPORTANT:
-   This component owns all audio state.
-   Parent tab changes DO NOT recreate the audio.
 ========================================================= */
 
-const MusicPlayer = memo(function MusicPlayer() {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const indexRef = useRef(0);
-  const repeatRef = useRef(false);
-  const shuffleRef = useRef(false);
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-
-  const [volume, setVolume] = useState(0.8);
-
-  const [shuffle, setShuffle] = useState(false);
-  const [repeat, setRepeat] = useState(false);
-
-  const [showPlaylist, setShowPlaylist] =
-    useState(false);
-
-  const currentSong = playlist[currentIndex];
-
-  /* -----------------------------------------
-     AUDIO INIT
-  ----------------------------------------- */
-
-  useEffect(() => {
-    const audio = audioRef.current;
-
-    if (!audio) return;
-
-    audio.volume = 0.8;
-
-    const handleLoadedMetadata = () => {
-      if (Number.isFinite(audio.duration)) {
-        setDuration(audio.duration);
-      }
-    };
-
-    const handleTimeUpdate = () => {
-      /*
-       * Only update React state when the visible
-       * second changes.
-       *
-       * This prevents unnecessary renders while
-       * audio is playing.
-       */
-
-      const nextSecond = Math.floor(
-        audio.currentTime
+const MusicPlayer = memo(
+  function MusicPlayer() {
+    const audioRef =
+      useRef<HTMLAudioElement | null>(
+        null
       );
 
-      setCurrentTime((previous) =>
-        previous === nextSecond
-          ? previous
-          : nextSecond
-      );
-    };
+    const currentIndexRef =
+      useRef(0);
 
-    const handlePlay = () => {
-      setIsPlaying(true);
-    };
+    const repeatRef =
+      useRef(false);
 
-    const handlePause = () => {
-      setIsPlaying(false);
-    };
+    const shuffleRef =
+      useRef(false);
 
-    const handleEnded = () => {
-      if (repeatRef.current) {
-        audio.currentTime = 0;
+    const [currentIndex, setCurrentIndex] =
+      useState(0);
 
-        void audio.play().catch(() => {
-          setIsPlaying(false);
-        });
+    const [isPlaying, setIsPlaying] =
+      useState(false);
 
-        return;
-      }
+    const [currentTime, setCurrentTime] =
+      useState(0);
 
-      if (shuffleRef.current && playlist.length > 1) {
-        let next = indexRef.current;
+    const [duration, setDuration] =
+      useState(0);
 
-        while (next === indexRef.current) {
-          next = Math.floor(
-            Math.random() * playlist.length
+    const [volume, setVolume] =
+      useState(0.8);
+
+    const [shuffle, setShuffle] =
+      useState(false);
+
+    const [repeat, setRepeat] =
+      useState(false);
+
+    const [showPlaylist, setShowPlaylist] =
+      useState(false);
+
+    const currentSong =
+      playlist[currentIndex];
+
+    /* -----------------------------------------
+       CREATE AUDIO ONCE
+    ----------------------------------------- */
+
+    useEffect(() => {
+      const audio =
+        new Audio();
+
+      audio.preload =
+        "metadata";
+
+      audio.volume = 0.8;
+
+      audioRef.current = audio;
+
+      return () => {
+        audio.pause();
+        audio.src = "";
+        audioRef.current = null;
+      };
+    }, []);
+
+    /* -----------------------------------------
+       EVENTS
+    ----------------------------------------- */
+
+    useEffect(() => {
+      const audio =
+        audioRef.current;
+
+      if (!audio) return;
+
+      const handleMetadata = () => {
+        const nextDuration =
+          Number.isFinite(
+            audio.duration
+          )
+            ? audio.duration
+            : 0;
+
+        setDuration(
+          nextDuration
+        );
+      };
+
+      const handleTimeUpdate =
+        () => {
+          const nextSecond =
+            Math.floor(
+              audio.currentTime
+            );
+
+          setCurrentTime(
+            (previous) =>
+              previous ===
+              nextSecond
+                ? previous
+                : nextSecond
           );
+        };
+
+      const handlePlay = () => {
+        setIsPlaying(true);
+      };
+
+      const handlePause = () => {
+        setIsPlaying(false);
+      };
+
+      const handleEnded = () => {
+        if (
+          repeatRef.current
+        ) {
+          audio.currentTime =
+            0;
+
+          void audio
+            .play()
+            .catch(() => {
+              setIsPlaying(false);
+            });
+
+          return;
         }
 
-        indexRef.current = next;
-        setCurrentIndex(next);
+        let nextIndex: number;
 
-        return;
-      }
+        if (
+          shuffleRef.current &&
+          playlist.length > 1
+        ) {
+          do {
+            nextIndex =
+              Math.floor(
+                Math.random() *
+                  playlist.length
+              );
+          } while (
+            nextIndex ===
+            currentIndexRef.current
+          );
+        } else {
+          nextIndex =
+            (currentIndexRef.current +
+              1) %
+            playlist.length;
+        }
 
-      const next =
-        (indexRef.current + 1) %
-        playlist.length;
+        currentIndexRef.current =
+          nextIndex;
 
-      indexRef.current = next;
-      setCurrentIndex(next);
-    };
+        setCurrentIndex(
+          nextIndex
+        );
+      };
 
-    audio.addEventListener(
-      "loadedmetadata",
-      handleLoadedMetadata
-    );
-
-    audio.addEventListener(
-      "timeupdate",
-      handleTimeUpdate
-    );
-
-    audio.addEventListener("play", handlePlay);
-    audio.addEventListener("pause", handlePause);
-    audio.addEventListener("ended", handleEnded);
-
-    return () => {
-      audio.pause();
-
-      audio.removeEventListener(
+      audio.addEventListener(
         "loadedmetadata",
-        handleLoadedMetadata
+        handleMetadata
       );
 
-      audio.removeEventListener(
+      audio.addEventListener(
         "timeupdate",
         handleTimeUpdate
       );
 
-      audio.removeEventListener("play", handlePlay);
-      audio.removeEventListener(
+      audio.addEventListener(
+        "play",
+        handlePlay
+      );
+
+      audio.addEventListener(
         "pause",
         handlePause
       );
 
-      audio.removeEventListener(
+      audio.addEventListener(
         "ended",
         handleEnded
       );
-    };
-  }, []);
 
-  /* -----------------------------------------
-     KEEP REFS IN SYNC
-  ----------------------------------------- */
-
-  useEffect(() => {
-    indexRef.current = currentIndex;
-  }, [currentIndex]);
-
-  useEffect(() => {
-    repeatRef.current = repeat;
-  }, [repeat]);
-
-  useEffect(() => {
-    shuffleRef.current = shuffle;
-  }, [shuffle]);
-
-  /* -----------------------------------------
-     LOAD SONG
-  ----------------------------------------- */
-
-  useEffect(() => {
-    const audio = audioRef.current;
-
-    if (!audio) return;
-
-    const wasPlaying = !audio.paused;
-
-    audio.src = currentSong.src;
-    audio.load();
-
-    setCurrentTime(0);
-    setDuration(0);
-
-    if (wasPlaying || isPlaying) {
-      void audio.play().catch(() => {
-        setIsPlaying(false);
-      });
-    }
-  }, [currentIndex]);
-
-  /* -----------------------------------------
-     PLAY / PAUSE
-  ----------------------------------------- */
-
-  const togglePlay = useCallback(async () => {
-    const audio = audioRef.current;
-
-    if (!audio) return;
-
-    try {
-      if (audio.paused) {
-        await audio.play();
-      } else {
-        audio.pause();
-      }
-    } catch (error) {
-      console.error("Audio error:", error);
-      setIsPlaying(false);
-    }
-  }, []);
-
-  /* -----------------------------------------
-     NEXT
-  ----------------------------------------- */
-
-  const playNext = useCallback(() => {
-    if (playlist.length <= 1) return;
-
-    if (shuffleRef.current) {
-      let next = indexRef.current;
-
-      while (next === indexRef.current) {
-        next = Math.floor(
-          Math.random() * playlist.length
+      return () => {
+        audio.removeEventListener(
+          "loadedmetadata",
+          handleMetadata
         );
-      }
 
-      indexRef.current = next;
-      setCurrentIndex(next);
-      setIsPlaying(true);
+        audio.removeEventListener(
+          "timeupdate",
+          handleTimeUpdate
+        );
 
-      return;
-    }
+        audio.removeEventListener(
+          "play",
+          handlePlay
+        );
 
-    const next =
-      (indexRef.current + 1) %
-      playlist.length;
+        audio.removeEventListener(
+          "pause",
+          handlePause
+        );
 
-    indexRef.current = next;
-    setCurrentIndex(next);
-    setIsPlaying(true);
-  }, []);
+        audio.removeEventListener(
+          "ended",
+          handleEnded
+        );
+      };
+    }, []);
 
-  /* -----------------------------------------
-     PREVIOUS
-  ----------------------------------------- */
+    /* -----------------------------------------
+       REFS
+    ----------------------------------------- */
 
-  const playPrevious = useCallback(() => {
-    const audio = audioRef.current;
+    useEffect(() => {
+      currentIndexRef.current =
+        currentIndex;
+    }, [currentIndex]);
 
-    if (audio && audio.currentTime > 3) {
-      audio.currentTime = 0;
+    useEffect(() => {
+      repeatRef.current =
+        repeat;
+    }, [repeat]);
+
+    useEffect(() => {
+      shuffleRef.current =
+        shuffle;
+    }, [shuffle]);
+
+    /* -----------------------------------------
+       CHANGE SONG
+    ----------------------------------------- */
+
+    useEffect(() => {
+      const audio =
+        audioRef.current;
+
+      if (!audio) return;
+
+      const shouldPlay =
+        isPlaying ||
+        !audio.paused;
+
+      audio.src =
+        currentSong.src;
+
+      audio.load();
+
       setCurrentTime(0);
-      return;
-    }
+      setDuration(0);
 
-    const previous =
-      (indexRef.current - 1 + playlist.length) %
-      playlist.length;
+      if (shouldPlay) {
+        void audio
+          .play()
+          .catch(() => {
+            setIsPlaying(false);
+          });
+      }
+    }, [currentIndex]);
 
-    indexRef.current = previous;
-    setCurrentIndex(previous);
-    setIsPlaying(true);
-  }, []);
+    /* -----------------------------------------
+       CONTROLS
+    ----------------------------------------- */
 
-  /* -----------------------------------------
-     SELECT
-  ----------------------------------------- */
+    const togglePlay =
+      useCallback(
+        async () => {
+          const audio =
+            audioRef.current;
 
-  const selectSong = useCallback((index: number) => {
-    if (!playlist[index]) return;
+          if (!audio) return;
 
-    indexRef.current = index;
-    setCurrentIndex(index);
-    setIsPlaying(true);
-  }, []);
+          try {
+            if (
+              audio.paused
+            ) {
+              await audio.play();
+            } else {
+              audio.pause();
+            }
+          } catch (error) {
+            console.error(
+              "Audio error:",
+              error
+            );
 
-  /* -----------------------------------------
-     SEEK
-  ----------------------------------------- */
+            setIsPlaying(false);
+          }
+        },
+        []
+      );
 
-  const changeProgress = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const value = Number(event.target.value);
+    const playNext =
+      useCallback(() => {
+        let next: number;
 
-    const audio = audioRef.current;
+        if (
+          shuffleRef.current &&
+          playlist.length > 1
+        ) {
+          do {
+            next =
+              Math.floor(
+                Math.random() *
+                  playlist.length
+              );
+          } while (
+            next ===
+            currentIndexRef.current
+          );
+        } else {
+          next =
+            (currentIndexRef.current +
+              1) %
+            playlist.length;
+        }
 
-    if (!audio) return;
+        currentIndexRef.current =
+          next;
 
-    audio.currentTime = value;
-    setCurrentTime(Math.floor(value));
-  };
+        setCurrentIndex(next);
+        setIsPlaying(true);
+      }, []);
 
-  /* -----------------------------------------
-     VOLUME
-  ----------------------------------------- */
+    const playPrevious =
+      useCallback(() => {
+        const audio =
+          audioRef.current;
 
-  const changeVolume = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const value = Number(event.target.value);
+        if (
+          audio &&
+          audio.currentTime >
+            3
+        ) {
+          audio.currentTime =
+            0;
 
-    setVolume(value);
+          setCurrentTime(0);
 
-    if (audioRef.current) {
-      audioRef.current.volume = value;
-    }
-  };
+          return;
+        }
 
-  const toggleMute = () => {
-    const audio = audioRef.current;
+        const previous =
+          (currentIndexRef.current -
+            1 +
+            playlist.length) %
+          playlist.length;
 
-    if (!audio) return;
+        currentIndexRef.current =
+          previous;
 
-    if (audio.volume > 0) {
-      audio.volume = 0;
-      setVolume(0);
-    } else {
-      audio.volume = 0.8;
-      setVolume(0.8);
-    }
-  };
+        setCurrentIndex(
+          previous
+        );
 
-  const progress =
-    duration > 0
-      ? Math.min(
-          (currentTime / duration) * 100,
-          100
-        )
-      : 0;
+        setIsPlaying(true);
+      }, []);
 
-  return (
-    <>
-      {/* REAL AUDIO ELEMENT */}
+    const selectSong =
+      useCallback(
+        (index: number) => {
+          if (
+            !playlist[index]
+          ) return;
 
-      <audio
-        ref={audioRef}
-        preload="metadata"
-      />
+          currentIndexRef.current =
+            index;
 
-      {/* PLAYLIST POPUP */}
+          setCurrentIndex(
+            index
+          );
 
-      {showPlaylist && (
-        <div
+          setIsPlaying(true);
+        },
+        []
+      );
+
+    const changeProgress =
+      (
+        event: React.ChangeEvent<HTMLInputElement>
+      ) => {
+        const value =
+          Number(
+            event.target.value
+          );
+
+        const audio =
+          audioRef.current;
+
+        if (!audio) return;
+
+        audio.currentTime =
+          value;
+
+        setCurrentTime(
+          Math.floor(value)
+        );
+      };
+
+    const changeVolume =
+      (
+        event: React.ChangeEvent<HTMLInputElement>
+      ) => {
+        const value =
+          Number(
+            event.target.value
+          );
+
+        setVolume(value);
+
+        if (
+          audioRef.current
+        ) {
+          audioRef.current.volume =
+            value;
+        }
+      };
+
+    const toggleMute =
+      () => {
+        const audio =
+          audioRef.current;
+
+        if (!audio) return;
+
+        if (
+          audio.volume > 0
+        ) {
+          audio.volume = 0;
+          setVolume(0);
+        } else {
+          audio.volume = 0.8;
+          setVolume(0.8);
+        }
+      };
+
+    const progress =
+      duration > 0
+        ? Math.min(
+            (currentTime /
+              duration) *
+              100,
+            100
+          )
+        : 0;
+
+    return (
+      <>
+        {/* =====================================
+            PLAYLIST
+        ===================================== */}
+
+        {showPlaylist && (
+          <div
+            className="
+              fixed
+              z-[90]
+              bottom-[76px]
+              md:bottom-[80px]
+              right-3
+              md:right-5
+              w-[calc(100vw-24px)]
+              max-w-sm
+              rounded-2xl
+              overflow-hidden
+              bg-slate-950/90
+              backdrop-blur-xl
+              border
+              border-white/10
+              shadow-2xl
+            "
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+
+              <div>
+                <p className="text-xs font-bold text-white">
+                  MY PLAYLIST
+                </p>
+
+                <p className="text-[9px] text-white/40">
+                  {playlist.length} songs
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPlaylist(
+                    false
+                  )
+                }
+                className="text-white/40 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+            </div>
+
+            <div className="p-2 max-h-72 overflow-y-auto">
+
+              {playlist.map(
+                (
+                  song,
+                  index
+                ) => {
+                  const active =
+                    index ===
+                    currentIndex;
+
+                  return (
+                    <button
+                      type="button"
+                      key={
+                        song.title
+                      }
+                      onClick={() =>
+                        selectSong(
+                          index
+                        )
+                      }
+                      className={`
+                        w-full
+                        flex
+                        items-center
+                        gap-3
+                        p-2
+                        rounded-xl
+                        text-left
+                        transition-colors
+                        ${
+                          active
+                            ? "bg-white/10"
+                            : "hover:bg-white/5"
+                        }
+                      `}
+                    >
+                      <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0">
+                        <Image
+                          src={
+                            song.cover
+                          }
+                          alt=""
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                        />
+
+                        {active && (
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            {isPlaying ? (
+                              <Pause className="w-4 h-4 text-white" />
+                            ) : (
+                              <Play className="w-4 h-4 text-white" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[11px] font-semibold text-white truncate">
+                          {
+                            song.title
+                          }
+                        </p>
+
+                        <p className="text-[9px] text-white/40 truncate">
+                          {
+                            song.artist
+                          }
+                        </p>
+                      </div>
+
+                      <span className="text-[9px] text-white/30">
+                        {
+                          song.duration
+                        }
+                      </span>
+                    </button>
+                  );
+                }
+              )}
+
+            </div>
+          </div>
+        )}
+
+        {/* =====================================
+            DESKTOP PLAYER
+        ===================================== */}
+
+        <footer
           className="
+            hidden
+            md:flex
             fixed
+            bottom-0
+            left-24
+            right-0
+            h-[68px]
             z-[80]
-            bottom-[82px]
-            right-4
-            w-72
-            max-w-[calc(100vw-32px)]
+            items-center
+            px-5
+            bg-white/80
+            backdrop-blur-xl
+            border-t
+            border-white/80
+            shadow-lg
+          "
+        >
+
+          <div className="flex items-center gap-3 w-1/4 min-w-0">
+
+            <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0">
+              <Image
+                src={
+                  currentSong.cover
+                }
+                alt={
+                  currentSong.title
+                }
+                fill
+                sizes="40px"
+                className="object-cover"
+              />
+            </div>
+
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-slate-800 truncate">
+                {
+                  currentSong.title
+                }
+              </p>
+
+              <p className="text-[10px] text-slate-500 truncate">
+                {
+                  currentSong.artist
+                }
+              </p>
+            </div>
+
+          </div>
+
+          <div className="flex flex-col items-center gap-1 flex-1">
+
+            <div className="flex items-center gap-4 text-slate-600">
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShuffle(
+                    (value) =>
+                      !value
+                  )
+                }
+                className={
+                  shuffle
+                    ? "text-sky-500"
+                    : "text-slate-500"
+                }
+                aria-label="Shuffle"
+              >
+                <Shuffle className="w-3.5 h-3.5" />
+              </button>
+
+              <button
+                type="button"
+                onClick={
+                  playPrevious
+                }
+                aria-label="Previous"
+              >
+                <SkipBack className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={
+                  togglePlay
+                }
+                aria-label={
+                  isPlaying
+                    ? "Pause"
+                    : "Play"
+                }
+                className="
+                  w-9
+                  h-9
+                  rounded-full
+                  bg-teal-500
+                  text-white
+                  flex
+                  items-center
+                  justify-center
+                  shadow-md
+                  active:scale-95
+                  transition-transform
+                "
+              >
+                {isPlaying ? (
+                  <Pause className="w-4 h-4 fill-current" />
+                ) : (
+                  <Play className="w-4 h-4 fill-current ml-0.5" />
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={
+                  playNext
+                }
+                aria-label="Next"
+              >
+                <SkipForward className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setRepeat(
+                    (value) =>
+                      !value
+                  )
+                }
+                className={
+                  repeat
+                    ? "text-sky-500"
+                    : "text-slate-500"
+                }
+                aria-label="Repeat"
+              >
+                <Repeat className="w-3.5 h-3.5" />
+              </button>
+
+            </div>
+
+            <div className="flex items-center gap-2 w-full max-w-md">
+
+              <span className="text-[8px] text-slate-400 w-7 text-right">
+                {
+                  formatTime(
+                    currentTime
+                  )
+                }
+              </span>
+
+              <input
+                type="range"
+                min="0"
+                max={
+                  duration || 0
+                }
+                step="0.1"
+                value={Math.min(
+                  currentTime,
+                  duration || 0
+                )}
+                onChange={
+                  changeProgress
+                }
+                aria-label="Progress"
+                className="flex-1 h-1 accent-teal-500 cursor-pointer"
+              />
+
+              <span className="text-[8px] text-slate-400 w-7">
+                {
+                  formatTime(
+                    duration
+                  )
+                }
+              </span>
+
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 w-1/4 justify-end">
+
+            <div className="hidden lg:flex items-center gap-2">
+
+              <button
+                type="button"
+                onClick={
+                  toggleMute
+                }
+                aria-label="Mute"
+              >
+                {volume > 0 ? (
+                  <Volume2 className="w-4 h-4 text-slate-500" />
+                ) : (
+                  <VolumeX className="w-4 h-4 text-slate-500" />
+                )}
+              </button>
+
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={volume}
+                onChange={
+                  changeVolume
+                }
+                className="w-16 accent-teal-500"
+                aria-label="Volume"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowPlaylist(
+                  (value) =>
+                    !value
+                )
+              }
+              aria-label="Playlist"
+              className={
+                showPlaylist
+                  ? "text-teal-500"
+                  : "text-slate-500"
+              }
+            >
+              <ListMusic className="w-4 h-4" />
+            </button>
+
+            <Maximize2 className="hidden lg:block w-4 h-4 text-slate-500" />
+
+            <ChevronDown className="hidden lg:block w-4 h-4 text-slate-500" />
+
+          </div>
+        </footer>
+
+        {/* =====================================
+            MOBILE PLAYER
+        ===================================== */}
+
+        <footer
+          className="
+            md:hidden
+            fixed
+            bottom-2
+            left-2
+            right-2
+            z-[80]
+            h-[58px]
             rounded-2xl
-            overflow-hidden
-            bg-slate-950/90
+            px-2
+            flex
+            items-center
+            gap-2
+            bg-slate-950/88
             backdrop-blur-xl
             border
             border-white/10
             shadow-2xl
           "
         >
-          <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-            <div>
-              <p className="text-xs font-bold text-white">
-                MY PLAYLIST
-              </p>
 
-              <p className="text-[9px] text-white/40">
-                {playlist.length} songs
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() =>
-                setShowPlaylist(false)
-              }
-              className="text-white/40 hover:text-white"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="p-2 max-h-72 overflow-y-auto">
-            {playlist.map((song, index) => {
-              const active =
-                index === currentIndex;
-
-              return (
-                <button
-                  type="button"
-                  key={song.title}
-                  onClick={() =>
-                    selectSong(index)
-                  }
-                  className={`
-                    w-full
-                    flex
-                    items-center
-                    gap-3
-                    p-2
-                    rounded-xl
-                    text-left
-                    transition-colors
-                    ${
-                      active
-                        ? "bg-white/10"
-                        : "hover:bg-white/5"
-                    }
-                  `}
-                >
-                  <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white/10">
-                    <Image
-                      src={song.cover}
-                      alt=""
-                      fill
-                      sizes="40px"
-                      className="object-cover"
-                    />
-
-                    {active && (
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                        {isPlaying ? (
-                          <Pause className="w-4 h-4 text-white" />
-                        ) : (
-                          <Play className="w-4 h-4 text-white" />
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-semibold text-white truncate">
-                      {song.title}
-                    </p>
-
-                    <p className="text-[9px] text-white/40 truncate">
-                      {song.artist}
-                    </p>
-                  </div>
-
-                  <span className="text-[9px] text-white/30">
-                    {song.duration}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* DESKTOP PLAYER */}
-
-      <footer
-        className="
-          hidden
-          md:flex
-          fixed
-          bottom-0
-          left-24
-          right-0
-          h-[68px]
-          bg-white/80
-          backdrop-blur-xl
-          border-t
-          border-white/80
-          px-5
-          items-center
-          z-50
-          shadow-lg
-        "
-      >
-        {/* SONG */}
-
-        <div className="flex items-center gap-3 w-1/4 min-w-0">
-          <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-white shadow-sm shrink-0 bg-slate-300">
+          <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0">
             <Image
-              src={currentSong.cover}
-              alt={currentSong.title}
+              src={
+                currentSong.cover
+              }
+              alt={
+                currentSong.title
+              }
               fill
               sizes="40px"
               className="object-cover"
             />
           </div>
 
-          <div className="min-w-0">
-            <p className="text-xs font-bold text-slate-800 truncate">
-              {currentSong.title}
+          <div className="min-w-0 flex-1">
+
+            <p className="text-[10px] font-bold text-white truncate">
+              {
+                currentSong.title
+              }
             </p>
 
-            <p className="text-[10px] text-slate-500 truncate">
-              {currentSong.artist}
+            <p className="text-[8px] text-white/45 truncate">
+              {
+                currentSong.artist
+              }
             </p>
-          </div>
-        </div>
 
-        {/* CENTER */}
+            <div className="h-0.5 bg-white/10 rounded-full overflow-hidden mt-1">
+              <div
+                className="h-full bg-teal-400 transition-[width] duration-300"
+                style={{
+                  width: `${progress}%`,
+                }}
+              />
+            </div>
 
-        <div className="flex flex-col items-center gap-1 flex-1">
-          <div className="flex items-center gap-4 text-slate-600">
-            <button
-              type="button"
-              onClick={() =>
-                setShuffle((value) => !value)
-              }
-              className={
-                shuffle
-                  ? "text-sky-500"
-                  : "text-slate-500"
-              }
-              aria-label="Shuffle"
-            >
-              <Shuffle className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              type="button"
-              onClick={playPrevious}
-              aria-label="Previous"
-            >
-              <SkipBack className="w-4 h-4" />
-            </button>
-
-            <button
-              type="button"
-              onClick={togglePlay}
-              aria-label={
-                isPlaying ? "Pause" : "Play"
-              }
-              className="
-                w-9
-                h-9
-                rounded-full
-                bg-teal-500
-                text-white
-                flex
-                items-center
-                justify-center
-                shadow-md
-                transition-transform
-                duration-150
-                active:scale-95
-              "
-            >
-              {isPlaying ? (
-                <Pause className="w-4 h-4 fill-current" />
-              ) : (
-                <Play className="w-4 h-4 fill-current ml-0.5" />
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={playNext}
-              aria-label="Next"
-            >
-              <SkipForward className="w-4 h-4" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() =>
-                setRepeat((value) => !value)
-              }
-              className={
-                repeat
-                  ? "text-sky-500"
-                  : "text-slate-500"
-              }
-              aria-label="Repeat"
-            >
-              <Repeat className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2 w-full max-w-md">
-            <span className="text-[8px] text-slate-400 w-7 text-right">
-              {formatTime(currentTime)}
-            </span>
-
-            <input
-              type="range"
-              min="0"
-              max={duration || 0}
-              step="0.1"
-              value={Math.min(
-                currentTime,
-                duration || 0
-              )}
-              onChange={changeProgress}
-              className="flex-1 h-1 accent-teal-500 cursor-pointer"
-              style={{
-                background: `linear-gradient(
-                  to right,
-                  rgb(45 212 191) ${progress}%,
-                  rgb(226 232 240) ${progress}%
-                )`,
-              }}
-              aria-label="Progress"
-            />
-
-            <span className="text-[8px] text-slate-400 w-7">
-              {formatTime(duration)}
-            </span>
-          </div>
-        </div>
-
-        {/* RIGHT */}
-
-        <div className="flex items-center gap-3 w-1/4 justify-end">
-          <div className="hidden lg:flex items-center gap-2">
-            <button
-              type="button"
-              onClick={toggleMute}
-              aria-label="Mute"
-            >
-              {volume > 0 ? (
-                <Volume2 className="w-4 h-4 text-slate-500" />
-              ) : (
-                <VolumeX className="w-4 h-4 text-slate-500" />
-              )}
-            </button>
-
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={volume}
-              onChange={changeVolume}
-              className="w-16 accent-teal-500"
-              aria-label="Volume"
-            />
           </div>
 
           <button
             type="button"
+            onClick={
+              playPrevious
+            }
+            className="text-white/60 shrink-0"
+            aria-label="Previous"
+          >
+            <SkipBack className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={
+              togglePlay
+            }
+            className="
+              w-8
+              h-8
+              rounded-full
+              bg-teal-500
+              text-white
+              flex
+              items-center
+              justify-center
+              shrink-0
+              active:scale-95
+            "
+            aria-label={
+              isPlaying
+                ? "Pause"
+                : "Play"
+            }
+          >
+            {isPlaying ? (
+              <Pause className="w-3.5 h-3.5 fill-current" />
+            ) : (
+              <Play className="w-3.5 h-3.5 fill-current" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={
+              playNext
+            }
+            className="text-white/60 shrink-0"
+            aria-label="Next"
+          >
+            <SkipForward className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            type="button"
             onClick={() =>
-              setShowPlaylist((value) => !value)
+              setShowPlaylist(
+                (value) =>
+                  !value
+              )
             }
-            className={
-              showPlaylist
-                ? "text-teal-500"
-                : "text-slate-500"
-            }
+            className="text-white/50 shrink-0"
             aria-label="Playlist"
           >
             <ListMusic className="w-4 h-4" />
           </button>
 
-          <Maximize2 className="w-4 h-4 text-slate-500 hidden lg:block" />
-
-          <ChevronDown className="w-4 h-4 text-slate-500 hidden lg:block" />
-        </div>
-      </footer>
-
-      {/* MOBILE PLAYER */}
-
-      <footer
-        className="
-          md:hidden
-          fixed
-          bottom-2
-          left-2
-          right-2
-          z-50
-          h-[58px]
-          rounded-2xl
-          bg-slate-950/85
-          backdrop-blur-xl
-          border
-          border-white/10
-          shadow-2xl
-          px-2
-          flex
-          items-center
-          gap-2
-        "
-      >
-        <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0">
-          <Image
-            src={currentSong.cover}
-            alt={currentSong.title}
-            fill
-            sizes="40px"
-            className="object-cover"
-          />
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-bold text-white truncate">
-            {currentSong.title}
-          </p>
-
-          <p className="text-[8px] text-white/45 truncate">
-            {currentSong.artist}
-          </p>
-
-          <div className="h-0.5 bg-white/10 rounded-full overflow-hidden mt-1">
-            <div
-              className="h-full bg-teal-400 transition-[width] duration-300"
-              style={{
-                width: `${progress}%`,
-              }}
-            />
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={playPrevious}
-          className="text-white/60"
-          aria-label="Previous"
-        >
-          <SkipBack className="w-3.5 h-3.5" />
-        </button>
-
-        <button
-          type="button"
-          onClick={togglePlay}
-          className="w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center shrink-0"
-          aria-label={
-            isPlaying ? "Pause" : "Play"
-          }
-        >
-          {isPlaying ? (
-            <Pause className="w-3.5 h-3.5 fill-current" />
-          ) : (
-            <Play className="w-3.5 h-3.5 fill-current" />
-          )}
-        </button>
-
-        <button
-          type="button"
-          onClick={playNext}
-          className="text-white/60"
-          aria-label="Next"
-        >
-          <SkipForward className="w-3.5 h-3.5" />
-        </button>
-
-        <button
-          type="button"
-          onClick={() =>
-            setShowPlaylist((value) => !value)
-          }
-          className="text-white/50"
-          aria-label="Playlist"
-        >
-          <ListMusic className="w-4 h-4" />
-        </button>
-      </footer>
-    </>
-  );
-});
+        </footer>
+      </>
+    );
+  }
+);
 
 /* =========================================================
-   HOME VIEW
+   HOME
 ========================================================= */
 
-const HomeView = memo(function HomeView() {
-  const [selectedGallery, setSelectedGallery] =
-    useState<number | null>(null);
+const HomeView = memo(
+  function HomeView() {
+    const [
+      selectedGallery,
+      setSelectedGallery,
+    ] = useState<
+      number | null
+    >(null);
 
-  return (
-    <div className="animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)] flex flex-col gap-5">
-
-      {/* HERO */}
-
-      <section
+    return (
+      <div
         className="
+          animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)]
           flex
           flex-col
-          md:flex-row
-          items-center
-          justify-center
-          gap-4
-          md:gap-6
-          py-2
-          text-center
-          md:text-left
+          gap-5
         "
       >
-        <div className="relative shrink-0">
 
-          <div
-            className="
-              w-28
-              h-28
-              md:w-36
-              md:h-36
-              rounded-full
-              p-1
-              bg-gradient-to-tr
-              from-sky-200
-              via-teal-100
-              to-indigo-200
-              shadow-lg
-            "
-          >
-            <div className="relative w-full h-full rounded-full border-2 border-white overflow-hidden bg-slate-300">
-              <Image
-                src={profileData.avatar}
-                alt="Trương Chí Lâm"
-                fill
-                sizes="(max-width: 768px) 112px, 144px"
-                priority
-                className="object-cover"
-              />
-            </div>
-          </div>
-
-          <span
-            className="
-              absolute
-              bottom-0
-              right-0
-              bg-emerald-400
-              text-white
-              text-[9px]
-              px-2
-              py-0.5
-              rounded-full
-              border
-              border-white
-              font-medium
-            "
-          >
-            ● Online
-          </span>
-
-        </div>
-
-        <div className="space-y-1.5 max-w-lg">
-
-          <p className="text-xs md:text-sm text-slate-600 font-medium">
-            {profileData.greetingJp}
-          </p>
-
-          <h1
-            className="
-              text-3xl
-              md:text-4xl
-              font-extrabold
-              text-transparent
-              bg-clip-text
-              bg-gradient-to-r
-              from-rose-400
-              via-pink-400
-              to-sky-500
-              font-serif
-              italic
-              tracking-wide
-            "
-          >
-            {profileData.name}
-          </h1>
-
-          <p className="text-xs text-slate-600 font-medium">
-            {profileData.titleJp}
-          </p>
-
-          <p className="text-[10px] text-slate-400">
-            {profileData.tagline}
-          </p>
-
-          <div className="flex items-center justify-center md:justify-start gap-1.5 flex-wrap pt-1.5">
-
-            <span className="text-[9px] bg-white/60 backdrop-blur-md border border-white/80 px-2.5 py-1 rounded-xl">
-              🇻🇳 {profileData.location}
-            </span>
-
-            <span className="text-[9px] bg-white/60 backdrop-blur-md border border-white/80 px-2.5 py-1 rounded-xl">
-              👤 {profileData.age}
-            </span>
-
-            <span className="text-[9px] bg-white/60 backdrop-blur-md border border-white/80 px-2.5 py-1 rounded-xl">
-              💻 {profileData.role}
-            </span>
-
-          </div>
-
-          <div
-            className="
-              mt-2
-              bg-white/50
-              backdrop-blur-md
-              border
-              border-white/80
-              px-3.5
-              py-2
-              rounded-2xl
-              text-[9px]
-              text-slate-600
-            "
-          >
-            <p className="font-medium">
-              "{profileData.quoteJp}"
-            </p>
-
-            <p className="text-slate-500 mt-0.5">
-              {profileData.quoteVi}
-            </p>
-          </div>
-
-        </div>
-      </section>
-
-      {/* GRID */}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-4 items-start max-w-7xl mx-auto w-full">
-
-        {/* PROFILE */}
+        {/* HERO */}
 
         <section
-          id="profile"
           className="
-            xl:col-span-3
-            bg-white/45
-            backdrop-blur-md
-            md:backdrop-blur-xl
-            border
-            border-white/80
-            rounded-2xl
-            p-4
-            shadow-sm
-          "
-        >
-          <div className="flex items-center gap-1.5 mb-3">
-            <User className="w-3.5 h-3.5" />
-            <span className="text-xs font-bold">
-              PROFILE
-            </span>
-          </div>
-
-          <div className="space-y-1.5 text-xs">
-            <p>👤 {profileData.name}</p>
-            <p>🎓 {profileData.age}</p>
-            <p>🎒 Student</p>
-            <p>💻 Developer</p>
-          </div>
-
-          <div className="mt-4 pt-3 border-t border-white/60">
-            <h4 className="text-[10px] font-bold text-slate-500 mb-1">
-              ABOUT ME
-            </h4>
-
-            <p className="text-[10px] text-slate-600 leading-relaxed">
-              {profileData.aboutJp}
-            </p>
-          </div>
-
-          <div className="mt-3">
-            <h4 className="text-[10px] font-bold text-slate-500 mb-1">
-              好きなこと:
-            </h4>
-
-            <ul className="text-[10px] text-slate-600 space-y-0.5">
-              {profileData.hobbies.map(
-                (hobby) => (
-                  <li key={hobby}>
-                    ・ {hobby}
-                  </li>
-                )
-              )}
-            </ul>
-          </div>
-
-          <div className="flex gap-3 mt-4 pt-3 border-t border-white/60">
-            <a
-              href={socials.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="GitHub"
-              className="hover:text-sky-600 transition-colors"
-            >
-              <Github className="w-3.5 h-3.5" />
-            </a>
-
-            <a
-              href={socials.discord}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Discord"
-              className="hover:text-indigo-600 transition-colors"
-            >
-              <DiscordIcon className="w-3.5 h-3.5" />
-            </a>
-
-            <a
-              href="mailto:"
-              aria-label="Email"
-              className="hover:text-sky-600 transition-colors"
-            >
-              <Mail className="w-3.5 h-3.5" />
-            </a>
-          </div>
-        </section>
-
-        {/* PROJECTS */}
-
-        <section
-          id="projects"
-          className="
-            md:col-span-2
-            xl:col-span-5
-            bg-white/45
-            backdrop-blur-md
-            md:backdrop-blur-xl
-            border
-            border-white/80
-            rounded-2xl
-            p-4
-            shadow-sm
-          "
-        >
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-xs font-bold flex items-center gap-1.5">
-              <Folder className="w-3.5 h-3.5" />
-              PROJECTS
-            </span>
-
-            <button
-              type="button"
-              className="text-[9px] text-sky-600 font-bold flex items-center gap-0.5"
-            >
-              VIEW ALL
-              <ExternalLink className="w-2.5 h-2.5" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            {projectsData.map((project) => (
-              <div
-                key={project.id}
-                className="bg-white/60 rounded-xl p-2 border border-white/90 flex flex-col min-w-0"
-              >
-                <div className="relative aspect-[1.55] rounded-lg bg-slate-200 mb-2 overflow-hidden">
-                  <Image
-                    src={project.image}
-                    alt={project.name}
-                    fill
-                    sizes="(max-width: 640px) 45vw, (max-width: 1280px) 20vw, 200px"
-                    loading="lazy"
-                    className="object-cover"
-                  />
-                </div>
-
-                <h3 className="text-[10px] font-bold leading-tight">
-                  {project.name}
-                </h3>
-
-                <div className="flex flex-wrap gap-0.5 my-1.5">
-                  {project.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-[7px] bg-sky-100/80 text-sky-700 px-1 rounded"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-
-                <p className="text-[8px] text-slate-500 line-clamp-2 leading-tight">
-                  {project.desc}
-                </p>
-
-                <button
-                  type="button"
-                  className="mt-2 text-[8px] bg-white/80 border border-slate-200 px-2 py-1 rounded-md text-slate-700 font-medium w-fit"
-                >
-                  Xem thêm →
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* RIGHT COLUMN */}
-
-        <div className="xl:col-span-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-3">
-
-          {/* GALLERY */}
-
-          <section
-            id="gallery"
-            className="
-              bg-white/45
-              backdrop-blur-md
-              md:backdrop-blur-xl
-              border
-              border-white/80
-              rounded-2xl
-              p-3
-              shadow-sm
-            "
-          >
-            <div className="flex items-center gap-1 mb-2">
-              <GalleryIcon className="w-3 h-3" />
-              <span className="text-[11px] font-bold">
-                GALLERY
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-1.5">
-              {[1, 2, 3, 4, 5, 6].map(
-                (number) => (
-                  <button
-                    key={number}
-                    type="button"
-                    onClick={() =>
-                      setSelectedGallery(number)
-                    }
-                    className="
-                      relative
-                      h-14
-                      rounded-lg
-                      overflow-hidden
-                      bg-slate-200
-                    "
-                  >
-                    <Image
-                      src={`/images/gallery/${number}.jpg`}
-                      alt={`Gallery ${number}`}
-                      fill
-                      sizes="80px"
-                      loading="lazy"
-                      className="object-cover transition-transform duration-300 hover:scale-105"
-                    />
-                  </button>
-                )
-              )}
-            </div>
-          </section>
-
-          {/* SERVER */}
-
-          <ServerStatus />
-
-          {/* NOTE */}
-
-          <section
-            id="notes"
-            className="
-              sm:col-span-2
-              bg-white/45
-              backdrop-blur-md
-              md:backdrop-blur-xl
-              border
-              border-white/80
-              rounded-2xl
-              p-3
-              shadow-sm
-              relative
-              overflow-hidden
-            "
-          >
-            <div className="flex justify-between mb-1.5">
-              <span className="text-[10px] font-bold">
-                ✏️ 今日の言霊
-                <span className="text-slate-400 font-normal ml-1">
-                  TODAY'S NOTE
-                </span>
-              </span>
-
-              <ChevronDown className="w-3 h-3 text-slate-400" />
-            </div>
-
-            <p className="text-[10px] text-slate-600 italic">
-              夢を見ることができれば、
-              <br />
-              それは実現できる。
-            </p>
-
-            <p className="text-[9px] text-slate-500 mt-1">
-              Nếu có thể mơ,
-              <br />
-              bạn có thể làm được.
-            </p>
-
-            <div className="absolute right-2 bottom-1 opacity-40 text-2xl pointer-events-none">
-              🌸
-            </div>
-          </section>
-
-        </div>
-      </div>
-
-      {/* GALLERY LIGHTBOX */}
-
-      {selectedGallery && (
-        <div
-          className="
-            fixed
-            inset-0
-            z-[100]
-            bg-black/40
-            backdrop-blur-sm
             flex
+            flex-col
+            md:flex-row
             items-center
             justify-center
-            p-4
+            gap-4
+            md:gap-6
+            py-2
+            text-center
+            md:text-left
           "
-          onClick={() =>
-            setSelectedGallery(null)
-          }
         >
+
+          <div className="relative shrink-0">
+
+            <div
+              className="
+                relative
+                w-28
+                h-28
+                md:w-36
+                md:h-36
+                rounded-full
+                p-1
+                bg-gradient-to-tr
+                from-sky-200
+                via-teal-100
+                to-indigo-200
+                shadow-lg
+              "
+            >
+              <div className="relative w-full h-full rounded-full overflow-hidden border-2 border-white bg-slate-300">
+
+                <Image
+                  src={
+                    profileData.avatar
+                  }
+                  alt={
+                    profileData.name
+                  }
+                  fill
+                  priority
+                  sizes="
+                    (max-width: 768px) 112px,
+                    144px
+                  "
+                  className="object-cover"
+                />
+
+              </div>
+            </div>
+
+            <span
+              className="
+                absolute
+                bottom-0
+                right-0
+                px-2
+                py-0.5
+                rounded-full
+                border
+                border-white
+                bg-emerald-400
+                text-white
+                text-[9px]
+                font-medium
+              "
+            >
+              ● Online
+            </span>
+
+          </div>
+
+          <div className="space-y-1.5 max-w-lg">
+
+            <p className="text-xs md:text-sm text-slate-600 font-medium">
+              {
+                profileData.greetingJp
+              }
+            </p>
+
+            <h1
+              className="
+                text-3xl
+                md:text-4xl
+                font-extrabold
+                italic
+                font-serif
+                tracking-wide
+                text-transparent
+                bg-clip-text
+                bg-gradient-to-r
+                from-rose-400
+                via-pink-400
+                to-sky-500
+              "
+            >
+              {profileData.name}
+            </h1>
+
+            <p className="text-xs text-slate-600 font-medium">
+              {
+                profileData.titleJp
+              }
+            </p>
+
+            <p className="text-[10px] text-slate-400">
+              {
+                profileData.tagline
+              }
+            </p>
+
+            <div
+              className="
+                flex
+                items-center
+                justify-center
+                md:justify-start
+                flex-wrap
+                gap-1.5
+                pt-1.5
+              "
+            >
+
+              <span className="text-[9px] bg-white/60 backdrop-blur-md border border-white/80 px-2.5 py-1 rounded-xl">
+                🇻🇳{" "}
+                {
+                  profileData.location
+                }
+              </span>
+
+              <span className="text-[9px] bg-white/60 backdrop-blur-md border border-white/80 px-2.5 py-1 rounded-xl">
+                👤{" "}
+                {profileData.age}
+              </span>
+
+              <span className="text-[9px] bg-white/60 backdrop-blur-md border border-white/80 px-2.5 py-1 rounded-xl">
+                💻{" "}
+                {profileData.role}
+              </span>
+
+            </div>
+
+            <div
+              className="
+                mt-2
+                bg-white/50
+                backdrop-blur-md
+                border
+                border-white/80
+                px-3.5
+                py-2
+                rounded-2xl
+                text-[9px]
+                text-slate-600
+              "
+            >
+              <p className="font-medium">
+                "{profileData.quoteJp}"
+              </p>
+
+              <p className="mt-0.5 text-slate-500">
+                {
+                  profileData.quoteVi
+                }
+              </p>
+            </div>
+
+          </div>
+
+        </section>
+
+        {/* GRID */}
+
+        <div
+          className="
+            grid
+            grid-cols-1
+            md:grid-cols-2
+            xl:grid-cols-12
+            gap-4
+            items-start
+            max-w-7xl
+            mx-auto
+            w-full
+          "
+        >
+
+          {/* PROFILE */}
+
+          <section
+            id="profile"
+            className="
+              xl:col-span-3
+              rounded-2xl
+              border
+              border-white/80
+              bg-white/45
+              backdrop-blur-md
+              md:backdrop-blur-xl
+              p-4
+              shadow-sm
+            "
+          >
+
+            <div className="flex items-center gap-1.5 mb-3">
+              <User className="w-3.5 h-3.5" />
+
+              <span className="text-xs font-bold">
+                PROFILE
+              </span>
+            </div>
+
+            <div className="space-y-1.5 text-xs">
+              <p>
+                👤{" "}
+                {profileData.name}
+              </p>
+
+              <p>
+                🎓{" "}
+                {profileData.age}
+              </p>
+
+              <p>
+                🎒 Student
+              </p>
+
+              <p>
+                💻 Developer
+              </p>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-white/60">
+
+              <h4 className="text-[10px] font-bold text-slate-500 mb-1">
+                ABOUT ME
+              </h4>
+
+              <p className="text-[10px] text-slate-600 leading-relaxed">
+                {
+                  profileData.aboutJp
+                }
+              </p>
+
+            </div>
+
+            <div className="mt-3">
+
+              <h4 className="text-[10px] font-bold text-slate-500 mb-1">
+                好きなこと:
+              </h4>
+
+              <ul className="text-[10px] text-slate-600 space-y-0.5">
+
+                {profileData.hobbies.map(
+                  (hobby) => (
+                    <li key={hobby}>
+                      ・ {hobby}
+                    </li>
+                  )
+                )}
+
+              </ul>
+
+            </div>
+
+            <div className="flex items-center gap-3 mt-4 pt-3 border-t border-white/60">
+
+              <a
+                href={
+                  socials.github
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="GitHub"
+                className="hover:text-sky-600 transition-colors"
+              >
+                <Github className="w-3.5 h-3.5" />
+              </a>
+
+              <a
+                href={
+                  socials.discord
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Discord"
+                className="hover:text-indigo-600 transition-colors"
+              >
+                <DiscordIcon className="w-3.5 h-3.5" />
+              </a>
+
+              <a
+                href="mailto:"
+                aria-label="Email"
+                className="hover:text-sky-600 transition-colors"
+              >
+                <Mail className="w-3.5 h-3.5" />
+              </a>
+
+            </div>
+
+          </section>
+
+          {/* PROJECTS */}
+
+          <section
+            id="projects"
+            className="
+              md:col-span-2
+              xl:col-span-5
+              rounded-2xl
+              border
+              border-white/80
+              bg-white/45
+              backdrop-blur-md
+              md:backdrop-blur-xl
+              p-4
+              shadow-sm
+            "
+          >
+
+            <div className="flex items-center justify-between mb-3">
+
+              <span className="flex items-center gap-1.5 text-xs font-bold">
+                <Folder className="w-3.5 h-3.5" />
+                PROJECTS
+              </span>
+
+              <button
+                type="button"
+                className="flex items-center gap-0.5 text-[9px] text-sky-600 font-bold"
+              >
+                VIEW ALL
+                <ExternalLink className="w-2.5 h-2.5" />
+              </button>
+
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+
+              {projectsData.map(
+                (project) => (
+                  <div
+                    key={
+                      project.id
+                    }
+                    className="
+                      min-w-0
+                      rounded-xl
+                      border
+                      border-white/90
+                      bg-white/60
+                      p-2
+                    "
+                  >
+
+                    <div className="relative aspect-[1.55] rounded-lg overflow-hidden bg-slate-200 mb-2">
+
+                      <Image
+                        src={
+                          project.image
+                        }
+                        alt={
+                          project.name
+                        }
+                        fill
+                        sizes="
+                          (max-width: 640px) 42vw,
+                          (max-width: 1280px) 20vw,
+                          200px
+                        "
+                        loading="lazy"
+                        className="object-cover"
+                      />
+
+                    </div>
+
+                    <h3 className="text-[10px] font-bold leading-tight">
+                      {
+                        project.name
+                      }
+                    </h3>
+
+                    <div className="flex flex-wrap gap-0.5 my-1.5">
+
+                      {project.tags.map(
+                        (tag) => (
+                          <span
+                            key={tag}
+                            className="
+                              px-1
+                              rounded
+                              bg-sky-100/80
+                              text-sky-700
+                              text-[7px]
+                            "
+                          >
+                            {tag}
+                          </span>
+                        )
+                      )}
+
+                    </div>
+
+                    <p className="text-[8px] text-slate-500 line-clamp-2 leading-tight">
+                      {
+                        project.desc
+                      }
+                    </p>
+
+                    <button
+                      type="button"
+                      className="
+                        mt-2
+                        px-2
+                        py-1
+                        rounded-md
+                        border
+                        border-slate-200
+                        bg-white/80
+                        text-[8px]
+                        text-slate-700
+                      "
+                    >
+                      Xem thêm →
+                    </button>
+
+                  </div>
+                )
+              )}
+
+            </div>
+          </section>
+
+          {/* RIGHT SIDE */}
+
           <div
             className="
-              relative
-              w-full
-              max-w-2xl
-              aspect-video
-              rounded-3xl
-              overflow-hidden
-              border
-              border-white/60
-              shadow-2xl
+              xl:col-span-4
+              grid
+              grid-cols-1
+              sm:grid-cols-2
+              gap-3
             "
-            onClick={(event) =>
-              event.stopPropagation()
+          >
+
+            {/* GALLERY */}
+
+            <section
+              id="gallery"
+              className="
+                rounded-2xl
+                border
+                border-white/80
+                bg-white/45
+                backdrop-blur-md
+                md:backdrop-blur-xl
+                p-3
+                shadow-sm
+              "
+            >
+
+              <div className="flex items-center gap-1 mb-2">
+
+                <GalleryIcon className="w-3 h-3" />
+
+                <span className="text-[11px] font-bold">
+                  GALLERY
+                </span>
+
+              </div>
+
+              <div className="grid grid-cols-2 gap-1.5">
+
+                {[1, 2, 3, 4, 5, 6].map(
+                  (number) => (
+                    <button
+                      key={number}
+                      type="button"
+                      onClick={() =>
+                        setSelectedGallery(
+                          number
+                        )
+                      }
+                      className="
+                        relative
+                        h-14
+                        rounded-lg
+                        overflow-hidden
+                        bg-slate-200
+                      "
+                    >
+                      <Image
+                        src={`/images/gallery/${number}.jpg`}
+                        alt={`Gallery ${number}`}
+                        fill
+                        sizes="80px"
+                        loading="lazy"
+                        className="object-cover"
+                      />
+                    </button>
+                  )
+                )}
+
+              </div>
+
+            </section>
+
+            {/* SERVER */}
+
+            <ServerStatus />
+
+            {/* TODAY NOTE */}
+
+            <section
+              id="notes"
+              className="
+                sm:col-span-2
+                rounded-2xl
+                border
+                border-white/80
+                bg-white/45
+                backdrop-blur-md
+                md:backdrop-blur-xl
+                p-3
+                shadow-sm
+                relative
+                overflow-hidden
+              "
+            >
+
+              <div className="flex justify-between mb-1.5">
+
+                <span className="text-[10px] font-bold">
+
+                  ✏️ 今日の言霊
+
+                  <span className="ml-1 text-slate-400 font-normal">
+                    TODAY'S NOTE
+                  </span>
+
+                </span>
+
+                <ChevronDown className="w-3 h-3 text-slate-400" />
+
+              </div>
+
+              <p className="text-[10px] text-slate-600 italic">
+                夢を見ることができれば、
+                <br />
+                それは実現できる。
+              </p>
+
+              <p className="mt-1 text-[9px] text-slate-500">
+                Nếu có thể mơ,
+                <br />
+                bạn có thể làm được.
+              </p>
+
+              <div className="absolute right-2 bottom-1 opacity-40 text-2xl pointer-events-none">
+                🌸
+              </div>
+
+            </section>
+
+          </div>
+
+        </div>
+
+        {/* GALLERY MODAL */}
+
+        {selectedGallery && (
+          <div
+            className="
+              fixed
+              inset-0
+              z-[100]
+              flex
+              items-center
+              justify-center
+              p-4
+              bg-black/40
+              backdrop-blur-sm
+            "
+            onClick={() =>
+              setSelectedGallery(
+                null
+              )
             }
           >
-            <Image
-              src={`/images/gallery/${selectedGallery}.jpg`}
-              alt={`Gallery ${selectedGallery}`}
-              fill
-              sizes="90vw"
-              className="object-contain bg-slate-950"
-            />
-
-            <button
-              type="button"
-              onClick={() =>
-                setSelectedGallery(null)
+            <div
+              className="
+                relative
+                w-full
+                max-w-2xl
+                aspect-video
+                overflow-hidden
+                rounded-3xl
+                border
+                border-white/60
+                bg-slate-950
+                shadow-2xl
+              "
+              onClick={(event) =>
+                event.stopPropagation()
               }
-              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center"
             >
-              <X className="w-4 h-4" />
-            </button>
+              <Image
+                src={`/images/gallery/${selectedGallery}.jpg`}
+                alt={`Gallery ${selectedGallery}`}
+                fill
+                sizes="90vw"
+                className="object-contain"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedGallery(
+                    null
+                  )
+                }
+                className="
+                  absolute
+                  top-3
+                  right-3
+                  w-8
+                  h-8
+                  rounded-full
+                  bg-black/40
+                  text-white
+                  flex
+                  items-center
+                  justify-center
+                "
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
-});
+        )}
+
+      </div>
+    );
+  }
+);
 
 /* =========================================================
    MUSIC VIEW
 ========================================================= */
 
-const MusicView = memo(function MusicView() {
-  return (
-    <div className="animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)] max-w-3xl mx-auto">
+const MusicView = memo(
+  function MusicView() {
+    return (
+      <div className="animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)] max-w-3xl mx-auto">
 
-      <div className="
-        bg-white/45
-        backdrop-blur-md
-        md:backdrop-blur-xl
-        border
-        border-white/80
-        rounded-3xl
-        p-4
-        md:p-6
-        shadow-sm
-      ">
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-11 h-11 rounded-2xl bg-teal-100/70 border border-white flex items-center justify-center">
-            <Music className="w-5 h-5 text-teal-600" />
-          </div>
+        <div className="
+          rounded-3xl
+          border
+          border-white/80
+          bg-white/45
+          backdrop-blur-md
+          md:backdrop-blur-xl
+          p-4
+          md:p-6
+          shadow-sm
+        ">
 
-          <div>
-            <p className="text-[9px] text-slate-400 tracking-[.2em]">
-              MUSIC / 音楽
-            </p>
+          <div className="flex items-center gap-3 mb-5">
 
-            <h2 className="text-xl md:text-2xl font-bold">
-              My Playlist
-            </h2>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          {playlist.map((song) => (
-            <div
-              key={song.title}
-              className="
-                flex
-                items-center
-                gap-3
-                p-3
-                rounded-2xl
-                bg-white/35
-                border
-                border-white/60
-              "
-            >
-              <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0">
-                <Image
-                  src={song.cover}
-                  alt={song.title}
-                  fill
-                  sizes="48px"
-                  loading="lazy"
-                  className="object-cover"
-                />
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold truncate">
-                  {song.title}
-                </p>
-
-                <p className="text-[10px] text-slate-500 truncate">
-                  {song.artist}
-                </p>
-              </div>
-
-              <span className="text-[9px] text-slate-400">
-                {song.duration}
-              </span>
+            <div className="w-11 h-11 rounded-2xl bg-teal-100/70 border border-white flex items-center justify-center">
+              <Music className="w-5 h-5 text-teal-600" />
             </div>
-          ))}
+
+            <div>
+              <p className="text-[9px] text-slate-400 tracking-[.2em]">
+                MUSIC / 音楽
+              </p>
+
+              <h2 className="text-xl md:text-2xl font-bold">
+                My Playlist
+              </h2>
+            </div>
+
+          </div>
+
+          <div className="space-y-2">
+
+            {playlist.map(
+              (song) => (
+                <div
+                  key={
+                    song.title
+                  }
+                  className="
+                    flex
+                    items-center
+                    gap-3
+                    p-3
+                    rounded-2xl
+                    bg-white/35
+                    border
+                    border-white/60
+                  "
+                >
+
+                  <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0">
+
+                    <Image
+                      src={
+                        song.cover
+                      }
+                      alt={
+                        song.title
+                      }
+                      fill
+                      sizes="48px"
+                      loading="lazy"
+                      className="object-cover"
+                    />
+
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+
+                    <p className="text-xs font-bold truncate">
+                      {
+                        song.title
+                      }
+                    </p>
+
+                    <p className="text-[10px] text-slate-500 truncate">
+                      {
+                        song.artist
+                      }
+                    </p>
+
+                  </div>
+
+                  <span className="text-[9px] text-slate-400">
+                    {
+                      song.duration
+                    }
+                  </span>
+
+                </div>
+              )
+            )}
+
+          </div>
+
         </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 /* =========================================================
    PROJECT VIEW
 ========================================================= */
 
-const ProjectView = memo(function ProjectView() {
-  return (
-    <div className="animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)]">
-      <div className="
-        bg-white/45
-        backdrop-blur-md
-        md:backdrop-blur-xl
-        border
-        border-white/80
-        rounded-3xl
-        p-4
-        md:p-5
-        shadow-sm
-      ">
+const ProjectView = memo(
+  function ProjectView() {
+    return (
+      <div className="animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)]">
 
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <p className="text-[9px] text-slate-400 tracking-[.2em]">
-              PROJECTS / プロジェクト
-            </p>
+        <div className="
+          rounded-3xl
+          border
+          border-white/80
+          bg-white/45
+          backdrop-blur-md
+          md:backdrop-blur-xl
+          p-4
+          md:p-5
+          shadow-sm
+        ">
 
-            <h2 className="text-xl md:text-2xl font-bold">
-              Things I Build
-            </h2>
-          </div>
+          <div className="flex items-center justify-between mb-5">
 
-          <Folder className="w-5 h-5 text-sky-500" />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {projectsData.map((project) => (
-            <div
-              key={project.id}
-              className="
-                bg-white/55
-                border
-                border-white/80
-                rounded-2xl
-                p-3
-              "
-            >
-              <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-slate-200">
-                <Image
-                  src={project.image}
-                  alt={project.name}
-                  fill
-                  sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 240px"
-                  loading="lazy"
-                  className="object-cover"
-                />
-              </div>
-
-              <h3 className="text-xs font-bold mt-3">
-                {project.name}
-              </h3>
-
-              <p className="text-[10px] text-slate-500 mt-1 line-clamp-3">
-                {project.desc}
+            <div>
+              <p className="text-[9px] text-slate-400 tracking-[.2em]">
+                PROJECTS / プロジェクト
               </p>
 
-              <div className="flex flex-wrap gap-1 mt-2">
-                {project.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="text-[8px] px-1.5 py-0.5 rounded bg-sky-100 text-sky-700"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
+              <h2 className="text-xl md:text-2xl font-bold">
+                Things I Build
+              </h2>
             </div>
-          ))}
-        </div>
 
+            <Folder className="w-5 h-5 text-sky-500" />
+
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+
+            {projectsData.map(
+              (project) => (
+                <div
+                  key={
+                    project.id
+                  }
+                  className="
+                    rounded-2xl
+                    border
+                    border-white/80
+                    bg-white/55
+                    p-3
+                  "
+                >
+
+                  <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-slate-200">
+
+                    <Image
+                      src={
+                        project.image
+                      }
+                      alt={
+                        project.name
+                      }
+                      fill
+                      sizes="
+                        (max-width: 640px) 90vw,
+                        (max-width: 1024px) 45vw,
+                        240px
+                      "
+                      loading="lazy"
+                      className="object-cover"
+                    />
+
+                  </div>
+
+                  <h3 className="text-xs font-bold mt-3">
+                    {
+                      project.name
+                    }
+                  </h3>
+
+                  <p className="text-[10px] text-slate-500 mt-1 line-clamp-3">
+                    {
+                      project.desc
+                    }
+                  </p>
+
+                  <div className="flex flex-wrap gap-1 mt-2">
+
+                    {project.tags.map(
+                      (tag) => (
+                        <span
+                          key={tag}
+                          className="text-[8px] px-1.5 py-0.5 rounded bg-sky-100 text-sky-700"
+                        >
+                          {tag}
+                        </span>
+                      )
+                    )}
+
+                  </div>
+
+                </div>
+              )
+            )}
+
+          </div>
+
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 /* =========================================================
    GALLERY VIEW
 ========================================================= */
 
-const GalleryView = memo(function GalleryView() {
-  return (
-    <div className="animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)]">
+const GalleryView = memo(
+  function GalleryView() {
+    return (
+      <div className="animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)]">
 
-      <div className="
-        bg-white/45
-        backdrop-blur-md
-        md:backdrop-blur-xl
-        border
-        border-white/80
-        rounded-3xl
-        p-4
-        md:p-5
-        shadow-sm
-      ">
+        <div className="
+          rounded-3xl
+          border
+          border-white/80
+          bg-white/45
+          backdrop-blur-md
+          md:backdrop-blur-xl
+          p-4
+          md:p-5
+          shadow-sm
+        ">
 
-        <div className="mb-5">
-          <p className="text-[9px] text-slate-400 tracking-[.2em]">
-            GALLERY / ギャラリー
-          </p>
+          <div className="mb-5">
 
-          <h2 className="text-xl md:text-2xl font-bold">
-            Little Moments
-          </h2>
+            <p className="text-[9px] text-slate-400 tracking-[.2em]">
+              GALLERY / ギャラリー
+            </p>
+
+            <h2 className="text-xl md:text-2xl font-bold">
+              Little Moments
+            </h2>
+
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+
+            {[1, 2, 3, 4, 5, 6].map(
+              (number) => (
+                <div
+                  key={number}
+                  className="
+                    relative
+                    aspect-video
+                    rounded-2xl
+                    overflow-hidden
+                    bg-slate-200
+                    border
+                    border-white/70
+                  "
+                >
+                  <Image
+                    src={`/images/gallery/${number}.jpg`}
+                    alt={`Gallery ${number}`}
+                    fill
+                    sizes="
+                      (max-width: 768px) 45vw,
+                      30vw
+                    "
+                    loading="lazy"
+                    className="
+                      object-cover
+                      transition-transform
+                      duration-300
+                      hover:scale-105
+                    "
+                  />
+                </div>
+              )
+            )}
+
+          </div>
+
         </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {[1, 2, 3, 4, 5, 6].map(
-            (number) => (
-              <div
-                key={number}
-                className="relative aspect-video rounded-2xl overflow-hidden bg-slate-200 border border-white/70"
-              >
-                <Image
-                  src={`/images/gallery/${number}.jpg`}
-                  alt={`Gallery ${number}`}
-                  fill
-                  sizes="(max-width: 768px) 45vw, 30vw"
-                  loading="lazy"
-                  className="object-cover hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-            )
-          )}
-        </div>
-
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 /* =========================================================
-   DIARY REDIRECT VIEW
+   DIARY VIEW
 ========================================================= */
 
-const DiaryView = memo(function DiaryView({
-  onOpenDiary,
-}: {
-  onOpenDiary: () => void;
-}) {
-  return (
-    <div className="animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)] flex items-center justify-center min-h-[55vh]">
+const DiaryView = memo(
+  function DiaryView() {
+    const openDiary =
+      () => {
+        window.history.pushState(
+          {},
+          "",
+          "/diary"
+        );
+
+        window.dispatchEvent(
+          new PopStateEvent(
+            "popstate"
+          )
+        );
+      };
+
+    return (
       <div className="
-        w-full
-        max-w-xl
-        text-center
-        bg-white/45
-        backdrop-blur-md
-        md:backdrop-blur-xl
-        border
-        border-white/80
-        rounded-3xl
-        p-7
-        shadow-sm
+        animate-[contentEnter_.38s_cubic-bezier(.22,1,.36,1)]
+        min-h-[60vh]
+        flex
+        items-center
+        justify-center
       ">
-        <div className="w-12 h-12 rounded-2xl bg-teal-100/70 mx-auto flex items-center justify-center mb-4">
-          <BookOpen className="w-5 h-5 text-teal-600" />
-        </div>
 
-        <p className="text-[9px] text-slate-400 tracking-[.2em]">
-          PERSONAL SPACE
-        </p>
+        <div className="
+          w-full
+          max-w-xl
+          rounded-3xl
+          border
+          border-white/80
+          bg-white/45
+          backdrop-blur-md
+          md:backdrop-blur-xl
+          p-7
+          shadow-sm
+          text-center
+        ">
 
-        <h2 className="text-2xl font-bold mt-1">
-          My Diary
-        </h2>
-
-        <p className="text-[10px] text-slate-500 mt-2 max-w-sm mx-auto">
-          Nơi lưu lại những ngày đã đi qua,
-          những điều đã nghĩ và những khoảnh khắc
-          không muốn quên.
-        </p>
-
-        <button
-          type="button"
-          onClick={onOpenDiary}
-          className="
-            mt-5
-            h-10
-            px-4
-            rounded-xl
-            bg-teal-500
-            text-white
-            text-xs
-            font-semibold
-            inline-flex
+          <div className="
+            w-12
+            h-12
+            mx-auto
+            rounded-2xl
+            bg-teal-100/70
+            flex
             items-center
-            gap-2
-            active:scale-95
-            transition-transform
-          "
-        >
-          Mở Diary
-          <ArrowRight className="w-3.5 h-3.5" />
-        </button>
+            justify-center
+            mb-4
+          ">
+            <BookOpen className="w-5 h-5 text-teal-600" />
+          </div>
+
+          <p className="text-[9px] text-slate-400 tracking-[.2em]">
+            PERSONAL SPACE
+          </p>
+
+          <h2 className="text-2xl font-bold mt-1">
+            My Diary
+          </h2>
+
+          <p className="text-[10px] text-slate-500 mt-2 max-w-sm mx-auto">
+            Nơi lưu lại những ngày đã đi qua,
+            những điều đã nghĩ và những khoảnh khắc
+            không muốn quên.
+          </p>
+
+          <button
+            type="button"
+            onClick={openDiary}
+            className="
+              mt-5
+              h-10
+              px-4
+              rounded-xl
+              bg-teal-500
+              text-white
+              text-xs
+              font-semibold
+              inline-flex
+              items-center
+              gap-2
+              active:scale-95
+              transition-transform
+            "
+          >
+            Mở Diary
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 /* =========================================================
-   APP
+   MAIN APP
 ========================================================= */
 
 export default function DashboardDesktop() {
@@ -2005,24 +2575,28 @@ export default function DashboardDesktop() {
         en: "PROFILE",
         icon: User,
       },
+
       {
         id: "music",
         jp: "音楽",
         en: "MUSIC",
         icon: Music,
       },
+
       {
         id: "projects",
         jp: "作成",
         en: "PROJECTS",
         icon: Folder,
       },
+
       {
         id: "gallery",
         jp: "ギャラリー",
         en: "GALLERY",
         icon: GalleryIcon,
       },
+
       {
         id: "diary",
         jp: "日記",
@@ -2033,74 +2607,100 @@ export default function DashboardDesktop() {
     []
   );
 
-  const changeTab = useCallback(
-    (tab: string) => {
-      setActiveTab(tab);
-      setMobileMenuOpen(false);
-    },
-    []
-  );
+  const changeTab =
+    useCallback(
+      (tab: string) => {
+        setActiveTab(tab);
+        setMobileMenuOpen(false);
+      },
+      []
+    );
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case "music":
-        return <MusicView />;
+  const renderContent =
+    () => {
+      switch (activeTab) {
+        case "music":
+          return <MusicView />;
 
-      case "projects":
-        return <ProjectView />;
+        case "projects":
+          return <ProjectView />;
 
-      case "gallery":
-        return <GalleryView />;
+        case "gallery":
+          return <GalleryView />;
 
-      case "diary":
-        return (
-          <DiaryView
-            onOpenDiary={() =>
-              window.location.assign("/diary")
-            }
-          />
-        );
+        case "diary":
+          return <DiaryView />;
 
-      case "profile":
-      case "home":
-      default:
-        return <HomeView />;
-    }
-  };
+        case "profile":
+        case "home":
+        default:
+          return <HomeView />;
+      }
+    };
 
   return (
-    <div className="
-      min-h-screen
-      w-full
-      relative
-      font-sans
-      text-slate-800
-      overflow-x-hidden
-      selection:bg-sky-200
-      bg-slate-200
-    ">
+    <div
+      className="
+        min-h-screen
+        w-full
+        relative
+        overflow-x-hidden
+        bg-slate-200
+        font-sans
+        text-slate-800
+        selection:bg-sky-200
+      "
+    >
 
-      {/* =====================================================
-          OPTIMIZED BACKGROUND
-      ===================================================== */}
+      {/* =================================================
+          RESPONSIVE BACKGROUND
+      ================================================= */}
 
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <Image
-          src="/images/background.jpg"
-          alt=""
-          fill
-          sizes="100vw"
-          quality={65}
-          className="object-cover object-center"
-          priority
-        />
+      <div
+        className="
+          fixed
+          inset-0
+          z-0
+          pointer-events-none
+          overflow-hidden
+        "
+      >
 
-        <div className="absolute inset-0 bg-sky-100/15" />
+        <picture>
+
+          {/* MOBILE */}
+          <source
+            media="(max-width: 767px)"
+            srcSet="/images/background-mobile.jpg"
+          />
+
+          {/* DESKTOP */}
+          <img
+            src="/images/background-pc.jpg"
+            alt=""
+            fetchPriority="high"
+            decoding="async"
+            draggable={false}
+            className="
+              absolute
+              inset-0
+              w-full
+              h-full
+              object-cover
+              object-center
+              select-none
+            "
+          />
+
+        </picture>
+
+        <div className="absolute inset-0 bg-sky-100/10" />
+
       </div>
 
-      {/* =====================================================
+      {/* =================================================
           DESKTOP SIDEBAR
-      ===================================================== */}
+      ================================================= */}
 
       <aside
         className="
@@ -2111,19 +2711,20 @@ export default function DashboardDesktop() {
           top-0
           bottom-0
           w-24
+          z-[70]
+          flex-col
+          justify-between
+          px-2
+          py-4
+          border-r
+          border-white/60
           bg-white/40
           backdrop-blur-md
           md:backdrop-blur-xl
-          border-r
-          border-white/60
-          flex-col
-          justify-between
-          py-4
-          px-2
-          z-[70]
           shadow-sm
         "
       >
+
         <div className="flex flex-col items-center gap-5">
 
           <LiveClock />
@@ -2133,7 +2734,9 @@ export default function DashboardDesktop() {
           <button
             type="button"
             onClick={() =>
-              changeTab("home")
+              changeTab(
+                "home"
+              )
             }
             className={`
               w-12
@@ -2144,15 +2747,17 @@ export default function DashboardDesktop() {
               flex-col
               items-center
               justify-center
-              shadow-sm
               transition-colors
+              shadow-sm
               ${
-                activeTab === "home"
+                activeTab ===
+                "home"
                   ? "bg-teal-100/80 border-white text-teal-600"
-                  : "bg-white/40 border-white/60 text-slate-600"
+                  : "bg-white/40 border-white/60 text-slate-600 hover:bg-white/70"
               }
             `}
           >
+
             <span className="text-lg">
               🌸
             </span>
@@ -2160,49 +2765,70 @@ export default function DashboardDesktop() {
             <span className="text-[9px] font-bold">
               ホーム
             </span>
+
           </button>
 
+          {/* NAV */}
+
           <nav className="flex flex-col gap-2.5 w-full">
-            {navigation.map((item) => {
-              const Icon = item.icon;
-              const active =
-                activeTab === item.id;
 
-              return (
-                <button
-                  type="button"
-                  key={item.id}
-                  onClick={() =>
-                    changeTab(item.id)
-                  }
-                  className={`
-                    flex
-                    flex-col
-                    items-center
-                    py-2
-                    px-1
-                    rounded-xl
-                    transition-colors
-                    ${
-                      active
-                        ? "bg-white/80 text-sky-600 shadow-sm font-bold"
-                        : "text-slate-600 hover:bg-white/50"
+            {navigation.map(
+              (item) => {
+                const Icon =
+                  item.icon;
+
+                const active =
+                  activeTab ===
+                  item.id;
+
+                return (
+                  <button
+                    type="button"
+                    key={
+                      item.id
                     }
-                  `}
-                >
-                  <Icon className="w-4 h-4 mb-0.5" />
+                    onClick={() =>
+                      changeTab(
+                        item.id
+                      )
+                    }
+                    className={`
+                      flex
+                      flex-col
+                      items-center
+                      rounded-xl
+                      py-2
+                      px-1
+                      transition-colors
+                      ${
+                        active
+                          ? "bg-white/80 text-sky-600 shadow-sm font-bold"
+                          : "text-slate-600 hover:bg-white/50"
+                      }
+                    `}
+                  >
 
-                  <span className="text-[9px] leading-tight">
-                    {item.jp}
-                  </span>
+                    <Icon className="w-4 h-4 mb-0.5" />
 
-                  <span className="text-[7px] text-slate-400 font-semibold tracking-wider">
-                    {item.en}
-                  </span>
-                </button>
-              );
-            })}
+                    <span className="text-[9px] leading-tight">
+                      {
+                        item.jp
+                      }
+                    </span>
+
+                    <span className="text-[7px] text-slate-400 font-semibold tracking-wider">
+                      {
+                        item.en
+                      }
+                    </span>
+
+                  </button>
+                );
+              }
+            )}
+
           </nav>
+
         </div>
 
         {/* SOCIAL */}
@@ -2212,21 +2838,25 @@ export default function DashboardDesktop() {
           <div className="flex flex-col gap-2.5">
 
             <a
-              href={socials.github}
+              href={
+                socials.github
+              }
               target="_blank"
               rel="noopener noreferrer"
               aria-label="GitHub"
-              className="hover:text-sky-600 transition-colors"
+              className="transition-colors hover:text-sky-600"
             >
               <Github className="w-4 h-4" />
             </a>
 
             <a
-              href={socials.discord}
+              href={
+                socials.discord
+              }
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Discord"
-              className="hover:text-indigo-600 transition-colors"
+              className="transition-colors hover:text-indigo-600"
             >
               <DiscordIcon className="w-4 h-4" />
             </a>
@@ -2239,10 +2869,11 @@ export default function DashboardDesktop() {
                   "Settings đang được phát triển ⚙️"
                 )
               }
-              className="hover:text-sky-600 transition-colors"
+              className="transition-colors hover:text-sky-600"
             >
               <Settings className="w-4 h-4" />
             </button>
+
           </div>
 
           <span className="text-[8px] text-slate-400 text-center leading-tight">
@@ -2250,12 +2881,14 @@ export default function DashboardDesktop() {
             <br />
             30/08 Lâm
           </span>
+
         </div>
+
       </aside>
 
-      {/* =====================================================
+      {/* =================================================
           MOBILE HEADER
-      ===================================================== */}
+      ================================================= */}
 
       <header
         className="
@@ -2269,27 +2902,33 @@ export default function DashboardDesktop() {
           pt-3
         "
       >
-        <div className="
-          h-12
-          rounded-2xl
-          bg-white/45
-          backdrop-blur-xl
-          border
-          border-white/70
-          px-2
-          flex
-          items-center
-          justify-between
-          shadow-sm
-        ">
+
+        <div
+          className="
+            h-12
+            rounded-2xl
+            px-2
+            flex
+            items-center
+            justify-between
+            border
+            border-white/70
+            bg-white/45
+            backdrop-blur-xl
+            shadow-sm
+          "
+        >
 
           <LiveClock />
 
           <button
             type="button"
             onClick={() =>
-              setMobileMenuOpen(true)
+              setMobileMenuOpen(
+                true
+              )
             }
+            aria-label="Open navigation"
             className="
               w-9
               h-9
@@ -2300,24 +2939,35 @@ export default function DashboardDesktop() {
               justify-center
               text-slate-600
             "
-            aria-label="Open menu"
           >
             <Menu className="w-4 h-4" />
           </button>
+
         </div>
+
       </header>
 
-      {/* =====================================================
+      {/* =================================================
           MOBILE DRAWER
-      ===================================================== */}
+      ================================================= */}
 
       {mobileMenuOpen && (
         <div
-          className="md:hidden fixed inset-0 z-[100] bg-slate-950/20 backdrop-blur-sm"
+          className="
+            md:hidden
+            fixed
+            inset-0
+            z-[100]
+            bg-slate-950/20
+            backdrop-blur-sm
+          "
           onClick={() =>
-            setMobileMenuOpen(false)
+            setMobileMenuOpen(
+              false
+            )
           }
         >
+
           <div
             className="
               absolute
@@ -2326,18 +2976,20 @@ export default function DashboardDesktop() {
               bottom-0
               w-[82%]
               max-w-xs
-              bg-white/80
-              backdrop-blur-2xl
+              p-4
               border-l
               border-white/80
-              p-4
+              bg-white/80
+              backdrop-blur-2xl
               shadow-2xl
             "
             onClick={(event) =>
               event.stopPropagation()
             }
           >
+
             <div className="flex items-center justify-between mb-6">
+
               <div>
                 <p className="text-[9px] text-slate-400 tracking-[.2em]">
                   NAVIGATION
@@ -2351,20 +3003,35 @@ export default function DashboardDesktop() {
               <button
                 type="button"
                 onClick={() =>
-                  setMobileMenuOpen(false)
+                  setMobileMenuOpen(
+                    false
+                  )
                 }
-                className="w-8 h-8 rounded-full bg-white/70 flex items-center justify-center"
+                className="
+                  w-8
+                  h-8
+                  rounded-full
+                  bg-white/70
+                  flex
+                  items-center
+                  justify-center
+                "
               >
                 <X className="w-4 h-4 text-slate-500" />
               </button>
+
             </div>
 
             <div className="space-y-1.5">
 
+              {/* HOME */}
+
               <button
                 type="button"
                 onClick={() =>
-                  changeTab("home")
+                  changeTab(
+                    "home"
+                  )
                 }
                 className={`
                   w-full
@@ -2375,12 +3042,14 @@ export default function DashboardDesktop() {
                   rounded-2xl
                   text-left
                   ${
-                    activeTab === "home"
+                    activeTab ===
+                    "home"
                       ? "bg-teal-100/80 text-teal-700"
                       : "bg-white/35 text-slate-600"
                   }
                 `}
               >
+
                 <span className="text-base">
                   🌸
                 </span>
@@ -2394,55 +3063,74 @@ export default function DashboardDesktop() {
                     HOME
                   </p>
                 </div>
+
               </button>
 
-              {navigation.map((item) => {
-                const Icon = item.icon;
-                const active =
-                  activeTab === item.id;
+              {navigation.map(
+                (item) => {
+                  const Icon =
+                    item.icon;
 
-                return (
-                  <button
-                    type="button"
-                    key={item.id}
-                    onClick={() =>
-                      changeTab(item.id)
-                    }
-                    className={`
-                      w-full
-                      flex
-                      items-center
-                      gap-3
-                      p-3
-                      rounded-2xl
-                      text-left
-                      ${
-                        active
-                          ? "bg-white text-sky-600 shadow-sm"
-                          : "bg-white/35 text-slate-600"
+                  const active =
+                    activeTab ===
+                    item.id;
+
+                  return (
+                    <button
+                      type="button"
+                      key={
+                        item.id
                       }
-                    `}
-                  >
-                    <Icon className="w-4 h-4" />
+                      onClick={() =>
+                        changeTab(
+                          item.id
+                        )
+                      }
+                      className={`
+                        w-full
+                        flex
+                        items-center
+                        gap-3
+                        p-3
+                        rounded-2xl
+                        text-left
+                        ${
+                          active
+                            ? "bg-white text-sky-600 shadow-sm"
+                            : "bg-white/35 text-slate-600"
+                        }
+                      `}
+                    >
 
-                    <div>
-                      <p className="text-xs font-bold">
-                        {item.jp}
-                      </p>
+                      <Icon className="w-4 h-4" />
 
-                      <p className="text-[8px] opacity-60">
-                        {item.en}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
+                      <div>
+                        <p className="text-xs font-bold">
+                          {
+                            item.jp
+                          }
+                        </p>
+
+                        <p className="text-[8px] opacity-60">
+                          {
+                            item.en
+                          }
+                        </p>
+                      </div>
+
+                    </button>
+                  );
+                }
+              )}
+
             </div>
 
             <div className="mt-6 pt-4 border-t border-white/60 flex gap-4">
 
               <a
-                href={socials.github}
+                href={
+                  socials.github
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"
@@ -2452,7 +3140,9 @@ export default function DashboardDesktop() {
               </a>
 
               <a
-                href={socials.discord}
+                href={
+                  socials.discord
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Discord"
@@ -2462,13 +3152,14 @@ export default function DashboardDesktop() {
               </a>
 
             </div>
+
           </div>
         </div>
       )}
 
-      {/* =====================================================
-          TOP RIGHT TOOLS
-      ===================================================== */}
+      {/* =================================================
+          TOP RIGHT
+      ================================================= */}
 
       <div
         className="
@@ -2482,10 +3173,23 @@ export default function DashboardDesktop() {
           gap-2
         "
       >
+
         <button
           type="button"
           aria-label="Search"
-          className="w-8 h-8 rounded-full bg-white/50 backdrop-blur-md border border-white/80 flex items-center justify-center text-slate-700 shadow-sm"
+          className="
+            w-8
+            h-8
+            rounded-full
+            border
+            border-white/80
+            bg-white/50
+            backdrop-blur-md
+            flex
+            items-center
+            justify-center
+            text-slate-700
+          "
         >
           <Search className="w-4 h-4" />
         </button>
@@ -2493,7 +3197,19 @@ export default function DashboardDesktop() {
         <button
           type="button"
           aria-label="Notifications"
-          className="w-8 h-8 rounded-full bg-white/50 backdrop-blur-md border border-white/80 flex items-center justify-center text-slate-700 shadow-sm"
+          className="
+            w-8
+            h-8
+            rounded-full
+            border
+            border-white/80
+            bg-white/50
+            backdrop-blur-md
+            flex
+            items-center
+            justify-center
+            text-slate-700
+          "
         >
           <Bell className="w-4 h-4" />
         </button>
@@ -2501,15 +3217,28 @@ export default function DashboardDesktop() {
         <button
           type="button"
           aria-label="Add"
-          className="w-8 h-8 rounded-full bg-white/50 backdrop-blur-md border border-white/80 flex items-center justify-center text-slate-700 shadow-sm"
+          className="
+            w-8
+            h-8
+            rounded-full
+            border
+            border-white/80
+            bg-white/50
+            backdrop-blur-md
+            flex
+            items-center
+            justify-center
+            text-slate-700
+          "
         >
           <Plus className="w-4 h-4" />
         </button>
+
       </div>
 
-      {/* =====================================================
-          MAIN CONTENT
-      ===================================================== */}
+      {/* =================================================
+          MAIN
+      ================================================= */}
 
       <main
         className="
@@ -2525,16 +3254,19 @@ export default function DashboardDesktop() {
           md:pb-24
         "
       >
+
         <div className="max-w-[1400px] mx-auto">
           {renderContent()}
         </div>
+
       </main>
 
-      {/* =====================================================
-          MUSIC PLAYER
-      ===================================================== */}
+      {/* =================================================
+          MUSIC
+      ================================================= */}
 
       <MusicPlayer />
+
     </div>
   );
-}
+                }
