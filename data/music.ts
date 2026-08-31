@@ -1,33 +1,33 @@
 export interface Song {
   title: string;
   artist: string;
-  duration: string;
   cover: string;
+  src: string;
 }
 
 export const playlist: Song[] = [
   {
     title: "夜に駆ける",
     artist: "YOASOBI",
-    duration: "4:21",
-    cover: "/images/music/yoasobi.jpg"
+    cover: "/images/music/yoasobi.jpg",
+    src: "/music/yoru-ni-kakeru.mp3",
   },
   {
     title: "花に亡霊",
     artist: "ヨルシカ",
-    duration: "4:01",
-    cover: "/images/music/yorushika.jpg"
+    cover: "/images/music/yorushika.jpg",
+    src: "/music/hana-ni-bourei.mp3",
   },
   {
     title: "アイドル",
     artist: "YOASOBI",
-    duration: "3:33",
-    cover: "/images/music/idol.jpg"
+    cover: "/images/music/idol.jpg",
+    src: "/music/idol.mp3",
   },
   {
     title: "光へ",
     artist: "Aimer",
-    duration: "4:50",
-    cover: "/images/music/aimer.jpg"
-  }
+    cover: "/images/music/aimer.jpg",
+    src: "/music/hikari-e.mp3",
+  },
 ];
