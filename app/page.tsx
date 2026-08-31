@@ -12,6 +12,7 @@ import Image from "next/image";
 
 import {
   User,
+  Home as HomeIcon,
   MapPin,
   Code2,
   CalendarDays,
@@ -29,7 +30,6 @@ import {
   Github,
   Settings,
   Mail,
-  MessageSquare,
   ExternalLink,
   Play,
   Pause,
@@ -51,6 +51,7 @@ import {
   Menu,
   ArrowRight,
   BookOpen,
+  MessageSquare,
 } from "lucide-react";
 
 /* =========================================================
@@ -116,6 +117,7 @@ const profileData = {
   location: "Vietnam",
 
   age: "14 tuổi",
+
 
   role: "Developer / Student",
 
@@ -223,10 +225,10 @@ const projectsData: Project[] = [
 ========================================================= */
 
 const profileStats = [
-  { value: "12+", label: "PROJECTS", icon: Code2 },
+  { value: "36+", label: "PROJECTS", icon: Code2 },
   { value: "3+", label: "YEARS CODING", icon: CalendarDays },
   { value: "1", label: "MINECRAFT SERVER", icon: Boxes },
-  { value: "500+", label: "DISCORD USERS", icon: MessageSquare },
+  { value: "36+", label: "DISCORD USERS", icon: MessageSquare },
 ];
 
 const profileBuilds = [
@@ -358,38 +360,34 @@ const playlist: Song[] = [
 
 const navigation = [
   {
+    id: "home",
+    jp: "ホーム",
+    en: "HOME",
+    icon: HomeIcon,
+  },
+  {
     id: "profile",
     jp: "プロフィール",
     en: "PROFILE",
     icon: User,
   },
-
   {
     id: "music",
     jp: "音楽",
     en: "MUSIC",
     icon: Music,
   },
-
   {
     id: "projects",
     jp: "作成",
     en: "PROJECTS",
     icon: Folder,
   },
-
   {
     id: "gallery",
     jp: "ギャラリー",
     en: "GALLERY",
     icon: GalleryIcon,
-  },
-
-  {
-    id: "diary",
-    jp: "日記",
-    en: "DIARY",
-    icon: StickyNote,
   },
 ];
 
@@ -1303,7 +1301,7 @@ const MusicPlayer = memo(
             className="
               fixed
               z-[90]
-              bottom-[76px]
+              bottom-[122px]
               md:bottom-[80px]
               right-3
               md:right-5
@@ -1551,7 +1549,7 @@ const MusicPlayer = memo(
                   w-9
                   h-9
                   rounded-full
-                  bg-teal-500
+                  bg-sky-500
                   text-white
                   flex
                   items-center
@@ -1625,7 +1623,7 @@ const MusicPlayer = memo(
                 onChange={
                   changeProgress
                 }
-                className="flex-1 h-1 accent-teal-500 cursor-pointer"
+                className="flex-1 h-1 accent-sky-500 cursor-pointer"
                 style={{
                   background: `linear-gradient(
                     to right,
@@ -1679,7 +1677,7 @@ const MusicPlayer = memo(
                 onChange={
                   changeVolume
                 }
-                className="w-16 accent-teal-500"
+                className="w-16 accent-sky-500"
                 aria-label="Volume"
               />
 
@@ -1696,7 +1694,7 @@ const MusicPlayer = memo(
               aria-label="Playlist"
               className={
                 showPlaylist
-                  ? "text-teal-500"
+                  ? "text-sky-500"
                   : "text-slate-500"
               }
             >
@@ -1720,7 +1718,7 @@ const MusicPlayer = memo(
           className="
             md:hidden
             fixed
-            bottom-2
+            bottom-[60px]
             left-2
             right-2
             z-[80]
@@ -1778,7 +1776,7 @@ const MusicPlayer = memo(
             <div className="h-0.5 bg-slate-200 rounded-full overflow-hidden mt-1">
 
               <div
-                className="h-full bg-teal-400 transition-[width] duration-200"
+                className="h-full bg-sky-400 transition-[width] duration-200"
                 style={{
                   width: `${progress}%`,
                 }}
@@ -1808,7 +1806,7 @@ const MusicPlayer = memo(
               w-8
               h-8
               rounded-full
-              bg-teal-500
+              bg-sky-500
               text-white
               flex
               items-center
@@ -2021,13 +2019,6 @@ const HomeView = memo(
               </span>
 
               <span className="text-[9px] bg-white/60 backdrop-blur-md border border-white/80 px-2.5 py-1 rounded-xl">
-                👤{" "}
-                {
-                  profileData.age
-                }
-              </span>
-
-              <span className="text-[9px] bg-white/60 backdrop-blur-md border border-white/80 px-2.5 py-1 rounded-xl">
                 💻{" "}
                 {
                   profileData.role
@@ -2118,13 +2109,6 @@ const HomeView = memo(
                 👤{" "}
                 {
                   profileData.name
-                }
-              </p>
-
-              <p>
-                🎓{" "}
-                {
-                  profileData.age
                 }
               </p>
 
@@ -2686,7 +2670,7 @@ const ProfileView = memo(
             <div className="lg:col-span-5">
               <div className="flex flex-wrap gap-1.5 mb-3">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/90 bg-white/75 px-2.5 py-1 text-[9px] md:text-[10px] text-slate-600"><MapPin className="w-3 h-3" /> Vietnam</span>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/90 bg-white/75 px-2.5 py-1 text-[9px] md:text-[10px] text-slate-600"><User className="w-3 h-3" /> {profileData.age}</span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/90 bg-white/75 px-2.5 py-1 text-[9px] md:text-[10px] text-slate-600"></span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/90 bg-white/75 px-2.5 py-1 text-[9px] md:text-[10px] text-slate-600"><Code2 className="w-3 h-3" /> {profileData.role}</span>
               </div>
 
@@ -2967,9 +2951,9 @@ const MusicView = memo(
 
           <div className="flex items-center gap-3 mb-5">
 
-            <div className="w-11 h-11 rounded-2xl bg-teal-100/70 border border-white flex items-center justify-center">
+            <div className="w-11 h-11 rounded-2xl bg-sky-100/70 border border-white flex items-center justify-center">
 
-              <Music className="w-5 h-5 text-teal-600" />
+              <Music className="w-5 h-5 text-sky-600" />
 
             </div>
 
@@ -3335,7 +3319,7 @@ const DiaryView = memo(
               h-12
               mx-auto
               rounded-2xl
-              bg-teal-100/70
+              bg-sky-100/70
               flex
               items-center
               justify-center
@@ -3343,7 +3327,7 @@ const DiaryView = memo(
             "
           >
 
-            <BookOpen className="w-5 h-5 text-teal-600" />
+            <BookOpen className="w-5 h-5 text-sky-600" />
 
           </div>
 
@@ -3371,7 +3355,7 @@ const DiaryView = memo(
               h-10
               px-4
               rounded-xl
-              bg-teal-500
+              bg-sky-500
               text-white
               text-xs
               font-semibold
@@ -3585,46 +3569,6 @@ export default function DashboardDesktop() {
 
           <LiveClock />
 
-          {/* HOME */}
-
-          <button
-            type="button"
-            onClick={() =>
-              changeTab(
-                "home"
-              )
-            }
-            className={`
-              w-12
-              h-12
-              rounded-2xl
-              border
-              flex
-              flex-col
-              items-center
-              justify-center
-              transition-colors
-              duration-150
-              shadow-sm
-              ${
-                activeTab ===
-                "home"
-                  ? "bg-teal-100/80 border-white text-teal-600"
-                  : "bg-white/40 border-white/60 text-slate-600 hover:bg-white/70"
-              }
-            `}
-          >
-
-            <span className="text-lg">
-              🌸
-            </span>
-
-            <span className="text-[9px] font-bold">
-              ホーム
-            </span>
-
-          </button>
-
           <nav className="flex flex-col gap-2.5 w-full">
 
             {navigation.map(
@@ -3755,403 +3699,30 @@ export default function DashboardDesktop() {
       </aside>
 
       {/* =================================================
-          MOBILE HEADER
-          GIỮ STYLE CŨ
+          MOBILE BOTTOM NAV
+          Giống app UI trong reference: luôn nằm dưới music player.
       ================================================= */}
-
-      <header
-        className="
-          md:hidden
-          fixed
-          top-0
-          left-0
-          right-0
-          h-12
-          z-[70]
-          flex
-          items-center
-          justify-between
-          px-4
-        "
-      >
-
-        <div
-          className="
-            w-full
-            h-12
-            rounded-2xl
-            px-2
-            flex
-            items-center
-            justify-between
-            border
-            border-white/70
-            bg-white/45
-            backdrop-blur-xl
-            shadow-sm
-          "
-        >
-
-          <LiveClock />
-
-          <button
-            type="button"
-            onClick={() =>
-              setMobileMenuOpen(
-                true
-              )
-            }
-            aria-label="Open menu"
-            className="
-              p-1
-              rounded-md
-              bg-white/60
-              text-slate-700
-              active:scale-95
-              transition-transform
-              duration-150
-            "
-          >
-            <Menu className="w-4 h-4" />
-          </button>
-
-        </div>
-
-      </header>
-
-      {/* =================================================
-          MOBILE DRAWER
-          KÍCH THƯỚC ĐÚNG BẢN CŨ
-      ================================================= */}
-
-      {mobileMenuOpen && (
-        <div
-          className="
-            md:hidden
-            fixed
-            inset-0
-            z-[100]
-            bg-slate-900/20
-            backdrop-blur-sm
-          "
-          onClick={() =>
-            setMobileMenuOpen(
-              false
-            )
-          }
-        >
-
-          <div
-            className="
-              absolute
-              top-0
-              right-0
-              bottom-0
-
-              w-64
-
-              bg-white/80
-              backdrop-blur-2xl
-
-              border-l
-              border-white/80
-
-              p-4
-
-              shadow-2xl
-
-              overflow-y-auto
-
-              animate-[mobileMenuIn_.24s_cubic-bezier(.22,1,.36,1)]
-            "
-            onClick={(event) =>
-              event.stopPropagation()
-            }
-          >
-
-            {/* HEADER */}
-
-            <div className="flex items-center justify-between mb-6">
-
-              <div>
-
-                <p className="text-[9px] text-slate-400 tracking-[.2em]">
-                  NAVIGATION
-                </p>
-
-                <h2 className="text-lg font-bold text-slate-800">
-                  Trương Chí Lâm
-                </h2>
-
-              </div>
-
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[90] h-14 bg-white/90 backdrop-blur-2xl border-t border-white/90 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+        <div className="mx-auto flex h-full max-w-md items-stretch justify-around px-1">
+          {navigation.map((item) => {
+            const Icon = item.icon;
+            const active = activeTab === item.id;
+            return (
               <button
+                key={item.id}
                 type="button"
-                onClick={() =>
-                  setMobileMenuOpen(
-                    false
-                  )
-                }
-                className="
-                  w-8
-                  h-8
-                  rounded-full
-                  bg-white/70
-                  flex
-                  items-center
-                  justify-center
-                "
-                aria-label="Close menu"
+                onClick={() => changeTab(item.id)}
+                className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 transition-colors ${active ? "text-sky-600" : "text-slate-500"}`}
+                aria-label={item.en}
               >
-                <X className="w-4 h-4 text-slate-500" />
+                {active && <span className="absolute top-0 h-0.5 w-8 rounded-b-full bg-sky-400" />}
+                <Icon className="h-[18px] w-[18px]" />
+                <span className="text-[8px] font-semibold leading-none">{item.en === "HOME" ? "Home" : item.en.charAt(0) + item.en.slice(1).toLowerCase()}</span>
               </button>
-
-            </div>
-
-            {/* NAV */}
-
-            <div className="space-y-1.5">
-
-              {/* HOME */}
-
-              <button
-                type="button"
-                onClick={() =>
-                  changeTab(
-                    "home"
-                  )
-                }
-                className={`
-                  w-full
-                  flex
-                  items-center
-                  gap-3
-                  p-3
-                  rounded-2xl
-                  text-left
-                  transition-colors
-                  duration-150
-                  ${
-                    activeTab ===
-                    "home"
-                      ? "bg-teal-100/80 text-teal-700"
-                      : "bg-white/35 text-slate-600"
-                  }
-                `}
-              >
-
-                <span className="text-base">
-                  🌸
-                </span>
-
-                <div>
-
-                  <p className="text-xs font-bold">
-                    ホーム
-                  </p>
-
-                  <p className="text-[8px] opacity-60">
-                    HOME
-                  </p>
-
-                </div>
-
-              </button>
-
-              {navigation.map(
-                (
-                  item
-                ) => {
-
-                  const Icon =
-                    item.icon;
-
-                  const active =
-                    activeTab ===
-                    item.id;
-
-                  return (
-                    <button
-                      type="button"
-                      key={
-                        item.id
-                      }
-                      onClick={() =>
-                        changeTab(
-                          item.id
-                        )
-                      }
-                      className={`
-                        w-full
-                        flex
-                        items-center
-                        gap-3
-                        p-3
-                        rounded-2xl
-                        text-left
-                        transition-colors
-                        duration-150
-                        ${
-                          active
-                            ? "bg-white text-sky-600 shadow-sm"
-                            : "bg-white/35 text-slate-600"
-                        }
-                      `}
-                    >
-
-                      <Icon className="w-4 h-4 shrink-0" />
-
-                      <div>
-
-                        <p className="text-xs font-bold">
-                          {
-                            item.jp
-                          }
-                        </p>
-
-                        <p className="text-[8px] opacity-60">
-                          {
-                            item.en
-                          }
-                        </p>
-
-                      </div>
-
-                    </button>
-                  );
-                }
-              )}
-
-            </div>
-
-            {/* SOCIAL */}
-
-            <div className="mt-6 pt-4 border-t border-white/60 flex gap-4">
-
-              <a
-                href={
-                  socials.github
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="GitHub"
-                className="
-                  text-slate-600
-                  hover:text-sky-600
-                  transition-colors
-                "
-              >
-                <Github className="w-4 h-4" />
-              </a>
-
-              <a
-                href={
-                  socials.discord
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Discord"
-                className="
-                  text-slate-600
-                  hover:text-indigo-600
-                  transition-colors
-                "
-              >
-                <DiscordIcon className="w-4 h-4" />
-              </a>
-
-            </div>
-
-          </div>
-
+            );
+          })}
         </div>
-      )}
-
-      {/* =================================================
-          DESKTOP TOP BAR
-          GIỮ STYLE CŨ
-      ================================================= */}
-
-      <div
-        className="
-          hidden
-          md:flex
-          fixed
-          top-4
-          right-6
-          z-40
-          items-center
-          gap-2
-        "
-      >
-
-        <button
-          type="button"
-          aria-label="Search"
-          className="
-            w-8
-            h-8
-            rounded-full
-            border
-            border-white/80
-            bg-white/50
-            backdrop-blur-md
-            flex
-            items-center
-            justify-center
-            text-slate-700
-            shadow-sm
-            hover:bg-white/80
-          "
-        >
-          <Search className="w-4 h-4" />
-        </button>
-
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="
-            w-8
-            h-8
-            rounded-full
-            border
-            border-white/80
-            bg-white/50
-            backdrop-blur-md
-            flex
-            items-center
-            justify-center
-            text-slate-700
-            shadow-sm
-            hover:bg-white/80
-          "
-        >
-          <Bell className="w-4 h-4" />
-        </button>
-
-        <button
-          type="button"
-          aria-label="Add"
-          className="
-            w-8
-            h-8
-            rounded-full
-            border
-            border-white/80
-            bg-white/50
-            backdrop-blur-md
-            flex
-            items-center
-            justify-center
-            text-slate-700
-            shadow-sm
-            hover:bg-white/80
-          "
-        >
-          <Plus className="w-4 h-4" />
-        </button>
-
-      </div>
+      </nav>
 
       {/* =================================================
           MAIN SCROLL CONTAINER
@@ -4164,10 +3735,8 @@ export default function DashboardDesktop() {
         className="
           absolute
 
-          top-12
-          md:top-0
-
-          bottom-[74px]
+          top-0
+          bottom-[122px]
           md:bottom-[68px]
 
           left-0
@@ -4197,6 +3766,7 @@ export default function DashboardDesktop() {
 
             px-3
             py-3
+            pt-4
 
             md:px-6
             md:py-6
