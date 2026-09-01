@@ -1643,28 +1643,6 @@ const MusicPlayer = memo(
               </span>
 
             </div>
-
-            <div className="mt-0.5 flex items-center justify-center gap-2 text-slate-500">
-              <button
-                type="button"
-                onClick={() => changeVolume({ target: { value: String(Math.max(0, volume - 0.1)) } } as React.ChangeEvent<HTMLInputElement>)}
-                className="w-5 h-5 rounded-md bg-white/70 border border-white/80 text-sky-500 flex items-center justify-center"
-                aria-label="Decrease volume"
-              >
-                −
-              </button>
-              {volume > 0 ? <Volume2 className="w-3.5 h-3.5 text-sky-400" /> : <VolumeX className="w-3.5 h-3.5 text-sky-400" />}
-              <span className="text-[8px] min-w-[24px] text-center font-semibold text-sky-600">{Math.round(volume * 100)}%</span>
-              <button
-                type="button"
-                onClick={() => changeVolume({ target: { value: String(Math.min(1, volume + 0.1)) } } as React.ChangeEvent<HTMLInputElement>)}
-                className="w-5 h-5 rounded-md bg-white/70 border border-white/80 text-sky-500 flex items-center justify-center"
-                aria-label="Increase volume"
-              >
-                +
-              </button>
-            </div>
-
           </div>
 
           <div className="flex items-center gap-3 w-1/4 justify-end">
@@ -1874,28 +1852,6 @@ const MusicPlayer = memo(
           >
             <ListMusic className="w-4 h-4" />
           </button>
-
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-1 flex items-center gap-1.5 rounded-full border border-white/85 bg-white/80 px-2 py-0.5 shadow-sm">
-            <button
-              type="button"
-              onClick={() => changeVolume({ target: { value: String(Math.max(0, volume - 0.1)) } } as React.ChangeEvent<HTMLInputElement>)}
-              className="w-4 h-4 rounded-full text-[10px] leading-none text-sky-500"
-              aria-label="Decrease volume"
-            >
-              −
-            </button>
-            {volume > 0 ? <Volume2 className="w-3 h-3 text-sky-400" /> : <VolumeX className="w-3 h-3 text-sky-400" />}
-            <span className="text-[7px] font-semibold text-sky-600 min-w-[22px] text-center">{Math.round(volume * 100)}%</span>
-            <button
-              type="button"
-              onClick={() => changeVolume({ target: { value: String(Math.min(1, volume + 0.1)) } } as React.ChangeEvent<HTMLInputElement>)}
-              className="w-4 h-4 rounded-full text-[10px] leading-none text-sky-500"
-              aria-label="Increase volume"
-            >
-              +
-            </button>
-          </div>
-
         </footer>
       </>
     );
@@ -2327,6 +2283,7 @@ const HomeView = memo(
                           200px
                         "
                         loading="lazy"
+                        quality={82}
                         className="object-cover"
                       />
 
@@ -2469,6 +2426,7 @@ const HomeView = memo(
                         fill
                         sizes="80px"
                         loading="lazy"
+                        quality={82}
                         className="object-cover"
                       />
 
@@ -2629,6 +2587,9 @@ const HomeView = memo(
    PROFILE VIEW
 ========================================================= */
 
+const interactivePanel =
+  "transition-[transform,box-shadow,border-color,background-color] duration-200 ease-out hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(56,189,248,0.12)] hover:border-sky-200/80 motion-reduce:transform-none";
+
 const ProfileView = memo(
   function ProfileView() {
     const skillTone: Record<string, string> = {
@@ -2642,20 +2603,34 @@ const ProfileView = memo(
     };
 
     const outerGlass = `
+      relative
+      overflow-hidden
       rounded-[30px]
       border border-white/75
-      bg-white/30
+      bg-white/34
       backdrop-blur-xl
       shadow-[0_20px_60px_rgba(15,23,42,0.08)]
-      overflow-hidden
+      ${interactivePanel}
+      before:pointer-events-none
+      before:absolute
+      before:inset-x-10
+      before:top-0
+      before:h-px
+      before:bg-gradient-to-r
+      before:from-transparent
+      before:via-white/80
+      before:to-transparent
     `;
 
     const innerGlass = `
+      relative
+      overflow-hidden
       rounded-[22px]
-      border border-white/80
-      bg-white/58
+      border border-white/82
+      bg-white/64
       backdrop-blur-md
       shadow-[0_8px_28px_rgba(15,23,42,0.05)]
+      ${interactivePanel}
     `;
 
     return (
@@ -2672,13 +2647,14 @@ const ProfileView = memo(
 
         <section className={`${outerGlass} p-2.5 md:p-4 lg:p-5`}>
           {/* HERO */}
-          <div className={`${innerGlass} p-4 md:p-5 lg:p-6`}>
+          <div className={`${innerGlass} p-4 md:p-5 lg:p-6 before:pointer-events-none before:absolute before:-top-16 before:right-8 before:h-40 before:w-40 before:rounded-full before:bg-sky-100/35 before:blur-2xl`}>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
               <div className="lg:col-span-7 flex flex-col sm:flex-row items-center sm:items-start gap-4 md:gap-6">
                 <div className="relative shrink-0">
-                  <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full p-[3px] bg-white/85 shadow-[0_8px_30px_rgba(56,189,248,0.18)]">
-                    <div className="absolute inset-0 rounded-full border-[3px] border-sky-100/90" />
-                    <div className="relative w-full h-full rounded-full overflow-hidden border-2 border-white bg-slate-200">
+                  <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full p-[4px] bg-white/72 border border-white/90 shadow-[0_10px_34px_rgba(56,189,248,0.16)]">
+                    <div className="absolute -inset-1 rounded-full border-2 border-white/70" />
+                    <div className="absolute inset-[3px] rounded-full border border-sky-100/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,.55)]" />
+                    <div className="relative z-10 w-full h-full rounded-full overflow-hidden border-2 border-white/95 bg-slate-200">
                       <Image
                         src={profileData.avatar}
                         alt={profileData.name}
@@ -2687,6 +2663,7 @@ const ProfileView = memo(
                         sizes="(max-width: 768px) 112px, 144px"
                         className="object-cover"
                       />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/25 via-transparent to-sky-200/10" />
                     </div>
                   </div>
 
@@ -2788,7 +2765,7 @@ const ProfileView = memo(
                 {profileStats.map((stat) => {
                   const Icon = stat.icon;
                   return (
-                    <div key={stat.label} className="rounded-2xl border border-white/90 bg-white/65 p-3">
+                    <div key={stat.label} className={`rounded-2xl border border-white/90 bg-white/65 p-3 ${interactivePanel}`}>
                       <div className="flex items-center gap-2">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
                           <Icon className="w-4 h-4" />
@@ -2811,7 +2788,7 @@ const ProfileView = memo(
               <SectionHeader icon={<Boxes className="w-4 h-4" />} title="WHAT I BUILD" sub="何を作っているか" action="View all" />
               <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2.5">
                 {profileBuilds.map((build) => (
-                  <div key={build.title} className="rounded-2xl border border-white/90 bg-white/65 p-3">
+                  <div key={build.title} className={`rounded-2xl border border-white/90 bg-white/65 p-3 ${interactivePanel}`}>
                     <div className="flex items-start gap-3">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-white text-xl">
                         {build.icon === "discord" ? <DiscordIcon className="w-6 h-6 text-indigo-600" /> : <span>{build.icon}</span>}
@@ -2861,7 +2838,7 @@ const ProfileView = memo(
               <SectionHeader icon={<Heart className="w-4 h-4" />} title="FAVORITES" sub="お気に入り" />
               <div className="mt-3 grid grid-cols-3 md:grid-cols-6 gap-2">
                 {profileFavorites.map((item) => (
-                  <div key={item.label} className="flex flex-col items-center rounded-2xl border border-white/90 bg-white/60 px-2 py-3 text-center">
+                  <div key={item.label} className={`flex flex-col items-center rounded-2xl border border-white/90 bg-white/60 px-2 py-3 text-center ${interactivePanel}`}>
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white border border-white text-xl shadow-sm">{item.icon}</div>
                     <span className="mt-1.5 text-[8px] font-semibold text-slate-600">{item.label}</span>
                   </div>
@@ -2878,7 +2855,7 @@ const ProfileView = memo(
                 {profileActivity.map((item, index) => {
                   const Icon = item.icon;
                   return (
-                    <div key={`${item.title}-${index}`} className="flex items-center gap-3 rounded-2xl border border-white/80 bg-white/55 px-3 py-2.5">
+                    <div key={`${item.title}-${index}`} className={`flex items-center gap-3 rounded-2xl border border-white/80 bg-white/55 px-3 py-2.5 ${interactivePanel}`}>
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
                         <Icon className="w-4 h-4" />
                       </div>
@@ -2896,7 +2873,7 @@ const ProfileView = memo(
               <SectionHeader icon={<Folder className="w-4 h-4" />} title="RECENT PROJECTS" sub="最近のプロジェクト" action="View all" />
               <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2.5">
                 {projectsData.slice(0, 3).map((project) => (
-                  <div key={project.id} className="rounded-2xl border border-white/90 bg-white/65 p-2.5">
+                  <div key={project.id} className={`rounded-2xl border border-white/90 bg-white/65 p-2.5 ${interactivePanel}`}>
                     <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-slate-200">
                       <Image
                         src={project.image}
@@ -2904,6 +2881,7 @@ const ProfileView = memo(
                         fill
                         sizes="(max-width: 768px) 90vw, 240px"
                         loading="lazy"
+                        quality={82}
                         className="object-cover"
                       />
                     </div>
@@ -3650,8 +3628,10 @@ export default function DashboardDesktop() {
                       rounded-xl
                       py-2
                       px-1
-                      transition-colors
+                      transition-[transform,background-color,color,box-shadow]
                       duration-150
+                      hover:-translate-y-0.5
+                      hover:shadow-[0_8px_20px_rgba(56,189,248,0.12)]
                       ${
                         active
                           ? "bg-white/80 text-sky-600 shadow-sm font-bold"
@@ -3698,7 +3678,8 @@ export default function DashboardDesktop() {
               aria-label="GitHub"
               className="
                 hover:text-sky-600
-                transition-colors
+                transition-[transform,color]
+                hover:-translate-y-0.5
               "
             >
               <Github className="w-4 h-4" />
@@ -3713,7 +3694,8 @@ export default function DashboardDesktop() {
               aria-label="Discord"
               className="
                 hover:text-indigo-600
-                transition-colors
+                transition-[transform,color]
+                hover:-translate-y-0.5
               "
             >
               <DiscordIcon className="w-4 h-4" />
@@ -3729,7 +3711,8 @@ export default function DashboardDesktop() {
               }
               className="
                 hover:text-sky-600
-                transition-colors
+                transition-[transform,color]
+                hover:-translate-y-0.5
               "
             >
               <Settings className="w-4 h-4" />
@@ -3761,7 +3744,7 @@ export default function DashboardDesktop() {
                 key={item.id}
                 type="button"
                 onClick={() => changeTab(item.id)}
-                className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 transition-colors ${active ? "text-sky-600" : "text-slate-500"}`}
+                className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 transition-[transform,color] duration-150 hover:-translate-y-0.5 ${active ? "text-sky-600" : "text-slate-500"}`}
                 aria-label={item.en}
               >
                 {active && <span className="absolute top-0 h-0.5 w-8 rounded-b-full bg-sky-400" />}
