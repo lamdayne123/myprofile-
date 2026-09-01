@@ -138,8 +138,9 @@ const profileData = {
 
 const socials = {
   github: "https://github.com/lamdayne123",
-
-  discord: "https://discord.gg/EaMaGUuxwK",
+  discord: "https://discord.gg/HRNJwJ6y",
+  facebook: "https://www.facebook.com/share/19WXjbrKjx/",
+  email: "mailto:chilamt291@gmail.com",
 };
 
 /* =========================================================
@@ -1862,722 +1863,375 @@ const MusicPlayer = memo(
    HOME
 ========================================================= */
 
-const HomeView = memo(
-  function HomeView() {
-    const [
-      selectedGallery,
-      setSelectedGallery,
-    ] =
-      useState<
-        number | null
-      >(null);
+
+const HomeServerStatus = memo(
+  function HomeServerStatus() {
+    const [serverData, setServerData] = useState<ServerData>({
+      online: false,
+      players: { online: 0, max: 0 },
+      version: "Loading...",
+      tps: 20,
+      ping: 0,
+      ip: "play.craftopics.online",
+    });
+
+    const [loading, setLoading] = useState(true);
+
+    const loadServer = useCallback(async () => {
+      try {
+        const response = await fetch("/api/server", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server API ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        setServerData({
+          online: Boolean(data.online),
+          players: {
+            online: Number(data.players?.online ?? 0),
+            max: Number(data.players?.max ?? 0),
+          },
+          version: data.version ?? "Unknown",
+          tps: 20,
+          ping: 0,
+          ip: "play.craftopics.online",
+        });
+      } catch (error) {
+        console.error("Home server status error:", error);
+        setServerData((previous) => ({
+          ...previous,
+          online: false,
+        }));
+      } finally {
+        setLoading(false);
+      }
+    }, []);
+
+    useEffect(() => {
+      loadServer();
+      const timer = window.setInterval(loadServer, 30000);
+      return () => window.clearInterval(timer);
+    }, [loadServer]);
+
+    const copyIp = useCallback(async () => {
+      try {
+        await navigator.clipboard.writeText(serverData.ip);
+      } catch {
+        // Clipboard may be unavailable.
+      }
+    }, [serverData.ip]);
 
     return (
-      <div className="flex flex-col gap-5">
+      <section
+        className={`
+          group
+          relative
+          overflow-hidden
+          rounded-[28px]
+          border border-white/65
+          bg-white/24
+          backdrop-blur-xl
+          shadow-[0_18px_50px_rgba(15,23,42,0.08)]
+          ${interactivePanel}
+        `}
+      >
+        <div className="relative p-4 sm:p-5 md:p-6">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-stretch">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/70 bg-white/35 text-xl shadow-sm">
+                    ⛏️
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-semibold tracking-[0.22em] text-slate-400">
+                      MINECRAFT / SERVER
+                    </p>
+                    <h2 className="text-lg font-semibold tracking-tight text-slate-700 sm:text-xl">
+                      Craftopia Survival
+                    </h2>
+                  </div>
+                </div>
 
-        {/* =================================================
-            HERO
-        ================================================= */}
-
-        <section
-          className="
-            flex
-            flex-col
-            md:flex-row
-            items-center
-            justify-center
-            gap-4
-            md:gap-6
-            py-2
-            text-center
-            md:text-left
-          "
-        >
-
-          <div className="relative shrink-0">
-
-            <div
-              className="
-                relative
-                w-28
-                h-28
-                md:w-36
-                md:h-36
-                rounded-full
-                p-1
-                bg-gradient-to-tr
-                from-sky-200
-                via-teal-100
-                to-indigo-200
-                shadow-lg
-              "
-            >
-
-              <div className="relative w-full h-full rounded-full overflow-hidden border-2 border-white bg-slate-300">
-
-                <Image
-                  src={
-                    profileData.avatar
-                  }
-                  alt={
-                    profileData.name
-                  }
-                  fill
-                  priority
-                  sizes="
-                    (max-width: 768px) 112px,
-                    144px
-                  "
-                  className="object-cover"
-                />
-
+                <span
+                  className={`
+                    inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1
+                    text-[9px] font-semibold
+                    ${serverData.online
+                      ? "border-emerald-200/80 bg-emerald-50/80 text-emerald-700"
+                      : "border-rose-200/80 bg-rose-50/80 text-rose-700"}
+                  `}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      serverData.online ? "bg-emerald-500" : "bg-rose-500"
+                    }`}
+                  />
+                  {loading ? "CHECKING" : serverData.online ? "ONLINE" : "OFFLINE"}
+                </span>
               </div>
 
-            </div>
-
-            <span
-              className="
-                absolute
-                bottom-0
-                right-0
-                px-2
-                py-0.5
-                rounded-full
-                border
-                border-white
-                bg-emerald-400
-                text-white
-                text-[9px]
-                font-medium
-              "
-            >
-              ● Online
-            </span>
-
-          </div>
-
-          <div className="space-y-1.5 max-w-lg">
-
-            <p className="text-xs md:text-sm text-slate-600 font-medium">
-              {
-                profileData.greetingJp
-              }
-            </p>
-
-            <h1
-              className="
-                text-3xl
-                md:text-4xl
-                font-extrabold
-                italic
-                font-serif
-                tracking-wide
-                text-transparent
-                bg-clip-text
-                bg-gradient-to-r
-                from-rose-400
-                via-pink-400
-                to-sky-500
-              "
-            >
-              {
-                profileData.name
-              }
-            </h1>
-
-            <p className="text-xs text-slate-600 font-medium">
-              {
-                profileData.titleJp
-              }
-            </p>
-
-            <p className="text-[10px] text-slate-400">
-              {
-                profileData.tagline
-              }
-            </p>
-
-            <div
-              className="
-                flex
-                flex-wrap
-                items-center
-                justify-center
-                md:justify-start
-                gap-1.5
-                pt-1.5
-              "
-            >
-
-              <span className="text-[9px] bg-white/60 backdrop-blur-md border border-white/80 px-2.5 py-1 rounded-xl">
-                🇻🇳{" "}
-                {
-                  profileData.location
-                }
-              </span>
-
-              <span className="text-[9px] bg-white/60 backdrop-blur-md border border-white/80 px-2.5 py-1 rounded-xl">
-                💻{" "}
-                {
-                  profileData.role
-                }
-              </span>
-
-            </div>
-
-            <div
-              className="
-                mt-2
-                bg-white/50
-                backdrop-blur-md
-                border
-                border-white/80
-                px-3.5
-                py-2
-                rounded-2xl
-                text-[9px]
-                text-slate-600
-              "
-            >
-
-              <p className="font-medium">
-                "{profileData.quoteJp}"
+              <p className="mt-3 max-w-xl text-[11px] leading-relaxed text-slate-500">
+                Máy chủ sinh tồn của mình, nơi mình xây dựng và thử nghiệm
+                các hệ thống Minecraft.
               </p>
 
-              <p className="mt-0.5 text-slate-500">
-                {
-                  profileData.quoteVi
-                }
-              </p>
-
+              <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {[
+                  {
+                    icon: <Users className="h-3.5 w-3.5" />,
+                    label: "PLAYERS",
+                    value: loading
+                      ? "—"
+                      : `${serverData.players.online}/${serverData.players.max}`,
+                  },
+                  {
+                    icon: <Code2 className="h-3.5 w-3.5" />,
+                    label: "VERSION",
+                    value: loading ? "—" : serverData.version,
+                  },
+                  {
+                    icon: <Activity className="h-3.5 w-3.5" />,
+                    label: "TPS",
+                    value: "20.00",
+                  },
+                  {
+                    icon: <Wifi className="h-3.5 w-3.5" />,
+                    label: "PING",
+                    value: "0ms",
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="rounded-2xl border border-white/60 bg-white/22 px-3 py-3 transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-1 hover:bg-white/35 hover:shadow-[0_10px_24px_rgba(56,189,248,0.08)]"
+                  >
+                    <div className="flex items-center gap-1.5 text-[8px] font-semibold tracking-[0.12em] text-slate-400">
+                      {item.icon}
+                      {item.label}
+                    </div>
+                    <p className="mt-1 truncate text-sm font-semibold text-slate-700">
+                      {item.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
 
-          </div>
+            <div className="w-full lg:max-w-[330px]">
+              <div className="h-full rounded-[22px] border border-white/60 bg-white/22 p-4">
+                <p className="text-[9px] font-semibold tracking-[0.18em] text-slate-400">
+                  QUICK ACCESS
+                </p>
 
+                <div className="mt-3 rounded-2xl border border-white/60 bg-white/25 p-3">
+                  <p className="text-[8px] font-semibold tracking-[0.16em] text-slate-400">
+                    SERVER ADDRESS
+                  </p>
+                  <p className="mt-1 truncate font-mono text-[11px] font-semibold text-slate-700">
+                    {serverData.ip}
+                  </p>
+
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={copyIp}
+                      className="flex-1 rounded-xl border border-white/70 bg-white/50 px-3 py-2 text-[9px] font-semibold text-slate-700 transition-[transform,background-color,box-shadow] duration-150 hover:-translate-y-0.5 hover:bg-white/70 hover:shadow-[0_8px_18px_rgba(56,189,248,0.1)]"
+                    >
+                      Copy IP
+                    </button>
+                    <a
+                      href={socials.discord}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 rounded-xl bg-sky-500/90 px-3 py-2 text-center text-[9px] font-semibold text-white transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(56,189,248,0.2)]"
+                    >
+                      Discord
+                    </a>
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <div className="flex items-center justify-between text-[8px] font-semibold text-slate-400">
+                    <span>SERVER HEALTH</span>
+                    <span className="text-emerald-600">20 TPS</span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-emerald-100/70">
+                    <div className="h-full w-full rounded-full bg-emerald-400" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+);
+
+/* =========================================================
+   HOME
+========================================================= */
+
+const HomeView = memo(
+  function HomeView() {
+    const socialItems = [
+      {
+        label: "GitHub",
+        meta: "Projects & code",
+        href: socials.github,
+        icon: <Github className="h-4 w-4" />,
+      },
+      {
+        label: "Facebook",
+        meta: "Connect with me",
+        href: socials.facebook,
+        icon: (
+          <span className="flex h-4 w-4 items-center justify-center rounded-[5px] bg-sky-500 text-[10px] font-bold text-white">
+            f
+          </span>
+        ),
+      },
+      {
+        label: "Gmail",
+        meta: "chilamt291@gmail.com",
+        href: socials.email,
+        icon: <Mail className="h-4 w-4" />,
+      },
+      {
+        label: "Discord",
+        meta: "Community server",
+        href: socials.discord,
+        icon: <MessageSquare className="h-4 w-4" />,
+      },
+    ];
+
+    return (
+      <div className="w-full">
+        {/* HERO */}
+        <section className="relative mx-auto max-w-[1180px] py-3 sm:py-5">
+          <div className="flex flex-col items-center justify-center text-center md:flex-row md:gap-8 md:text-left">
+            <div className="relative shrink-0">
+              <div className="relative h-32 w-32 rounded-full p-[4px] bg-gradient-to-tr from-sky-200 via-white to-cyan-200 shadow-[0_18px_40px_rgba(56,189,248,0.15)] sm:h-36 sm:w-36">
+                <div className="absolute -inset-1.5 rounded-full border border-white/75" />
+                <div className="absolute inset-[3px] rounded-full border border-sky-100/90" />
+                <div className="relative h-full w-full overflow-hidden rounded-full border-2 border-white bg-slate-200">
+                  <Image
+                    src={profileData.avatar}
+                    alt={profileData.name}
+                    fill
+                    priority
+                    sizes="(max-width: 640px) 128px, 144px"
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+
+              <span className="absolute -bottom-1 right-0 inline-flex items-center gap-1 rounded-full border-2 border-white bg-emerald-400 px-2.5 py-1 text-[9px] font-semibold text-white shadow-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                Online
+              </span>
+            </div>
+
+            <div className="mt-5 max-w-2xl md:mt-0">
+              <p className="text-[11px] font-medium tracking-wide text-slate-500 sm:text-xs">
+                {profileData.greetingJp}
+              </p>
+
+              <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-sky-500 sm:text-4xl md:text-5xl">
+                {profileData.name}
+              </h1>
+
+              <p className="mt-1 text-xs font-medium text-slate-600">
+                {profileData.tagline}
+              </p>
+
+              <p className="mt-3 max-w-xl text-[11px] leading-relaxed text-slate-500 sm:text-xs">
+                Chào mừng bạn đến với góc nhỏ của mình. Xem nhanh trạng thái
+                Minecraft, kết nối Discord và tìm mình trên các nền tảng khác.
+              </p>
+
+              <div className="mt-3 flex flex-wrap justify-center gap-1.5 md:justify-start">
+                <span className="rounded-xl border border-white/75 bg-white/35 px-2.5 py-1 text-[9px] text-slate-600">
+                  🇻🇳 Vietnam
+                </span>
+                <span className="rounded-xl border border-white/75 bg-white/35 px-2.5 py-1 text-[9px] text-slate-600">
+                  💻 Developer / Student
+                </span>
+              </div>
+
+              <div className="mt-3 max-w-xl rounded-2xl border border-white/70 bg-white/24 px-3.5 py-2.5 text-[9px] text-slate-500 shadow-sm">
+                <p className="font-medium">"{profileData.quoteJp}"</p>
+                <p className="mt-0.5 text-slate-500">{profileData.quoteVi}</p>
+              </div>
+            </div>
+          </div>
         </section>
 
-        {/* =================================================
-            GRID
-        ================================================= */}
-
-        <div
-          className="
-            grid
-            grid-cols-1
-            md:grid-cols-2
-            xl:grid-cols-12
-            gap-4
-            items-start
-            max-w-7xl
-            mx-auto
-            w-full
-          "
-        >
-
-          {/* PROFILE */}
-
-          <section
-            id="profile"
-            className="
-              xl:col-span-3
-              rounded-2xl
-              border
-              border-white/80
-              bg-white/45
-              backdrop-blur-md
-              md:backdrop-blur-xl
-              p-4
-              shadow-sm
-            "
-          >
-
-            <div className="flex items-center gap-1.5 mb-3">
-
-              <User className="w-3.5 h-3.5" />
-
-              <span className="text-xs font-bold">
-                PROFILE
-              </span>
-
-            </div>
-
-            <div className="space-y-1.5 text-xs">
-
-              <p>
-                👤{" "}
-                {
-                  profileData.name
-                }
-              </p>
-
-              <p>
-                🎒 Student
-              </p>
-
-              <p>
-                💻 Developer
-              </p>
-
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-white/60">
-
-              <h4 className="text-[10px] font-bold text-slate-500 mb-1">
-                ABOUT ME
-              </h4>
-
-              <p className="text-[10px] text-slate-600 leading-relaxed">
-                {
-                  profileData.aboutJp
-                }
-              </p>
-
-            </div>
-
-            <div className="mt-3">
-
-              <h4 className="text-[10px] font-bold text-slate-500 mb-1">
-                好きなこと:
-              </h4>
-
-              <ul className="text-[10px] text-slate-600 space-y-0.5">
-
-                {profileData.hobbies.map(
-                  (
-                    hobby
-                  ) => (
-                    <li
-                      key={
-                        hobby
-                      }
-                    >
-                      ・ {hobby}
-                    </li>
-                  )
-                )}
-
-              </ul>
-
-            </div>
-
-            <div className="flex items-center gap-3 mt-4 pt-3 border-t border-white/60">
-
-              <a
-                href={
-                  socials.github
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="GitHub"
-                className="
-                  hover:text-sky-600
-                  transition-colors
-                "
-              >
-                <Github className="w-3.5 h-3.5" />
-              </a>
-
-              <a
-                href={
-                  socials.discord
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Discord"
-                className="
-                  hover:text-indigo-600
-                  transition-colors
-                "
-              >
-                <DiscordIcon className="w-3.5 h-3.5" />
-              </a>
-
-              <a
-                href="mailto:"
-                aria-label="Email"
-                className="
-                  hover:text-sky-600
-                  transition-colors
-                "
-              >
-                <Mail className="w-3.5 h-3.5" />
-              </a>
-
-            </div>
-
-          </section>
-
-          {/* PROJECTS */}
-
-          <section
-            id="projects"
-            className="
-              md:col-span-2
-              xl:col-span-5
-              rounded-2xl
-              border
-              border-white/80
-              bg-white/45
-              backdrop-blur-md
-              md:backdrop-blur-xl
-              p-4
-              shadow-sm
-            "
-          >
-
-            <div className="flex items-center justify-between mb-3">
-
-              <span className="flex items-center gap-1.5 text-xs font-bold">
-
-                <Folder className="w-3.5 h-3.5" />
-
-                PROJECTS
-
-              </span>
-
-              <button
-                type="button"
-                className="flex items-center gap-0.5 text-[9px] text-sky-600 font-bold"
-              >
-                VIEW ALL
-
-                <ExternalLink className="w-2.5 h-2.5" />
-              </button>
-
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-
-              {projectsData.map(
-                (
-                  project
-                ) => (
-
-                  <div
-                    key={
-                      project.id
-                    }
-                    className="
-                      min-w-0
-                      rounded-xl
-                      border
-                      border-white/90
-                      bg-white/60
-                      p-2
-                    "
-                  >
-
-                    <div className="relative aspect-[1.55] rounded-lg overflow-hidden bg-slate-200 mb-2">
-
-                      <Image
-                        src={
-                          project.image
-                        }
-                        alt={
-                          project.name
-                        }
-                        fill
-                        sizes="
-                          (max-width: 640px) 42vw,
-                          (max-width: 1280px) 20vw,
-                          200px
-                        "
-                        loading="lazy"
-                        quality={82}
-                        className="object-cover"
-                      />
-
-                    </div>
-
-                    <h3 className="text-[10px] font-bold leading-tight">
-                      {
-                        project.name
-                      }
-                    </h3>
-
-                    <div className="flex flex-wrap gap-0.5 my-1.5">
-
-                      {project.tags.map(
-                        (
-                          tag
-                        ) => (
-
-                          <span
-                            key={
-                              tag
-                            }
-                            className="
-                              px-1
-                              rounded
-                              bg-sky-100/80
-                              text-sky-700
-                              text-[7px]
-                            "
-                          >
-                            {
-                              tag
-                            }
-                          </span>
-
-                        )
-                      )}
-
-                    </div>
-
-                    <p className="text-[8px] text-slate-500 line-clamp-2 leading-tight">
-                      {
-                        project.desc
-                      }
-                    </p>
-
-                    <button
-                      type="button"
-                      className="
-                        mt-2
-                        px-2
-                        py-1
-                        rounded-md
-                        border
-                        border-slate-200
-                        bg-white/80
-                        text-[8px]
-                        text-slate-700
-                      "
-                    >
-                      Xem thêm →
-                    </button>
-
-                  </div>
-
-                )
-              )}
-
-            </div>
-
-          </section>
-
-          {/* RIGHT SIDE */}
-
-          <div
-            className="
-              xl:col-span-4
-              grid
-              grid-cols-1
-              sm:grid-cols-2
-              gap-3
-            "
-          >
-
-            {/* GALLERY */}
-
-            <section
-              id="gallery"
-              className="
-                rounded-2xl
-                border
-                border-white/80
-                bg-white/45
-                backdrop-blur-md
-                md:backdrop-blur-xl
-                p-3
-                shadow-sm
-              "
-            >
-
-              <div className="flex items-center gap-1 mb-2">
-
-                <GalleryIcon className="w-3 h-3" />
-
-                <span className="text-[11px] font-bold">
-                  GALLERY
-                </span>
-
-              </div>
-
-              <div className="grid grid-cols-2 gap-1.5">
-
-                {[1, 2, 3, 4, 5, 6].map(
-                  (
-                    number
-                  ) => (
-
-                    <button
-                      key={
-                        number
-                      }
-                      type="button"
-                      onClick={() =>
-                        setSelectedGallery(
-                          number
-                        )
-                      }
-                      className="
-                        relative
-                        h-14
-                        rounded-lg
-                        overflow-hidden
-                        bg-slate-200
-                      "
-                    >
-
-                      <Image
-                        src={`/images/gallery/${number}.jpg`}
-                        alt={`Gallery ${number}`}
-                        fill
-                        sizes="80px"
-                        loading="lazy"
-                        quality={82}
-                        className="object-cover"
-                      />
-
-                    </button>
-
-                  )
-                )}
-
-              </div>
-
-            </section>
-
-            {/* SERVER */}
-
-            <ServerStatus />
-
-            {/* NOTE */}
-
-            <section
-              id="notes"
-              className="
-                sm:col-span-2
-                rounded-2xl
-                border
-                border-white/80
-                bg-white/45
-                backdrop-blur-md
-                md:backdrop-blur-xl
-                p-3
-                shadow-sm
-                relative
-                overflow-hidden
-              "
-            >
-
-              <div className="flex justify-between mb-1.5">
-
-                <span className="text-[10px] font-bold">
-
-                  ✏️ 今日の言霊
-
-                  <span className="ml-1 text-slate-400 font-normal">
-                    TODAY'S NOTE
-                  </span>
-
-                </span>
-
-                <ChevronDown className="w-3 h-3 text-slate-400" />
-
-              </div>
-
-              <p className="text-[10px] text-slate-600 italic">
-                夢を見ることができれば、
-                <br />
-                それは実現できる。
-              </p>
-
-              <p className="mt-1 text-[9px] text-slate-500">
-                Nếu có thể mơ,
-                <br />
-                bạn có thể làm được.
-              </p>
-
-              <div className="absolute right-2 bottom-1 opacity-40 text-2xl pointer-events-none">
-                🌸
-              </div>
-
-            </section>
-
-          </div>
-
+        {/* SERVER */}
+        <div className="mx-auto mt-4 max-w-[1180px]">
+          <HomeServerStatus />
         </div>
 
-        {/* GALLERY LIGHTBOX */}
-
-        {selectedGallery && (
-          <div
-            className="
-              fixed
-              inset-0
-              z-[100]
-              flex
-              items-center
-              justify-center
-              p-4
-              bg-black/40
-              backdrop-blur-sm
-            "
-            onClick={() =>
-              setSelectedGallery(
-                null
-              )
-            }
-          >
-
-            <div
-              className="
-                relative
-                w-full
-                max-w-2xl
-                aspect-video
-                overflow-hidden
-                rounded-3xl
-                border
-                border-white/60
-                bg-slate-950
-                shadow-2xl
-              "
-              onClick={(event) =>
-                event.stopPropagation()
-              }
-            >
-
-              <Image
-                src={`/images/gallery/${selectedGallery}.jpg`}
-                alt={`Gallery ${selectedGallery}`}
-                fill
-                sizes="90vw"
-                className="object-contain"
-              />
-
-              <button
-                type="button"
-                onClick={() =>
-                  setSelectedGallery(
-                    null
-                  )
-                }
-                aria-label="Close"
-                className="
-                  absolute
-                  top-3
-                  right-3
-                  w-8
-                  h-8
-                  rounded-full
-                  bg-black/40
-                  text-white
-                  flex
-                  items-center
-                  justify-center
-                "
-              >
-                <X className="w-4 h-4" />
-              </button>
-
+        {/* SOCIALS */}
+        <section
+          className={`
+            group
+            relative
+            mx-auto
+            mt-4
+            max-w-[1180px]
+            overflow-hidden
+            rounded-[28px]
+            border border-white/65
+            bg-white/24
+            backdrop-blur-xl
+            shadow-[0_16px_45px_rgba(15,23,42,0.07)]
+            ${interactivePanel}
+          `}
+        >
+          <div className="relative p-4 sm:p-5">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-[9px] font-semibold tracking-[0.22em] text-slate-400">
+                  CONNECT / SOCIALS
+                </p>
+                <h2 className="mt-1 text-lg font-semibold tracking-tight text-slate-700 sm:text-xl">
+                  Find me around the web
+                </h2>
+              </div>
+              <ArrowRight className="hidden h-5 w-5 text-sky-400 sm:block" />
             </div>
 
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              {socialItems.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group/social flex items-center gap-3 rounded-2xl border border-white/60 bg-white/28 px-3.5 py-3 transition-[transform,background-color,box-shadow,border-color] duration-200 hover:-translate-y-1 hover:border-sky-200/75 hover:bg-white/45 hover:shadow-[0_14px_28px_rgba(56,189,248,0.1)]"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/70 bg-white/45 text-slate-600 shadow-sm">
+                    {item.icon}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[11px] font-semibold text-slate-700">
+                      {item.label}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[9px] text-slate-400">
+                      {item.meta}
+                    </span>
+                  </span>
+                  <ExternalLink className="h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200 group-hover/social:-translate-y-0.5 group-hover/social:translate-x-0.5 group-hover/social:text-sky-500" />
+                </a>
+              ))}
+            </div>
           </div>
-        )}
-
+        </section>
       </div>
     );
   }
