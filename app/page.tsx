@@ -1863,7 +1863,6 @@ const MusicPlayer = memo(
    HOME
 ========================================================= */
 
-
 const HomeServerStatus = memo(
   function HomeServerStatus() {
     const [serverData, setServerData] = useState<ServerData>({
@@ -1879,9 +1878,7 @@ const HomeServerStatus = memo(
 
     const loadServer = useCallback(async () => {
       try {
-        const response = await fetch("/api/server", {
-          cache: "no-store",
-        });
+        const response = await fetch("/api/server", { cache: "no-store" });
 
         if (!response.ok) {
           throw new Error(`Server API ${response.status}`);
@@ -1896,16 +1893,13 @@ const HomeServerStatus = memo(
             max: Number(data.players?.max ?? 0),
           },
           version: data.version ?? "Unknown",
-          tps: 20,
-          ping: 0,
+          tps: Number(data.tps ?? 20),
+          ping: Number(data.ping ?? 0),
           ip: "play.craftopics.online",
         });
       } catch (error) {
         console.error("Home server status error:", error);
-        setServerData((previous) => ({
-          ...previous,
-          online: false,
-        }));
+        setServerData((previous) => ({ ...previous, online: false }));
       } finally {
         setLoading(false);
       }
@@ -1925,62 +1919,90 @@ const HomeServerStatus = memo(
       }
     }, [serverData.ip]);
 
+    const health = Math.max(0, Math.min(100, (serverData.tps / 20) * 100));
+
     return (
       <section
         className={`
-          group
-          relative
-          overflow-hidden
-          rounded-[28px]
-          border border-white/65
-          bg-white/24
-          backdrop-blur-xl
-          shadow-[0_18px_50px_rgba(15,23,42,0.08)]
+          group relative overflow-hidden rounded-[26px]
+          border border-white/60 bg-white/[0.22] backdrop-blur-2xl
+          shadow-[0_20px_60px_rgba(15,23,42,0.09)]
           ${interactivePanel}
         `}
       >
+        {/* soft glass highlights */}
+        <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-sky-200/20 blur-3xl transition-opacity duration-300 group-hover:opacity-90" />
+        <div className="pointer-events-none absolute -bottom-28 left-1/3 h-48 w-48 rounded-full bg-cyan-200/15 blur-3xl" />
+
         <div className="relative p-4 sm:p-5 md:p-6">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-stretch">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-start justify-between gap-3">
+          <div className="grid gap-3 md:grid-cols-[1.1fr_1.8fr_1fr] md:items-stretch">
+
+            {/* SERVER IDENTITY */}
+            <div className="relative overflow-hidden rounded-[21px] border border-white/65 bg-white/[0.30] p-4 shadow-sm">
+              <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/70 bg-white/35 text-xl shadow-sm">
-                    ⛏️
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/75 bg-white/45 text-xl shadow-[0_8px_22px_rgba(56,189,248,0.10)] transition-transform duration-200 group-hover:scale-[1.03]">
+                    🧱
                   </div>
-                  <div>
-                    <p className="text-[9px] font-semibold tracking-[0.22em] text-slate-400">
-                      MINECRAFT / SERVER
+                  <div className="min-w-0">
+                    <p className="text-[8px] font-bold tracking-[0.22em] text-slate-400">
+                      MINECRAFT SERVER
                     </p>
-                    <h2 className="text-lg font-semibold tracking-tight text-slate-700 sm:text-xl">
+                    <h2 className="mt-0.5 truncate text-base font-bold tracking-tight text-slate-700">
                       Craftopia Survival
                     </h2>
                   </div>
                 </div>
 
                 <span
-                  className={`
-                    inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1
-                    text-[9px] font-semibold
-                    ${serverData.online
+                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[8px] font-bold ${
+                    serverData.online
                       ? "border-emerald-200/80 bg-emerald-50/80 text-emerald-700"
-                      : "border-rose-200/80 bg-rose-50/80 text-rose-700"}
-                  `}
+                      : "border-rose-200/80 bg-rose-50/80 text-rose-700"
+                  }`}
                 >
                   <span
                     className={`h-1.5 w-1.5 rounded-full ${
-                      serverData.online ? "bg-emerald-500" : "bg-rose-500"
+                      serverData.online ? "bg-emerald-500 animate-pulse" : "bg-rose-500"
                     }`}
                   />
                   {loading ? "CHECKING" : serverData.online ? "ONLINE" : "OFFLINE"}
                 </span>
               </div>
 
-              <p className="mt-3 max-w-xl text-[11px] leading-relaxed text-slate-500">
-                Máy chủ sinh tồn của mình, nơi mình xây dựng và thử nghiệm
-                các hệ thống Minecraft.
+              <p className="mt-4 text-[10px] leading-relaxed text-slate-500">
+                Máy chủ sinh tồn Minecraft và cũng là nơi mình xây dựng,
+                thử nghiệm plugin và các hệ thống riêng.
               </p>
 
-              <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <div className="mt-4 flex items-center gap-2 text-[9px] text-slate-400">
+                <span className="rounded-lg border border-white/70 bg-white/35 px-2 py-1">
+                  Paper
+                </span>
+                <span className="rounded-lg border border-white/70 bg-white/35 px-2 py-1">
+                  Survival
+                </span>
+                <span className="rounded-lg border border-white/70 bg-white/35 px-2 py-1">
+                  Community
+                </span>
+              </div>
+            </div>
+
+            {/* LIVE METRICS */}
+            <div className="rounded-[21px] border border-white/65 bg-white/[0.25] p-3.5 shadow-sm">
+              <div className="mb-2.5 flex items-center justify-between">
+                <div>
+                  <p className="text-[8px] font-bold tracking-[0.2em] text-slate-400">
+                    LIVE STATUS
+                  </p>
+                  <p className="mt-0.5 text-[10px] text-slate-500">
+                    Real-time server information
+                  </p>
+                </div>
+                <Activity className="h-4 w-4 text-sky-400" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
                 {[
                   {
                     icon: <Users className="h-3.5 w-3.5" />,
@@ -1988,32 +2010,36 @@ const HomeServerStatus = memo(
                     value: loading
                       ? "—"
                       : `${serverData.players.online}/${serverData.players.max}`,
+                    tone: "text-sky-600",
                   },
                   {
                     icon: <Code2 className="h-3.5 w-3.5" />,
                     label: "VERSION",
                     value: loading ? "—" : serverData.version,
+                    tone: "text-violet-600",
                   },
                   {
                     icon: <Activity className="h-3.5 w-3.5" />,
                     label: "TPS",
-                    value: "20.00",
+                    value: loading ? "—" : serverData.tps.toFixed(2),
+                    tone: "text-emerald-600",
                   },
                   {
                     icon: <Wifi className="h-3.5 w-3.5" />,
                     label: "PING",
-                    value: "0ms",
+                    value: loading ? "—" : `${serverData.ping}ms`,
+                    tone: "text-cyan-600",
                   },
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className="rounded-2xl border border-white/60 bg-white/22 px-3 py-3 transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-1 hover:bg-white/35 hover:shadow-[0_10px_24px_rgba(56,189,248,0.08)]"
+                    className="group/metric rounded-[15px] border border-white/65 bg-white/[0.34] px-3 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/[0.50] hover:shadow-[0_10px_25px_rgba(56,189,248,0.10)]"
                   >
-                    <div className="flex items-center gap-1.5 text-[8px] font-semibold tracking-[0.12em] text-slate-400">
+                    <div className={`flex items-center gap-1.5 text-[8px] font-bold tracking-[0.12em] ${item.tone}`}>
                       {item.icon}
                       {item.label}
                     </div>
-                    <p className="mt-1 truncate text-sm font-semibold text-slate-700">
+                    <p className="mt-1 truncate text-sm font-bold text-slate-700">
                       {item.value}
                     </p>
                   </div>
@@ -2021,47 +2047,57 @@ const HomeServerStatus = memo(
               </div>
             </div>
 
-            <div className="w-full lg:max-w-[330px]">
-              <div className="h-full rounded-[22px] border border-white/60 bg-white/22 p-4">
-                <p className="text-[9px] font-semibold tracking-[0.18em] text-slate-400">
-                  QUICK ACCESS
-                </p>
-
-                <div className="mt-3 rounded-2xl border border-white/60 bg-white/25 p-3">
-                  <p className="text-[8px] font-semibold tracking-[0.16em] text-slate-400">
-                    SERVER ADDRESS
+            {/* QUICK ACCESS */}
+            <div className="rounded-[21px] border border-white/65 bg-white/[0.25] p-3.5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[8px] font-bold tracking-[0.2em] text-slate-400">
+                    QUICK ACCESS
                   </p>
-                  <p className="mt-1 truncate font-mono text-[11px] font-semibold text-slate-700">
-                    {serverData.ip}
+                  <p className="mt-0.5 text-[10px] text-slate-500">
+                    Join the server
                   </p>
-
-                  <div className="mt-3 flex gap-2">
-                    <button
-                      type="button"
-                      onClick={copyIp}
-                      className="flex-1 rounded-xl border border-white/70 bg-white/50 px-3 py-2 text-[9px] font-semibold text-slate-700 transition-[transform,background-color,box-shadow] duration-150 hover:-translate-y-0.5 hover:bg-white/70 hover:shadow-[0_8px_18px_rgba(56,189,248,0.1)]"
-                    >
-                      Copy IP
-                    </button>
-                    <a
-                      href={socials.discord}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 rounded-xl bg-sky-500/90 px-3 py-2 text-center text-[9px] font-semibold text-white transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(56,189,248,0.2)]"
-                    >
-                      Discord
-                    </a>
-                  </div>
                 </div>
+                <Sparkles className="h-4 w-4 text-sky-400" />
+              </div>
 
-                <div className="mt-3">
-                  <div className="flex items-center justify-between text-[8px] font-semibold text-slate-400">
-                    <span>SERVER HEALTH</span>
-                    <span className="text-emerald-600">20 TPS</span>
-                  </div>
-                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-emerald-100/70">
-                    <div className="h-full w-full rounded-full bg-emerald-400" />
-                  </div>
+              <div className="mt-3 rounded-[15px] border border-white/65 bg-white/[0.34] px-3 py-2.5">
+                <p className="text-[7px] font-bold tracking-[0.16em] text-slate-400">
+                  SERVER ADDRESS
+                </p>
+                <p className="mt-1 truncate font-mono text-[10px] font-semibold text-slate-700">
+                  {serverData.ip}
+                </p>
+              </div>
+
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={copyIp}
+                  className="rounded-xl border border-white/70 bg-white/[0.45] px-3 py-2 text-[9px] font-bold text-slate-600 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/[0.70] hover:text-sky-600 hover:shadow-[0_9px_20px_rgba(56,189,248,0.12)]"
+                >
+                  Copy IP
+                </button>
+                <a
+                  href={socials.discord}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-xl bg-sky-500/90 px-3 py-2 text-center text-[9px] font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-sky-500 hover:shadow-[0_10px_22px_rgba(56,189,248,0.22)]"
+                >
+                  Discord
+                </a>
+              </div>
+
+              <div className="mt-3">
+                <div className="flex items-center justify-between text-[8px] font-bold">
+                  <span className="text-slate-400">SERVER HEALTH</span>
+                  <span className="text-emerald-600">{serverData.tps.toFixed(2)} TPS</span>
+                </div>
+                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-emerald-100/80">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-emerald-300 via-cyan-400 to-sky-400 transition-[width] duration-500"
+                    style={{ width: `${health}%` }}
+                  />
                 </div>
               </div>
             </div>
@@ -2149,11 +2185,6 @@ const HomeView = memo(
                 {profileData.tagline}
               </p>
 
-              <p className="mt-3 max-w-xl text-[11px] leading-relaxed text-slate-500 sm:text-xs">
-                Chào mừng bạn đến với góc nhỏ của mình. Xem nhanh trạng thái
-                Minecraft, kết nối Discord và tìm mình trên các nền tảng khác.
-              </p>
-
               <div className="mt-3 flex flex-wrap justify-center gap-1.5 md:justify-start">
                 <span className="rounded-xl border border-white/75 bg-white/35 px-2.5 py-1 text-[9px] text-slate-600">
                   🇻🇳 Vietnam
@@ -2163,7 +2194,7 @@ const HomeView = memo(
                 </span>
               </div>
 
-              <div className="mt-3 max-w-xl rounded-2xl border border-white/70 bg-white/24 px-3.5 py-2.5 text-[9px] text-slate-500 shadow-sm">
+              <div className="mt-3 max-w-xl rounded-2xl border border-white/70 bg-white/[0.24] px-3.5 py-2.5 text-[9px] text-slate-500 shadow-sm backdrop-blur-md">
                 <p className="font-medium">"{profileData.quoteJp}"</p>
                 <p className="mt-0.5 text-slate-500">{profileData.quoteVi}</p>
               </div>
@@ -2172,61 +2203,53 @@ const HomeView = memo(
         </section>
 
         {/* SERVER */}
-        <div className="mx-auto mt-4 max-w-[1180px]">
+        <div className="mx-auto mt-3 max-w-[1180px]">
           <HomeServerStatus />
         </div>
 
         {/* SOCIALS */}
         <section
           className={`
-            group
-            relative
-            mx-auto
-            mt-4
-            max-w-[1180px]
-            overflow-hidden
-            rounded-[28px]
-            border border-white/65
-            bg-white/24
-            backdrop-blur-xl
-            shadow-[0_16px_45px_rgba(15,23,42,0.07)]
+            group relative mx-auto mt-3 max-w-[1180px] overflow-hidden
+            rounded-[24px] border border-white/60 bg-white/[0.20]
+            backdrop-blur-2xl shadow-[0_16px_45px_rgba(15,23,42,0.07)]
             ${interactivePanel}
           `}
         >
-          <div className="relative p-4 sm:p-5">
-            <div className="flex items-end justify-between gap-4">
+          <div className="relative p-3.5 sm:p-4">
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-[9px] font-semibold tracking-[0.22em] text-slate-400">
+                <p className="text-[8px] font-bold tracking-[0.22em] text-slate-400">
                   CONNECT / SOCIALS
                 </p>
-                <h2 className="mt-1 text-lg font-semibold tracking-tight text-slate-700 sm:text-xl">
+                <h2 className="mt-0.5 text-sm font-bold tracking-tight text-slate-700 sm:text-base">
                   Find me around the web
                 </h2>
               </div>
-              <ArrowRight className="hidden h-5 w-5 text-sky-400 sm:block" />
+              <Sparkles className="h-4 w-4 text-sky-400" />
             </div>
 
-            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
               {socialItems.map((item) => (
                 <a
                   key={item.label}
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group/social flex items-center gap-3 rounded-2xl border border-white/60 bg-white/28 px-3.5 py-3 transition-[transform,background-color,box-shadow,border-color] duration-200 hover:-translate-y-1 hover:border-sky-200/75 hover:bg-white/45 hover:shadow-[0_14px_28px_rgba(56,189,248,0.1)]"
+                  className="group/social flex min-w-0 items-center gap-2.5 rounded-2xl border border-white/60 bg-white/[0.28] px-3 py-2.5 transition-all duration-200 hover:-translate-y-1 hover:border-sky-200/75 hover:bg-white/[0.48] hover:shadow-[0_13px_28px_rgba(56,189,248,0.11)]"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/70 bg-white/45 text-slate-600 shadow-sm">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/70 bg-white/[0.45] text-slate-600 shadow-sm transition-transform duration-200 group-hover/social:scale-105">
                     {item.icon}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[11px] font-semibold text-slate-700">
+                    <span className="block text-[10px] font-bold text-slate-700">
                       {item.label}
                     </span>
-                    <span className="mt-0.5 block truncate text-[9px] text-slate-400">
+                    <span className="mt-0.5 block truncate text-[8px] text-slate-400">
                       {item.meta}
                     </span>
                   </span>
-                  <ExternalLink className="h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200 group-hover/social:-translate-y-0.5 group-hover/social:translate-x-0.5 group-hover/social:text-sky-500" />
+                  <ExternalLink className="h-3 w-3 shrink-0 text-slate-400 transition-all duration-200 group-hover/social:translate-x-0.5 group-hover/social:-translate-y-0.5 group-hover/social:text-sky-500" />
                 </a>
               ))}
             </div>
