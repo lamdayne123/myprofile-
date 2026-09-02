@@ -143,6 +143,8 @@ const socials = {
   email: "mailto:chilamt291@gmail.com",
 };
 
+const craftopiaDiscord = "https://discord.gg/EaMaGUuxwK";
+
 /* =========================================================
    PROJECTS
 ========================================================= */
@@ -287,11 +289,6 @@ const profileGoals = [
   { icon: "🌐", title: "Future", text: "Study abroad & work in technology." },
 ];
 
-const profileActivity = [
-  { icon: Github, title: "Pushed a new commit", meta: "A few hours ago" },
-  { icon: Boxes, title: "Updated Craftopia Survival", meta: "Recently" },
-  { icon: Music, title: "Listening to YOASOBI", meta: "Today" },
-];
 
 /* =========================================================
    MUSIC
@@ -1863,8 +1860,8 @@ const MusicPlayer = memo(
    HOME
 ========================================================= */
 
-const HomeServerStatus = memo(
-  function HomeServerStatus() {
+const HomeView = memo(
+  function HomeView() {
     const [serverData, setServerData] = useState<ServerData>({
       online: false,
       players: { online: 0, max: 0 },
@@ -1873,19 +1870,13 @@ const HomeServerStatus = memo(
       ping: 0,
       ip: "play.craftopics.online",
     });
-
-    const [loading, setLoading] = useState(true);
+    const [serverLoading, setServerLoading] = useState(true);
 
     const loadServer = useCallback(async () => {
       try {
         const response = await fetch("/api/server", { cache: "no-store" });
-
-        if (!response.ok) {
-          throw new Error(`Server API ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`Server API ${response.status}`);
         const data = await response.json();
-
         setServerData({
           online: Boolean(data.online),
           players: {
@@ -1901,7 +1892,7 @@ const HomeServerStatus = memo(
         console.error("Home server status error:", error);
         setServerData((previous) => ({ ...previous, online: false }));
       } finally {
-        setLoading(false);
+        setServerLoading(false);
       }
     }, []);
 
@@ -1914,206 +1905,13 @@ const HomeServerStatus = memo(
     const copyIp = useCallback(async () => {
       try {
         await navigator.clipboard.writeText(serverData.ip);
-      } catch {
-        // Clipboard may be unavailable.
+      } catch (error) {
+        console.error("Copy IP failed:", error);
       }
     }, [serverData.ip]);
 
     const health = Math.max(0, Math.min(100, (serverData.tps / 20) * 100));
 
-    return (
-      <section
-        className={`
-          group relative overflow-hidden rounded-[26px]
-          border border-white/60 bg-white/[0.22] backdrop-blur-2xl
-          shadow-[0_20px_60px_rgba(15,23,42,0.09)]
-          ${interactivePanel}
-        `}
-      >
-        {/* soft glass highlights */}
-        <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-sky-200/20 blur-3xl transition-opacity duration-300 group-hover:opacity-90" />
-        <div className="pointer-events-none absolute -bottom-28 left-1/3 h-48 w-48 rounded-full bg-cyan-200/15 blur-3xl" />
-
-        <div className="relative p-4 sm:p-5 md:p-6">
-          <div className="grid gap-3 md:grid-cols-[1.1fr_1.8fr_1fr] md:items-stretch">
-
-            {/* SERVER IDENTITY */}
-            <div className="relative overflow-hidden rounded-[21px] border border-white/65 bg-white/[0.30] p-4 shadow-sm">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/75 bg-white/45 text-xl shadow-[0_8px_22px_rgba(56,189,248,0.10)] transition-transform duration-200 group-hover:scale-[1.03]">
-                    🧱
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[8px] font-bold tracking-[0.22em] text-slate-400">
-                      MINECRAFT SERVER
-                    </p>
-                    <h2 className="mt-0.5 truncate text-base font-bold tracking-tight text-slate-700">
-                      Craftopia Survival
-                    </h2>
-                  </div>
-                </div>
-
-                <span
-                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[8px] font-bold ${
-                    serverData.online
-                      ? "border-emerald-200/80 bg-emerald-50/80 text-emerald-700"
-                      : "border-rose-200/80 bg-rose-50/80 text-rose-700"
-                  }`}
-                >
-                  <span
-                    className={`h-1.5 w-1.5 rounded-full ${
-                      serverData.online ? "bg-emerald-500 animate-pulse" : "bg-rose-500"
-                    }`}
-                  />
-                  {loading ? "CHECKING" : serverData.online ? "ONLINE" : "OFFLINE"}
-                </span>
-              </div>
-
-              <p className="mt-4 text-[10px] leading-relaxed text-slate-500">
-                Máy chủ sinh tồn Minecraft và cũng là nơi mình xây dựng,
-                thử nghiệm plugin và các hệ thống riêng.
-              </p>
-
-              <div className="mt-4 flex items-center gap-2 text-[9px] text-slate-400">
-                <span className="rounded-lg border border-white/70 bg-white/35 px-2 py-1">
-                  Paper
-                </span>
-                <span className="rounded-lg border border-white/70 bg-white/35 px-2 py-1">
-                  Survival
-                </span>
-                <span className="rounded-lg border border-white/70 bg-white/35 px-2 py-1">
-                  Community
-                </span>
-              </div>
-            </div>
-
-            {/* LIVE METRICS */}
-            <div className="rounded-[21px] border border-white/65 bg-white/[0.25] p-3.5 shadow-sm">
-              <div className="mb-2.5 flex items-center justify-between">
-                <div>
-                  <p className="text-[8px] font-bold tracking-[0.2em] text-slate-400">
-                    LIVE STATUS
-                  </p>
-                  <p className="mt-0.5 text-[10px] text-slate-500">
-                    Real-time server information
-                  </p>
-                </div>
-                <Activity className="h-4 w-4 text-sky-400" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  {
-                    icon: <Users className="h-3.5 w-3.5" />,
-                    label: "PLAYERS",
-                    value: loading
-                      ? "—"
-                      : `${serverData.players.online}/${serverData.players.max}`,
-                    tone: "text-sky-600",
-                  },
-                  {
-                    icon: <Code2 className="h-3.5 w-3.5" />,
-                    label: "VERSION",
-                    value: loading ? "—" : serverData.version,
-                    tone: "text-violet-600",
-                  },
-                  {
-                    icon: <Activity className="h-3.5 w-3.5" />,
-                    label: "TPS",
-                    value: loading ? "—" : serverData.tps.toFixed(2),
-                    tone: "text-emerald-600",
-                  },
-                  {
-                    icon: <Wifi className="h-3.5 w-3.5" />,
-                    label: "PING",
-                    value: loading ? "—" : `${serverData.ping}ms`,
-                    tone: "text-cyan-600",
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className="group/metric rounded-[15px] border border-white/65 bg-white/[0.34] px-3 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/[0.50] hover:shadow-[0_10px_25px_rgba(56,189,248,0.10)]"
-                  >
-                    <div className={`flex items-center gap-1.5 text-[8px] font-bold tracking-[0.12em] ${item.tone}`}>
-                      {item.icon}
-                      {item.label}
-                    </div>
-                    <p className="mt-1 truncate text-sm font-bold text-slate-700">
-                      {item.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* QUICK ACCESS */}
-            <div className="rounded-[21px] border border-white/65 bg-white/[0.25] p-3.5 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[8px] font-bold tracking-[0.2em] text-slate-400">
-                    QUICK ACCESS
-                  </p>
-                  <p className="mt-0.5 text-[10px] text-slate-500">
-                    Join the server
-                  </p>
-                </div>
-                <Sparkles className="h-4 w-4 text-sky-400" />
-              </div>
-
-              <div className="mt-3 rounded-[15px] border border-white/65 bg-white/[0.34] px-3 py-2.5">
-                <p className="text-[7px] font-bold tracking-[0.16em] text-slate-400">
-                  SERVER ADDRESS
-                </p>
-                <p className="mt-1 truncate font-mono text-[10px] font-semibold text-slate-700">
-                  {serverData.ip}
-                </p>
-              </div>
-
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={copyIp}
-                  className="rounded-xl border border-white/70 bg-white/[0.45] px-3 py-2 text-[9px] font-bold text-slate-600 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/[0.70] hover:text-sky-600 hover:shadow-[0_9px_20px_rgba(56,189,248,0.12)]"
-                >
-                  Copy IP
-                </button>
-                <a
-                  href={socials.discord}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-xl bg-sky-500/90 px-3 py-2 text-center text-[9px] font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-sky-500 hover:shadow-[0_10px_22px_rgba(56,189,248,0.22)]"
-                >
-                  Discord
-                </a>
-              </div>
-
-              <div className="mt-3">
-                <div className="flex items-center justify-between text-[8px] font-bold">
-                  <span className="text-slate-400">SERVER HEALTH</span>
-                  <span className="text-emerald-600">{serverData.tps.toFixed(2)} TPS</span>
-                </div>
-                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-emerald-100/80">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-emerald-300 via-cyan-400 to-sky-400 transition-[width] duration-500"
-                    style={{ width: `${health}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    );
-  }
-);
-
-/* =========================================================
-   HOME
-========================================================= */
-
-const HomeView = memo(
-  function HomeView() {
     const socialItems = [
       {
         label: "GitHub",
@@ -2125,11 +1923,7 @@ const HomeView = memo(
         label: "Facebook",
         meta: "Connect with me",
         href: socials.facebook,
-        icon: (
-          <span className="flex h-4 w-4 items-center justify-center rounded-[5px] bg-sky-500 text-[10px] font-bold text-white">
-            f
-          </span>
-        ),
+        icon: <span className="font-bold text-sky-600">f</span>,
       },
       {
         label: "Gmail",
@@ -2139,22 +1933,21 @@ const HomeView = memo(
       },
       {
         label: "Discord",
-        meta: "Community server",
+        meta: "Personal contact",
         href: socials.discord,
         icon: <MessageSquare className="h-4 w-4" />,
       },
     ];
 
     return (
-      <div className="w-full">
+      <div className="w-full space-y-4 animate-[contentEnter_.28s_cubic-bezier(.22,1,.36,1)]">
         {/* HERO */}
-        <section className="relative mx-auto max-w-[1180px] py-3 sm:py-5">
-          <div className="flex flex-col items-center justify-center text-center md:flex-row md:gap-8 md:text-left">
+        <section className="mx-auto max-w-[1180px] px-1 py-2">
+          <div className="flex flex-col items-center justify-center gap-5 text-center md:flex-row md:gap-8 md:text-left">
             <div className="relative shrink-0">
-              <div className="relative h-32 w-32 rounded-full p-[4px] bg-gradient-to-tr from-sky-200 via-white to-cyan-200 shadow-[0_18px_40px_rgba(56,189,248,0.15)] sm:h-36 sm:w-36">
-                <div className="absolute -inset-1.5 rounded-full border border-white/75" />
-                <div className="absolute inset-[3px] rounded-full border border-sky-100/90" />
-                <div className="relative h-full w-full overflow-hidden rounded-full border-2 border-white bg-slate-200">
+              <div className="relative h-32 w-32 rounded-full bg-white/[0.08] p-[4px] backdrop-blur-md border border-white/55 shadow-[0_18px_42px_rgba(56,189,248,0.12)] sm:h-36 sm:w-36">
+                <div className="absolute -inset-1 rounded-full border border-white/50" />
+                <div className="relative h-full w-full overflow-hidden rounded-full border-2 border-white/75 bg-slate-200">
                   <Image
                     src={profileData.avatar}
                     alt={profileData.name}
@@ -2163,96 +1956,140 @@ const HomeView = memo(
                     sizes="(max-width: 640px) 128px, 144px"
                     className="object-cover"
                   />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/18 via-transparent to-sky-200/8" />
                 </div>
               </div>
-
-              <span className="absolute -bottom-1 right-0 inline-flex items-center gap-1 rounded-full border-2 border-white bg-emerald-400 px-2.5 py-1 text-[9px] font-semibold text-white shadow-sm">
+              <span className="absolute bottom-0 right-[-3px] z-20 inline-flex items-center gap-1.5 rounded-full border-2 border-white bg-emerald-400 px-2.5 py-1 text-[9px] font-semibold text-white shadow-[0_6px_18px_rgba(16,185,129,0.24)]">
                 <span className="h-1.5 w-1.5 rounded-full bg-white" />
                 Online
               </span>
             </div>
 
-            <div className="mt-5 max-w-2xl md:mt-0">
-              <p className="text-[11px] font-medium tracking-wide text-slate-500 sm:text-xs">
-                {profileData.greetingJp}
-              </p>
-
+            <div className="min-w-0 max-w-2xl">
+              <p className="text-xs font-medium tracking-wide text-slate-500">{profileData.greetingJp}</p>
               <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-sky-500 sm:text-4xl md:text-5xl">
                 {profileData.name}
               </h1>
-
-              <p className="mt-1 text-xs font-medium text-slate-600">
-                {profileData.tagline}
-              </p>
-
+              <p className="mt-1 text-xs font-medium text-slate-600">{profileData.tagline}</p>
               <div className="mt-3 flex flex-wrap justify-center gap-1.5 md:justify-start">
-                <span className="rounded-xl border border-white/75 bg-white/35 px-2.5 py-1 text-[9px] text-slate-600">
-                  🇻🇳 Vietnam
-                </span>
-                <span className="rounded-xl border border-white/75 bg-white/35 px-2.5 py-1 text-[9px] text-slate-600">
-                  💻 Developer / Student
-                </span>
+                <span className="rounded-xl border border-white/70 bg-white/[0.22] px-2.5 py-1 text-[9px] text-slate-600">🇻🇳 Vietnam</span>
+                <span className="rounded-xl border border-white/70 bg-white/[0.22] px-2.5 py-1 text-[9px] text-slate-600">💻 Developer / Student</span>
               </div>
-
-              <div className="mt-3 max-w-xl rounded-2xl border border-white/70 bg-white/[0.24] px-3.5 py-2.5 text-[9px] text-slate-500 shadow-sm backdrop-blur-md">
+              <div className="mt-3 rounded-2xl border border-white/60 bg-white/[0.16] px-3.5 py-2.5 text-[9px] text-slate-500 shadow-sm backdrop-blur-xl">
                 <p className="font-medium">"{profileData.quoteJp}"</p>
-                <p className="mt-0.5 text-slate-500">{profileData.quoteVi}</p>
+                <p className="mt-0.5">{profileData.quoteVi}</p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* SERVER */}
-        <div className="mx-auto mt-3 max-w-[1180px]">
-          <HomeServerStatus />
-        </div>
+        {/* SERVER + DISCORD COMMUNITY */}
+        <section className="mx-auto grid max-w-[1180px] grid-cols-1 gap-4 xl:grid-cols-[1.25fr_.85fr]">
+          {/* SERVER STATUS */}
+          <div className="group relative overflow-hidden rounded-[28px] border border-white/60 bg-white/[0.16] p-1.5 backdrop-blur-2xl shadow-[0_20px_55px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:border-sky-200/80 hover:shadow-[0_28px_65px_rgba(56,189,248,0.12)]">
+            <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-sky-200/15 blur-3xl transition-opacity duration-300 group-hover:opacity-100" />
+            <div className="relative rounded-[23px] border border-white/55 bg-white/[0.18] p-4 backdrop-blur-xl sm:p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/70 bg-white/[0.26] text-xl shadow-sm">🧱</div>
+                  <div className="min-w-0">
+                    <p className="text-[8px] font-bold tracking-[0.22em] text-slate-400">MINECRAFT SERVER</p>
+                    <h2 className="mt-0.5 truncate text-base font-bold text-slate-700 sm:text-lg">Craftopia Survival</h2>
+                  </div>
+                </div>
+                <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[8px] font-bold ${serverData.online ? "border-emerald-200/80 bg-emerald-50/65 text-emerald-700" : "border-rose-200/80 bg-rose-50/65 text-rose-700"}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${serverData.online ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`} />
+                  {serverLoading ? "CHECKING" : serverData.online ? "ONLINE" : "OFFLINE"}
+                </span>
+              </div>
+
+              <p className="mt-3 max-w-2xl text-[10px] leading-relaxed text-slate-500 sm:text-[11px]">
+                Máy chủ sinh tồn Minecraft, nơi mình xây dựng hệ thống, plugin và cùng mọi người chơi.
+              </p>
+
+              <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4">
+                {[
+                  [<Users className="h-3.5 w-3.5" />, "PLAYERS", serverLoading ? "—" : `${serverData.players.online} / ${serverData.players.max}`],
+                  [<Code2 className="h-3.5 w-3.5" />, "VERSION", serverLoading ? "—" : serverData.version],
+                  [<Activity className="h-3.5 w-3.5" />, "TPS", serverLoading ? "—" : serverData.tps.toFixed(2)],
+                  [<Wifi className="h-3.5 w-3.5" />, "PING", serverLoading ? "—" : `${serverData.ping}ms`],
+                ].map(([icon, label, value]) => (
+                  <div key={String(label)} className="rounded-[16px] border border-white/60 bg-white/[0.27] p-3 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/[0.40] hover:shadow-[0_12px_24px_rgba(56,189,248,0.10)]">
+                    <div className="flex items-center gap-1.5 text-[8px] font-bold tracking-[0.12em] text-sky-600">{icon}{label}</div>
+                    <p className="mt-1 truncate text-sm font-bold text-slate-700">{value}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-3 rounded-[16px] border border-white/60 bg-white/[0.20] p-3">
+                <div className="flex items-center justify-between text-[8px] font-bold">
+                  <span className="text-slate-400">SERVER HEALTH</span>
+                  <span className="text-emerald-600">{serverData.tps.toFixed(2)} TPS</span>
+                </div>
+                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-emerald-100/70">
+                  <div className="h-full rounded-full bg-gradient-to-r from-emerald-300 via-cyan-400 to-sky-400 transition-[width] duration-500" style={{ width: `${health}%` }} />
+                </div>
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <p className="min-w-0 truncate font-mono text-[10px] font-semibold text-slate-600">{serverData.ip}</p>
+                <div className="flex items-center gap-1.5">
+                  <button type="button" onClick={copyIp} className="rounded-xl border border-white/70 bg-white/[0.28] px-2.5 py-1.5 text-[8px] font-bold text-slate-600 transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-200/80 hover:bg-white/[0.55] hover:text-sky-600 hover:shadow-[0_8px_18px_rgba(56,189,248,0.10)]">Copy</button>
+                  <a href={craftopiaDiscord} target="_blank" rel="noopener noreferrer" className="rounded-xl border border-sky-200/70 bg-sky-50/45 px-2.5 py-1.5 text-[8px] font-bold text-sky-600 transition-all duration-200 hover:-translate-y-0.5 hover:bg-sky-100/70 hover:shadow-[0_8px_18px_rgba(56,189,248,0.13)]">Craftopia Discord ↗</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* DISCORD WIDGET */}
+          <div className="group relative overflow-hidden rounded-[28px] border border-white/60 bg-white/[0.16] p-1.5 backdrop-blur-2xl shadow-[0_20px_55px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:border-sky-200/80 hover:shadow-[0_28px_65px_rgba(56,189,248,0.12)]">
+            <div className="relative rounded-[23px] border border-white/55 bg-white/[0.18] p-3 backdrop-blur-xl sm:p-4">
+              <div className="mb-3 flex items-center justify-between gap-3 px-1">
+                <div>
+                  <p className="text-[8px] font-bold tracking-[0.22em] text-slate-400">DISCORD COMMUNITY</p>
+                  <h2 className="mt-0.5 text-sm font-bold text-slate-700 sm:text-base">Craftopia Survival</h2>
+                </div>
+                <MessageSquare className="h-4 w-4 text-sky-500" />
+              </div>
+
+              <div className="overflow-hidden rounded-[18px] border border-white/60 bg-slate-950/10 shadow-inner">
+                <iframe
+                  src="https://discord.com/widget?id=1505096709032775760&theme=dark"
+                  title="Craftopia Survival Discord Widget"
+                  width="100%"
+                  height="390"
+                  allowTransparency
+                  frameBorder="0"
+                  sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+                  loading="lazy"
+                  className="block w-full"
+                />
+              </div>
+              <p className="mt-2 px-1 text-center text-[8px] text-slate-400">Thành viên và trạng thái được hiển thị trực tiếp từ Discord.</p>
+            </div>
+          </div>
+        </section>
 
         {/* SOCIALS */}
-        <section
-          className={`
-            group relative mx-auto mt-3 max-w-[1180px] overflow-hidden
-            rounded-[24px] border border-white/60 bg-white/[0.20]
-            backdrop-blur-2xl shadow-[0_16px_45px_rgba(15,23,42,0.07)]
-            ${interactivePanel}
-          `}
-        >
-          <div className="relative p-3.5 sm:p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[8px] font-bold tracking-[0.22em] text-slate-400">
-                  CONNECT / SOCIALS
-                </p>
-                <h2 className="mt-0.5 text-sm font-bold tracking-tight text-slate-700 sm:text-base">
-                  Find me around the web
-                </h2>
-              </div>
-              <Sparkles className="h-4 w-4 text-sky-400" />
+        <section className="mx-auto max-w-[1180px] rounded-[26px] border border-white/60 bg-white/[0.14] p-3.5 backdrop-blur-2xl shadow-[0_16px_45px_rgba(15,23,42,0.07)] transition-all duration-300 hover:-translate-y-1 hover:border-sky-200/75 hover:shadow-[0_22px_55px_rgba(56,189,248,0.10)] sm:p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[8px] font-bold tracking-[0.22em] text-slate-400">CONNECT / SOCIALS</p>
+              <h2 className="mt-0.5 text-sm font-bold text-slate-700 sm:text-base">Find me around the web</h2>
             </div>
-
-            <div className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
-              {socialItems.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group/social flex min-w-0 items-center gap-2.5 rounded-2xl border border-white/60 bg-white/[0.28] px-3 py-2.5 transition-all duration-200 hover:-translate-y-1 hover:border-sky-200/75 hover:bg-white/[0.48] hover:shadow-[0_13px_28px_rgba(56,189,248,0.11)]"
-                >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/70 bg-white/[0.45] text-slate-600 shadow-sm transition-transform duration-200 group-hover/social:scale-105">
-                    {item.icon}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[10px] font-bold text-slate-700">
-                      {item.label}
-                    </span>
-                    <span className="mt-0.5 block truncate text-[8px] text-slate-400">
-                      {item.meta}
-                    </span>
-                  </span>
-                  <ExternalLink className="h-3 w-3 shrink-0 text-slate-400 transition-all duration-200 group-hover/social:translate-x-0.5 group-hover/social:-translate-y-0.5 group-hover/social:text-sky-500" />
-                </a>
-              ))}
-            </div>
+            <Sparkles className="h-4 w-4 text-sky-400" />
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4">
+            {socialItems.map((item) => (
+              <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer" className="group/social flex min-w-0 items-center gap-2.5 rounded-2xl border border-white/60 bg-white/[0.24] px-3 py-2.5 transition-all duration-200 hover:-translate-y-1 hover:border-sky-200/75 hover:bg-white/[0.44] hover:shadow-[0_13px_28px_rgba(56,189,248,0.11)]">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/70 bg-white/[0.38] text-slate-600 shadow-sm transition-transform duration-200 group-hover/social:scale-105">{item.icon}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[10px] font-bold text-slate-700">{item.label}</span>
+                  <span className="mt-0.5 block truncate text-[8px] text-slate-400">{item.meta}</span>
+                </span>
+                <ExternalLink className="h-3 w-3 shrink-0 text-slate-400 transition-colors group-hover/social:text-sky-500" />
+              </a>
+            ))}
           </div>
         </section>
       </div>
@@ -2283,14 +2120,14 @@ const ProfileView = memo(
       relative
       overflow-hidden
       rounded-[30px]
-      border border-white/75
-      bg-white/34
-      backdrop-blur-xl
+      border border-white/55
+      bg-white/[0.12]
+      backdrop-blur-2xl
       shadow-[0_20px_60px_rgba(15,23,42,0.08)]
       ${interactivePanel}
       before:pointer-events-none
       before:absolute
-      before:inset-x-10
+      before:inset-x-12
       before:top-0
       before:h-px
       before:bg-gradient-to-r
@@ -2303,10 +2140,21 @@ const ProfileView = memo(
       relative
       overflow-hidden
       rounded-[22px]
-      border border-white/82
-      bg-white/64
-      backdrop-blur-md
-      shadow-[0_8px_28px_rgba(15,23,42,0.05)]
+      border border-white/62
+      bg-white/[0.20]
+      backdrop-blur-xl
+      shadow-[0_8px_28px_rgba(15,23,42,0.045)]
+      ${interactivePanel}
+    `;
+
+    const heroGlass = `
+      relative
+      overflow-visible
+      rounded-[24px]
+      border border-white/62
+      bg-white/[0.14]
+      backdrop-blur-2xl
+      shadow-[0_12px_34px_rgba(15,23,42,0.06)]
       ${interactivePanel}
     `;
 
@@ -2324,14 +2172,14 @@ const ProfileView = memo(
 
         <section className={`${outerGlass} p-2.5 md:p-4 lg:p-5`}>
           {/* HERO */}
-          <div className={`${innerGlass} p-4 md:p-5 lg:p-6 before:pointer-events-none before:absolute before:-top-16 before:right-8 before:h-40 before:w-40 before:rounded-full before:bg-sky-100/35 before:blur-2xl`}>
+          <div className={`${heroGlass} p-4 md:p-5 lg:p-6 before:pointer-events-none before:absolute before:-top-16 before:right-8 before:h-40 before:w-40 before:rounded-full before:bg-sky-100/14 before:blur-2xl`}>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
               <div className="lg:col-span-7 flex flex-col sm:flex-row items-center sm:items-start gap-4 md:gap-6">
                 <div className="relative shrink-0">
-                  <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full p-[4px] bg-white/72 border border-white/90 shadow-[0_10px_34px_rgba(56,189,248,0.16)]">
-                    <div className="absolute -inset-1 rounded-full border-2 border-white/70" />
-                    <div className="absolute inset-[3px] rounded-full border border-sky-100/90 shadow-[inset_0_0_0_1px_rgba(255,255,255,.55)]" />
-                    <div className="relative z-10 w-full h-full rounded-full overflow-hidden border-2 border-white/95 bg-slate-200">
+                  <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full p-[4px] bg-white/[0.10] backdrop-blur-md border border-white/70 shadow-[0_10px_34px_rgba(56,189,248,0.12)]">
+                    <div className="absolute -inset-1 rounded-full border border-white/55" />
+                    <div className="absolute inset-[3px] rounded-full border border-sky-100/65 shadow-[inset_0_0_18px_rgba(255,255,255,.18)]" />
+                    <div className="relative z-10 w-full h-full rounded-full overflow-hidden border-2 border-white/80 bg-slate-200">
                       <Image
                         src={profileData.avatar}
                         alt={profileData.name}
@@ -2344,7 +2192,7 @@ const ProfileView = memo(
                     </div>
                   </div>
 
-                  <span className="absolute right-[-2px] md:right-0 bottom-1 md:bottom-1 inline-flex items-center gap-1 rounded-full border-2 border-white bg-emerald-400 px-2.5 py-1 text-[8px] md:text-[9px] font-semibold text-white shadow-sm">
+                  <span className="absolute z-30 right-[-4px] md:right-[-6px] bottom-1 md:bottom-1 inline-flex items-center gap-1 rounded-full border-2 border-white bg-emerald-400 px-2.5 py-1 text-[8px] md:text-[9px] font-semibold text-white shadow-[0_6px_18px_rgba(16,185,129,0.24)]">
                     <span className="h-1.5 w-1.5 rounded-full bg-white" /> ONLINE
                   </span>
                 </div>
@@ -2422,7 +2270,7 @@ const ProfileView = memo(
               <div className="mt-4 flex items-center gap-3 border-t border-slate-200/60 pt-3">
                 <a href={socials.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-slate-500 hover:text-slate-800 transition-colors"><Github className="w-4 h-4" /></a>
                 <a href={socials.discord} target="_blank" rel="noopener noreferrer" aria-label="Discord" className="text-slate-500 hover:text-indigo-600 transition-colors"><DiscordIcon className="w-4 h-4" /></a>
-                <a href="mailto:" aria-label="Email" className="text-slate-500 hover:text-sky-600 transition-colors"><Mail className="w-4 h-4" /></a>
+                <a href={socials.email} aria-label="Email" className="text-slate-500 hover:text-sky-600 transition-colors"><Mail className="w-4 h-4" /></a>
               </div>
             </section>
 
@@ -2524,25 +2372,26 @@ const ProfileView = memo(
             </section>
           </div>
 
-          {/* ACTIVITY + RECENT PROJECTS */}
+          {/* HIGHLIGHTS + RECENT PROJECTS */}
           <div className="mt-3 md:mt-4 grid grid-cols-1 xl:grid-cols-12 gap-3 md:gap-4">
             <section className={`${innerGlass} xl:col-span-5 p-4`}>
-              <SectionHeader icon={<Activity className="w-4 h-4" />} title="ACTIVITY" sub="最近の動き" />
-              <div className="mt-3 space-y-2">
-                {profileActivity.map((item, index) => {
-                  const Icon = item.icon;
-                  return (
-                    <div key={`${item.title}-${index}`} className={`flex items-center gap-3 rounded-2xl border border-white/80 bg-white/55 px-3 py-2.5 ${interactivePanel}`}>
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-semibold text-slate-700 truncate">{item.title}</p>
-                        <p className="text-[8px] text-slate-400">{item.meta}</p>
-                      </div>
+              <SectionHeader icon={<Sparkles className="w-4 h-4" />} title="HIGHLIGHTS" sub="自分について" />
+              <div className="mt-3 grid gap-2">
+                {[
+                  { icon: "💻", title: "Build", text: "Tạo các hệ thống web, bot và công cụ nhỏ." },
+                  { icon: "🧱", title: "Explore", text: "Minecraft là nơi mình thích thử nghiệm ý tưởng mới." },
+                  { icon: "🎵", title: "Reset", text: "Âm nhạc là khoảng nghỉ sau những giờ code." },
+                ].map((item) => (
+                  <div key={item.title} className={`flex items-center gap-3 rounded-2xl border border-white/70 bg-white/[0.30] px-3 py-2.5 ${interactivePanel}`}>
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/70 bg-white/[0.42] text-base shadow-sm">
+                      {item.icon}
                     </div>
-                  );
-                })}
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold text-slate-700">{item.title}</p>
+                      <p className="mt-0.5 text-[8px] leading-relaxed text-slate-400">{item.text}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </section>
 
