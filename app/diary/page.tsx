@@ -349,10 +349,10 @@ export default function DiaryPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-x-clip text-slate-800 selection:bg-cyan-200/60">
+    <div className="relative isolate min-h-screen overflow-x-clip text-slate-800 selection:bg-cyan-200/60">
       {/* GPU-friendly fixed visual layer. No background-attachment: fixed. */}
       <div
-        className="pointer-events-none fixed inset-0 -z-30 overflow-hidden bg-sky-100"
+        className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-sky-100"
         style={{
           transform: "translate3d(0,0,0)",
           willChange: "transform",
@@ -387,11 +387,11 @@ export default function DiaryPage() {
       </div>
 
       <div
-        className="pointer-events-none fixed left-1/2 top-[-10rem] -z-20 h-[26rem] w-[45rem] -translate-x-1/2 rounded-full bg-white/30 blur-[90px]"
+        className="pointer-events-none fixed left-1/2 top-[-10rem] z-0 h-[26rem] w-[45rem] -translate-x-1/2 rounded-full bg-white/30 blur-[90px]"
         style={{ transform: "translate3d(-50%,0,0)", willChange: "transform" }}
       />
 
-      <main className="mx-auto w-full max-w-7xl px-3 pb-20 pt-4 sm:px-5 sm:pt-7 lg:pl-28 lg:pr-7">
+      <main className="relative z-10 mx-auto w-full max-w-7xl px-3 pb-20 pt-4 sm:px-5 sm:pt-7 lg:pl-28 lg:pr-7">
         <header
           className={`${glass} relative overflow-hidden rounded-[2rem] p-4 sm:p-5`}
           style={{ transform: "translate3d(0,0,0)" }}
@@ -439,7 +439,7 @@ export default function DiaryPage() {
               {isAdmin ? (
                 <button
                   onClick={() => setShowEditor(true)}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-800 px-4 text-[9px] font-black tracking-[0.04em] text-white shadow-[0_12px_30px_rgba(15,23,42,.18)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-900"
+                  className="relative z-10 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-slate-900 via-cyan-900 to-slate-900 px-4 text-[9px] font-black tracking-[0.04em] !text-white shadow-[0_12px_30px_rgba(15,23,42,.24)] transition-all duration-300 hover:-translate-y-0.5 hover:from-slate-950 hover:via-cyan-950 hover:to-slate-950"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   NEW ENTRY
@@ -866,7 +866,7 @@ export default function DiaryPage() {
                     <button
                       type="submit"
                       disabled={authLoading}
-                      className="group relative mt-1 flex h-13 w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-slate-800 text-[10px] font-black tracking-[0.08em] text-white shadow-[0_16px_35px_rgba(15,23,42,.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-900 disabled:cursor-wait disabled:opacity-65"
+                      className="group relative mt-1 flex h-13 w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-slate-950 via-cyan-900 to-slate-900 text-[10px] font-black tracking-[0.08em] !text-white shadow-[0_18px_42px_rgba(8,47,73,.28)] transition-all duration-300 hover:-translate-y-0.5 hover:from-slate-950 hover:via-cyan-950 hover:to-slate-950 disabled:cursor-wait disabled:opacity-65"
                     >
                       <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/15 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                       {authLoading ? (
