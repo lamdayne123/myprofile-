@@ -1,8 +1,21 @@
+/* app/api/diary/route.ts */
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+export const dynamic = "force-dynamic";
+
+function getAdminEmails(): string[] {
+  // Easy admin management:
+  // ADMIN_EMAILS="a@gmail.com,b@gmail.com,c@gmail.com"
+  // ADMIN_EMAIL is still supported for backward compatibility.
+  const raw = process.env.ADMIN_EMAILS ?? process.env.ADMIN_EMAIL ?? "";
+
+  return raw
+    .split(/[,\n;]+/)
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+}
 
 async function getAdminUser() {
   const supabase = await createSupabaseServerClient();
@@ -10,9 +23,7 @@ async function getAdminUser() {
 
   if (error || !data.user) return null;
 
-  const email = data.user.email?.trim().toLowerCase();
-  if (!ADMIN_EMAIL || !email || email !== ADMIN_EMAIL) return null;
-
+  if (!isAdminUser(data.user)) return null;
   return data.user;
 }
 
@@ -53,25 +64,25 @@ async function selectEntries(includeDrafts: boolean) {
       `;
 }
 
-export async function HEAD() {
-  try {
-    const admin = await getAdminUser();
-    return new NextResponse(null, { status: admin ? 200 : 401 });
-  } catch {
-    return new NextResponse(null, { status: 500 });
-  }
-}
-
 export async function GET() {
   try {
     const admin = await getAdminUser();
-    const entries = await selectEntries(!!admin);
+    const entries = await selectEntries(Boolean(admin));
 
-    return NextResponse.json({
-      success: true,
-      isAdmin: !!admin,
-      entries,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        isAdmin: Boolean(admin),
+        adminEmail: admin?.email ?? null,
+        entries,
+      },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+        },
+      },
+    );
   } catch (error) {
     console.error("GET /api/diary:", error);
     return NextResponse.json(
@@ -81,14 +92,27 @@ export async function GET() {
   }
 }
 
+export async function HEAD() {
+  try {
+    const admin = await getAdminUser();
+    return new NextResponse(null, { status: admin ? 200 : 401 });
+  } catch (error) {
+    console.error("HEAD /api/diary:", error);
+    return new NextResponse(null, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const admin = await getAdminUser();
 
     if (!admin) {
       return NextResponse.json(
-        { success: false, error: "Bạn chưa đăng nhập Admin." },
-        { status: 401 },
+        {
+          success: false,
+          error: "Tài khoản chưa được cấp quyền Admin.",
+        },
+        { status: 403 },
       );
     }
 
@@ -102,14 +126,32 @@ export async function POST(request: Request) {
     }
 
     const data = body as Record<string, unknown>;
-    const title = typeof data.title === "string" ? data.title.trim() : "";
-    const content = typeof data.content === "string" ? data.content.trim() : "";
-    const mood = typeof data.mood === "string" && data.mood.trim() ? data.mood.trim() : "Personal";
-    const moodIcon = typeof data.moodIcon === "string" && data.moodIcon.trim() ? data.moodIcon.trim() : "🌸";
+
+    const title =
+      typeof data.title === "string" ? data.title.trim() : "";
+
+    const content =
+      typeof data.content === "string" ? data.content.trim() : "";
+
+    const mood =
+      typeof data.mood === "string" && data.mood.trim()
+        ? data.mood.trim()
+        : "Personal";
+
+    const moodIcon =
+      typeof data.moodIcon === "string" && data.moodIcon.trim()
+        ? data.moodIcon.trim()
+        : "🌸";
+
     const tags = Array.isArray(data.tags)
-      ? data.tags.filter((tag): tag is string => typeof tag === "string").map((tag) => tag.trim()).filter(Boolean)
+      ? data.tags
+          .filter((tag): tag is string => typeof tag === "string")
+          .map((tag) => tag.trim())
+          .filter(Boolean)
       : [];
-    const published = typeof data.published === "boolean" ? data.published : true;
+
+    const published =
+      typeof data.published === "boolean" ? data.published : true;
 
     if (!title) {
       return NextResponse.json(
@@ -126,12 +168,14 @@ export async function POST(request: Request) {
     }
 
     const now = new Date();
+
     const date = new Intl.DateTimeFormat("vi-VN", {
       timeZone: "Asia/Ho_Chi_Minh",
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
     }).format(now);
+
     const time = new Intl.DateTimeFormat("vi-VN", {
       timeZone: "Asia/Ho_Chi_Minh",
       hour: "2-digit",
@@ -140,6 +184,7 @@ export async function POST(request: Request) {
     }).format(now);
 
     const sql = getDb();
+
     const result = await sql`
       INSERT INTO diary_entries (
         date,
@@ -175,7 +220,10 @@ export async function POST(request: Request) {
     `;
 
     return NextResponse.json(
-      { success: true, entry: result[0] },
+      {
+        success: true,
+        entry: result[0],
+      },
       { status: 201 },
     );
   } catch (error) {
