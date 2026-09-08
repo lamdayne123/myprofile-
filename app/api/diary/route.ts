@@ -6,93 +6,80 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL?.trim().toLowerCase();
 
 async function getAdminUser() {
   const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.auth.getUser();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  if (error || !data.user) return null;
 
-  if (!user) return null;
+  const email = data.user.email?.trim().toLowerCase();
+  if (!ADMIN_EMAIL || !email || email !== ADMIN_EMAIL) return null;
 
-  const email = user.email?.trim().toLowerCase();
-
-  if (!ADMIN_EMAIL || email !== ADMIN_EMAIL) {
-    return null;
-  }
-
-  return user;
+  return data.user;
 }
 
-/* =========================================================
-   GET /api/diary
+async function selectEntries(includeDrafts: boolean) {
+  const sql = getDb();
 
-   Public:
-   - Chỉ lấy diary đã publish.
+  return includeDrafts
+    ? sql`
+        SELECT
+          id,
+          date,
+          time,
+          title,
+          content,
+          mood,
+          mood_icon AS "moodIcon",
+          tags,
+          published,
+          created_at AS "createdAt"
+        FROM diary_entries
+        ORDER BY created_at DESC
+      `
+    : sql`
+        SELECT
+          id,
+          date,
+          time,
+          title,
+          content,
+          mood,
+          mood_icon AS "moodIcon",
+          tags,
+          published,
+          created_at AS "createdAt"
+        FROM diary_entries
+        WHERE published = TRUE
+        ORDER BY created_at DESC
+      `;
+}
 
-   Admin:
-   - Nếu đăng nhập đúng tài khoản admin thì lấy cả
-     published + draft.
-========================================================= */
+export async function HEAD() {
+  try {
+    const admin = await getAdminUser();
+    return new NextResponse(null, { status: admin ? 200 : 401 });
+  } catch {
+    return new NextResponse(null, { status: 500 });
+  }
+}
 
 export async function GET() {
   try {
-    const sql = getDb();
     const admin = await getAdminUser();
-
-    const entries = admin
-      ? await sql`
-          SELECT
-            id,
-            date,
-            time,
-            title,
-            content,
-            mood,
-            mood_icon AS "moodIcon",
-            tags,
-            published,
-            created_at AS "createdAt"
-          FROM diary_entries
-          ORDER BY created_at DESC
-        `
-      : await sql`
-          SELECT
-            id,
-            date,
-            time,
-            title,
-            content,
-            mood,
-            mood_icon AS "moodIcon",
-            tags,
-            published,
-            created_at AS "createdAt"
-          FROM diary_entries
-          WHERE published = TRUE
-          ORDER BY created_at DESC
-        `;
+    const entries = await selectEntries(!!admin);
 
     return NextResponse.json({
       success: true,
+      isAdmin: !!admin,
       entries,
     });
   } catch (error) {
     console.error("GET /api/diary:", error);
-
     return NextResponse.json(
-      {
-        success: false,
-        error: "Không thể tải nhật ký.",
-      },
-      { status: 500 }
+      { success: false, error: "Không thể tải nhật ký." },
+      { status: 500 },
     );
   }
 }
-
-/* =========================================================
-   POST /api/diary
-
-   Chỉ ADMIN mới được tạo.
-========================================================= */
 
 export async function POST(request: Request) {
   try {
@@ -100,124 +87,59 @@ export async function POST(request: Request) {
 
     if (!admin) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Unauthorized",
-        },
-        { status: 401 }
+        { success: false, error: "Bạn chưa đăng nhập Admin." },
+        { status: 401 },
       );
     }
 
-    const sql = getDb();
+    const body = await request.json().catch(() => null);
 
-    let body: unknown;
-
-    try {
-      body = await request.json();
-    } catch {
+    if (!body || typeof body !== "object") {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Dữ liệu JSON không hợp lệ.",
-        },
-        { status: 400 }
-      );
-    }
-
-    if (
-      typeof body !== "object" ||
-      body === null
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Dữ liệu không hợp lệ.",
-        },
-        { status: 400 }
+        { success: false, error: "Dữ liệu không hợp lệ." },
+        { status: 400 },
       );
     }
 
     const data = body as Record<string, unknown>;
-
-    const title =
-      typeof data.title === "string"
-        ? data.title.trim()
-        : "";
-
-    const content =
-      typeof data.content === "string"
-        ? data.content.trim()
-        : "";
-
-    const mood =
-      typeof data.mood === "string" &&
-      data.mood.trim()
-        ? data.mood.trim()
-        : "Personal";
-
-    const moodIcon =
-      typeof data.moodIcon === "string" &&
-      data.moodIcon.trim()
-        ? data.moodIcon.trim()
-        : "🌸";
-
+    const title = typeof data.title === "string" ? data.title.trim() : "";
+    const content = typeof data.content === "string" ? data.content.trim() : "";
+    const mood = typeof data.mood === "string" && data.mood.trim() ? data.mood.trim() : "Personal";
+    const moodIcon = typeof data.moodIcon === "string" && data.moodIcon.trim() ? data.moodIcon.trim() : "🌸";
     const tags = Array.isArray(data.tags)
-      ? data.tags
-          .filter(
-            (tag): tag is string =>
-              typeof tag === "string"
-          )
-          .map((tag) => tag.trim())
-          .filter(Boolean)
+      ? data.tags.filter((tag): tag is string => typeof tag === "string").map((tag) => tag.trim()).filter(Boolean)
       : [];
-
-    const published =
-      typeof data.published === "boolean"
-        ? data.published
-        : true;
+    const published = typeof data.published === "boolean" ? data.published : true;
 
     if (!title) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Tiêu đề không được để trống.",
-        },
-        { status: 400 }
+        { success: false, error: "Tiêu đề không được để trống." },
+        { status: 400 },
       );
     }
 
     if (!content) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Nội dung không được để trống.",
-        },
-        { status: 400 }
+        { success: false, error: "Nội dung không được để trống." },
+        { status: 400 },
       );
     }
 
     const now = new Date();
+    const date = new Intl.DateTimeFormat("vi-VN", {
+      timeZone: "Asia/Ho_Chi_Minh",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(now);
+    const time = new Intl.DateTimeFormat("vi-VN", {
+      timeZone: "Asia/Ho_Chi_Minh",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(now);
 
-    const date = new Intl.DateTimeFormat(
-      "vi-VN",
-      {
-        timeZone: "Asia/Ho_Chi_Minh",
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      }
-    ).format(now);
-
-    const time = new Intl.DateTimeFormat(
-      "vi-VN",
-      {
-        timeZone: "Asia/Ho_Chi_Minh",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }
-    ).format(now);
-
+    const sql = getDb();
     const result = await sql`
       INSERT INTO diary_entries (
         date,
@@ -253,21 +175,14 @@ export async function POST(request: Request) {
     `;
 
     return NextResponse.json(
-      {
-        success: true,
-        entry: result[0],
-      },
-      { status: 201 }
+      { success: true, entry: result[0] },
+      { status: 201 },
     );
   } catch (error) {
     console.error("POST /api/diary:", error);
-
     return NextResponse.json(
-      {
-        success: false,
-        error: "Không thể tạo nhật ký.",
-      },
-      { status: 500 }
+      { success: false, error: "Không thể tạo nhật ký." },
+      { status: 500 },
     );
   }
 }
