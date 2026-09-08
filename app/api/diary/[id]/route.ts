@@ -1,139 +1,50 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { getDb } from "@/lib/db";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-type RouteContext = {
-  params: Promise<{
-    id: string;
-  }>;
-};
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL?.trim().toLowerCase();
 
+async function getAdminUser() {
+  const supabase = await createSupabaseServerClient();
 
-/* =========================================================
-   GET /api/diary/:id
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-   Public:
-   - Chỉ xem published.
+  if (!user) return null;
 
-   Admin:
-   - Xem cả draft.
-========================================================= */
+  const email = user.email?.trim().toLowerCase();
 
-export async function GET(
-  _request: Request,
-  context: RouteContext
-) {
-  try {
-    const { id } = await context.params;
-
-    const diaryId = Number(id);
-
-    if (
-      !Number.isSafeInteger(diaryId) ||
-      diaryId <= 0
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "ID không hợp lệ.",
-        },
-        { status: 400 }
-      );
-    }
-
-    const sql = getDb();
-    const session = await auth();
-
-    const isAdmin = Boolean(session?.user);
-
-    const result = isAdmin
-      ? await sql`
-          SELECT
-            id,
-            date,
-            time,
-            title,
-            content,
-            mood,
-            mood_icon AS "moodIcon",
-            tags,
-            published,
-            created_at AS "createdAt"
-          FROM diary_entries
-          WHERE id = ${diaryId}
-          LIMIT 1
-        `
-      : await sql`
-          SELECT
-            id,
-            date,
-            time,
-            title,
-            content,
-            mood,
-            mood_icon AS "moodIcon",
-            tags,
-            published,
-            created_at AS "createdAt"
-          FROM diary_entries
-          WHERE id = ${diaryId}
-            AND published = TRUE
-          LIMIT 1
-        `;
-
-    if (result.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Không tìm thấy nhật ký.",
-        },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      entry: result[0],
-    });
-  } catch (error) {
-    console.error(
-      "GET /api/diary/[id]:",
-      error
-    );
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Không thể tải nhật ký.",
-      },
-      { status: 500 }
-    );
+  if (!ADMIN_EMAIL || email !== ADMIN_EMAIL) {
+    return null;
   }
+
+  return user;
 }
 
+function getId(
+  context: { params: Promise<{ id: string }> }
+) {
+  return context.params.then((params) => params.id);
+}
 
 /* =========================================================
-   PATCH /api/diary/:id
+   PATCH /api/diary/[id]
 
-   Chỉ admin.
-
-   Cho phép cập nhật:
-   - title
-   - content
-   - mood
-   - moodIcon
-   - tags
-   - published
+   Admin:
+   - Publish / Unpublish
 ========================================================= */
 
 export async function PATCH(
   request: Request,
-  context: RouteContext
+  context: {
+    params: Promise<{ id: string }>;
+  }
 ) {
   try {
-    const session = await auth();
+    const admin = await getAdminUser();
 
-    if (!session?.user) {
+    if (!admin) {
       return NextResponse.json(
         {
           success: false,
@@ -143,18 +54,13 @@ export async function PATCH(
       );
     }
 
-    const { id } = await context.params;
+    const id = await getId(context);
 
-    const diaryId = Number(id);
-
-    if (
-      !Number.isSafeInteger(diaryId) ||
-      diaryId <= 0
-    ) {
+    if (!id) {
       return NextResponse.json(
         {
           success: false,
-          error: "ID không hợp lệ.",
+          error: "ID nhật ký không hợp lệ.",
         },
         { status: 400 }
       );
@@ -187,115 +93,24 @@ export async function PATCH(
       );
     }
 
-    const data = body as Record<
-      string,
-      unknown
-    >;
+    const data = body as Record<string, unknown>;
 
-    const title =
-      typeof data.title === "string"
-        ? data.title.trim()
-        : undefined;
-
-    const content =
-      typeof data.content === "string"
-        ? data.content.trim()
-        : undefined;
-
-    const mood =
-      typeof data.mood === "string"
-        ? data.mood.trim()
-        : undefined;
-
-    const moodIcon =
-      typeof data.moodIcon === "string"
-        ? data.moodIcon.trim()
-        : undefined;
-
-    const tags = Array.isArray(data.tags)
-      ? data.tags
-          .filter(
-            (tag): tag is string =>
-              typeof tag === "string"
-          )
-          .map((tag) => tag.trim())
-          .filter(Boolean)
-      : undefined;
-
-    const published =
-      typeof data.published === "boolean"
-        ? data.published
-        : undefined;
-
-    if (
-      title !== undefined &&
-      !title
-    ) {
+    if (typeof data.published !== "boolean") {
       return NextResponse.json(
         {
           success: false,
-          error: "Tiêu đề không được để trống.",
+          error: "Giá trị published không hợp lệ.",
         },
         { status: 400 }
       );
     }
-
-    if (
-      content !== undefined &&
-      !content
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Nội dung không được để trống.",
-        },
-        { status: 400 }
-      );
-    }
-
-    /*
-      COALESCE:
-      - Có giá trị mới → update
-      - undefined → giữ giá trị cũ
-    */
 
     const sql = getDb();
 
     const result = await sql`
       UPDATE diary_entries
-      SET
-        title = COALESCE(
-          ${title ?? null},
-          title
-        ),
-
-        content = COALESCE(
-          ${content ?? null},
-          content
-        ),
-
-        mood = COALESCE(
-          ${mood ?? null},
-          mood
-        ),
-
-        mood_icon = COALESCE(
-          ${moodIcon ?? null},
-          mood_icon
-        ),
-
-        tags = COALESCE(
-          ${tags ?? null},
-          tags
-        ),
-
-        published = COALESCE(
-          ${published ?? null},
-          published
-        )
-
-      WHERE id = ${diaryId}
-
+      SET published = ${data.published}
+      WHERE id = ${id}
       RETURNING
         id,
         date,
@@ -339,21 +154,22 @@ export async function PATCH(
   }
 }
 
-
 /* =========================================================
-   DELETE /api/diary/:id
+   DELETE /api/diary/[id]
 
-   Chỉ admin.
+   Chỉ ADMIN mới được xóa.
 ========================================================= */
 
 export async function DELETE(
-  _request: Request,
-  context: RouteContext
+  request: Request,
+  context: {
+    params: Promise<{ id: string }>;
+  }
 ) {
   try {
-    const session = await auth();
+    const admin = await getAdminUser();
 
-    if (!session?.user) {
+    if (!admin) {
       return NextResponse.json(
         {
           success: false,
@@ -363,18 +179,13 @@ export async function DELETE(
       );
     }
 
-    const { id } = await context.params;
+    const id = await getId(context);
 
-    const diaryId = Number(id);
-
-    if (
-      !Number.isSafeInteger(diaryId) ||
-      diaryId <= 0
-    ) {
+    if (!id) {
       return NextResponse.json(
         {
           success: false,
-          error: "ID không hợp lệ.",
+          error: "ID nhật ký không hợp lệ.",
         },
         { status: 400 }
       );
@@ -384,7 +195,7 @@ export async function DELETE(
 
     const result = await sql`
       DELETE FROM diary_entries
-      WHERE id = ${diaryId}
+      WHERE id = ${id}
       RETURNING id
     `;
 
@@ -401,7 +212,6 @@ export async function DELETE(
     return NextResponse.json({
       success: true,
       message: "Đã xóa nhật ký.",
-      id: diaryId,
     });
   } catch (error) {
     console.error(
