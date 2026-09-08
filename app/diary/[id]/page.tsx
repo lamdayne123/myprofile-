@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   BookOpen,
@@ -27,8 +27,13 @@ type DiaryEntry = {
 };
 
 export default function DiaryDetailPage() {
-  const params = useParams();
+  const params = useParams<{ id: string }>();
   const router = useRouter();
+
+  const diaryId = useMemo(() => {
+    const value = params?.id;
+    return Array.isArray(value) ? value[0] : value;
+  }, [params?.id]);
 
   const [entry, setEntry] = useState<DiaryEntry | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,7 +46,7 @@ export default function DiaryDetailPage() {
         setError("");
 
         const response = await fetch(
-          `/api/diary/${params.id}`,
+          `/api/diary/${encodeURIComponent(diaryId)}`,
           {
             cache: "no-store",
           }
@@ -67,10 +72,10 @@ setEntry(data.entry);
       }
     };
 
-    if (params.id) {
+    if (diaryId) {
       fetchEntry();
     }
-  }, [params.id]);
+  }, [diaryId]);
 
   const handleShare = async () => {
     try {
@@ -249,12 +254,12 @@ setEntry(data.entry);
 
               {/* TAGS */}
 
-              {entry.tags.length > 0 && (
+              {entry.tags?.length > 0 && (
                 <div className="flex items-center gap-2 flex-wrap mb-7">
 
                   <Tag className="w-3.5 h-3.5 text-slate-400" />
 
-                  {entry.tags.map((tag) => (
+                  {entry.tags?.map((tag) => (
                     <span
                       key={tag}
                       className="text-[9px] px-2.5 py-1 rounded-lg bg-sky-100/70 text-sky-700 border border-sky-100"
