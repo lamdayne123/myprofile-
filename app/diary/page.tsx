@@ -18,6 +18,12 @@ import {
   Loader2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { createBrowserClient } from "@supabase/ssr";
+
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 type DiaryEntry = {
   id: number | string;
@@ -45,6 +51,8 @@ export default function DiaryPage() {
   const [showAdmin, setShowAdmin] = useState(false);
 
   const [adminUnlocked, setAdminUnlocked] = useState(false);
+  const [adminEmail, setAdminEmail] = useState("");
+  const [authLoading, setAuthLoading] = useState(true);
 
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -90,6 +98,25 @@ setEntries(
 
   useEffect(() => {
     loadDiary();
+
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getUser();
+      setAdminUnlocked(!!data.user);
+      setAdminEmail(data.user?.email ?? "");
+      setAuthLoading(false);
+    };
+
+    checkSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setAdminUnlocked(!!session?.user);
+        setAdminEmail(session?.user?.email ?? "");
+        void loadDiary();
+      }
+    );
+
+    return () => authListener.subscription.unsubscribe();
   }, []);
 
   /* =========================
@@ -113,34 +140,59 @@ setEntries(
   }, [entries, search]);
 
   /* =========================
-     AUTH
+     AUTH - SUPABASE
   ========================= */
 
   const loginAdmin = async () => {
     setPasswordError("");
 
-    try {
-      /*
-       * Auth.js thực tế nên kiểm tra session
-       * chứ không kiểm tra password trực tiếp ở đây.
-       *
-       * Nếu auth.ts của bạn đã cấu hình Credentials,
-       * phần này sẽ được thay bằng signIn().
-       */
+    if (!adminEmail.trim() || !password) {
+      setPasswordError("Vui lòng nhập email và mật khẩu.");
+      return;
+    }
 
-      const response = await fetch("/api/diary", {
-        method: "HEAD",
+    try {
+      setAuthLoading(true);
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: adminEmail.trim(),
+        password,
       });
 
-      if (response.ok) {
-        setAdminUnlocked(true);
-        setPassword("");
-      } else {
-        setPasswordError("Không thể xác thực.");
+      if (error) {
+        setAdminUnlocked(false);
+        setPasswordError(
+          error.message === "Invalid login credentials"
+            ? "Email hoặc mật khẩu không đúng."
+            : error.message
+        );
+        return;
       }
-    } catch {
-      setPasswordError("Không thể kết nối máy chủ.");
+
+      setAdminUnlocked(!!data.user);
+      setAdminEmail(data.user?.email ?? adminEmail.trim());
+      setPassword("");
+      setShowAdmin(false);
+      await loadDiary();
+    } catch (error) {
+      setPasswordError(
+        error instanceof Error
+          ? error.message
+          : "Không thể đăng nhập."
+      );
+    } finally {
+      setAuthLoading(false);
     }
+  };
+
+  const logoutAdmin = async () => {
+    await supabase.auth.signOut();
+    setAdminUnlocked(false);
+    setAdminEmail("");
+    setPassword("");
+    setShowAdmin(false);
+    setShowEditor(false);
+    await loadDiary();
   };
 
   /* =========================
@@ -295,17 +347,17 @@ setEntries(
 
       <div className="absolute inset-0 bg-sky-100/15 backdrop-contrast-[1.02] pointer-events-none" />
 
-      <main className="relative z-10 pl-28 pr-6 pt-8 pb-28 min-h-screen">
+      <main className="relative z-10 px-3 sm:px-5 lg:pl-28 lg:pr-6 pt-5 sm:pt-8 pb-28 min-h-screen">
 
-        <section className="max-w-6xl mx-auto">
+        <section className="max-w-6xl mx-auto w-full">
 
           {/* HEADER */}
 
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
 
-              <div className="w-11 h-11 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 flex items-center justify-center shadow-sm">
 
                 <BookOpen className="w-5 h-5 text-teal-600" />
 
@@ -317,7 +369,7 @@ setEntries(
                   PERSONAL SPACE
                 </p>
 
-                <h1 className="text-2xl font-bold text-slate-800">
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
                   My Diary
                 </h1>
 
@@ -329,11 +381,11 @@ setEntries(
 
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex w-full sm:w-auto items-center gap-2">
 
               <button
                 onClick={() => setShowAdmin(true)}
-                className="h-9 px-3 rounded-xl bg-white/55 backdrop-blur-xl border border-white/80 text-[10px] font-semibold text-slate-600 hover:bg-white/80 transition flex items-center gap-1.5"
+                className="h-9 px-3 rounded-xl bg-white/55 backdrop-blur-xl border border-white/80 text-[10px] font-semibold text-slate-600 hover:bg-white/80 transition flex items-center gap-1.5 shrink-0"
               >
                 <Lock className="w-3.5 h-3.5" />
                 ADMIN
@@ -342,7 +394,7 @@ setEntries(
               {adminUnlocked && (
                 <button
                   onClick={() => setShowEditor(true)}
-                  className="h-9 px-3 rounded-xl bg-teal-500 text-white text-[10px] font-semibold shadow-sm hover:bg-teal-600 transition flex items-center gap-1.5"
+                  className="h-9 flex-1 sm:flex-none px-3 rounded-xl bg-teal-500 text-white text-[10px] font-semibold shadow-sm hover:bg-teal-600 transition flex items-center gap-1.5"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   NEW ENTRY
@@ -380,15 +432,15 @@ setEntries(
 
           {/* CONTENT */}
 
-          <div className="grid grid-cols-12 gap-5">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
 
             {/* TIMELINE */}
 
-            <section className="col-span-8">
+            <section className="col-span-1 lg:col-span-8">
 
-              <div className="bg-white/45 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-sm">
+              <div className="bg-white/45 backdrop-blur-xl border border-white/80 rounded-3xl p-3.5 sm:p-5 shadow-sm">
 
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-5 sm:mb-6">
 
                   <div className="flex items-center gap-2">
 
@@ -439,7 +491,7 @@ setEntries(
 
                           </div>
 
-                          <div className="bg-white/55 backdrop-blur-md border border-white/90 rounded-2xl p-4 hover:bg-white/70 transition">
+                          <div className="bg-white/55 backdrop-blur-md border border-white/90 rounded-2xl p-3.5 sm:p-4 hover:bg-white/70 transition">
 
                             <div className="flex items-start justify-between gap-3">
 
@@ -489,7 +541,7 @@ setEntries(
                               {entry.content}
                             </p>
 
-                            <div className="flex items-center justify-between mt-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-3">
 
                               <div className="flex gap-1 flex-wrap">
 
@@ -556,11 +608,11 @@ setEntries(
 
             {/* RIGHT */}
 
-            <aside className="col-span-4 space-y-4">
+            <aside className="col-span-1 lg:col-span-4 space-y-4">
 
               {/* ABOUT */}
 
-              <div className="bg-white/45 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-sm">
+              <div className="bg-white/45 backdrop-blur-xl border border-white/80 rounded-3xl p-3.5 sm:p-5 shadow-sm">
 
                 <div className="flex items-center gap-2 mb-4">
 
@@ -635,7 +687,7 @@ setEntries(
 
               {/* MOODS */}
 
-              <div className="bg-white/45 backdrop-blur-xl border border-white/80 rounded-3xl p-5 shadow-sm">
+              <div className="bg-white/45 backdrop-blur-xl border border-white/80 rounded-3xl p-3.5 sm:p-5 shadow-sm">
 
                 <p className="text-[10px] font-bold text-slate-600 mb-3">
                   MY MOODS
@@ -682,9 +734,9 @@ setEntries(
 
       {showAdmin && !adminUnlocked && (
 
-        <div className="fixed inset-0 z-[110] bg-slate-900/20 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[110] bg-slate-900/20 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
 
-          <div className="w-full max-w-sm bg-white/85 backdrop-blur-2xl border border-white rounded-3xl shadow-2xl p-6">
+          <div className="w-full max-w-sm bg-white/90 backdrop-blur-2xl border border-white/80 rounded-t-[2rem] sm:rounded-3xl shadow-2xl p-5 sm:p-6 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:pb-6">
 
             <div className="flex items-center justify-between mb-5">
 
@@ -703,7 +755,7 @@ setEntries(
                   </h2>
 
                   <p className="text-[9px] text-slate-400">
-                    Private area
+                    Supabase Admin
                   </p>
 
                 </div>
@@ -712,6 +764,7 @@ setEntries(
 
               <button
                 onClick={() => setShowAdmin(false)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/60 transition"
               >
                 <X className="w-4 h-4 text-slate-400" />
               </button>
@@ -719,22 +772,35 @@ setEntries(
             </div>
 
             <label className="text-[10px] font-semibold text-slate-600">
-              ADMIN PASSWORD
+              ADMIN EMAIL
+            </label>
+
+            <input
+              type="email"
+              value={adminEmail}
+              onChange={(event) => setAdminEmail(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") loginAdmin();
+              }}
+              placeholder="admin@example.com"
+              autoComplete="email"
+              className="w-full mt-2 h-11 px-3 rounded-xl bg-white/70 border border-white/90 outline-none text-xs focus:ring-2 focus:ring-teal-200"
+            />
+
+            <label className="block mt-3 text-[10px] font-semibold text-slate-600">
+              PASSWORD
             </label>
 
             <input
               type="password"
               value={password}
-              onChange={(event) =>
-                setPassword(event.target.value)
-              }
+              onChange={(event) => setPassword(event.target.value)}
               onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  loginAdmin();
-                }
+                if (event.key === "Enter") loginAdmin();
               }}
               placeholder="Nhập mật khẩu..."
-              className="w-full mt-2 h-10 px-3 rounded-xl bg-white/70 border border-white/90 outline-none text-xs focus:ring-2 focus:ring-teal-200"
+              autoComplete="current-password"
+              className="w-full mt-2 h-11 px-3 rounded-xl bg-white/70 border border-white/90 outline-none text-xs focus:ring-2 focus:ring-teal-200"
             />
 
             {passwordError && (
@@ -745,9 +811,11 @@ setEntries(
 
             <button
               onClick={loginAdmin}
-              className="w-full mt-4 h-10 rounded-xl bg-teal-500 text-white text-xs font-semibold hover:bg-teal-600 transition"
+              disabled={authLoading}
+              className="w-full mt-4 h-11 rounded-xl bg-teal-500 text-white text-xs font-semibold hover:bg-teal-600 transition disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              Đăng nhập
+              {authLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              {authLoading ? "Đang đăng nhập..." : "Đăng nhập"}
             </button>
 
           </div>
@@ -762,13 +830,13 @@ setEntries(
 
       {showAdmin && adminUnlocked && (
 
-        <div className="fixed inset-0 z-[110] bg-slate-900/20 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[110] bg-slate-900/20 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
 
-          <div className="w-full max-w-2xl max-h-[85vh] bg-white/85 backdrop-blur-2xl border border-white rounded-3xl shadow-2xl overflow-hidden">
+          <div className="w-full max-w-2xl max-h-[92vh] sm:max-h-[85vh] bg-white/90 backdrop-blur-2xl border border-white/80 rounded-t-[2rem] sm:rounded-3xl shadow-2xl overflow-hidden">
 
             <div className="px-5 py-4 border-b border-white/70 flex items-center justify-between">
 
-              <div>
+              <div className="min-w-0">
 
                 <p className="text-[9px] text-teal-600 font-bold">
                   ADMIN MODE
@@ -778,17 +846,30 @@ setEntries(
                   Diary Manager
                 </h2>
 
+                <p className="text-[8px] text-slate-400 truncate max-w-[190px]">
+                  {adminEmail}
+                </p>
+
               </div>
 
-              <button
-                onClick={() => setShowAdmin(false)}
-              >
-                <X className="w-4 h-4 text-slate-400" />
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={logoutAdmin}
+                  className="h-8 px-2.5 rounded-lg bg-white/60 border border-white/80 text-[9px] font-semibold text-slate-500 hover:bg-white transition"
+                >
+                  Đăng xuất
+                </button>
+                <button
+                  onClick={() => setShowAdmin(false)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/60 transition"
+                >
+                  <X className="w-4 h-4 text-slate-400" />
+                </button>
+              </div>
 
             </div>
 
-            <div className="p-4 max-h-[65vh] overflow-y-auto space-y-2">
+            <div className="p-3 sm:p-4 max-h-[68vh] overflow-y-auto space-y-2">
 
               {entries.map((entry) => (
 
@@ -870,7 +951,7 @@ setEntries(
 
         <div className="fixed inset-0 z-[120] bg-slate-900/20 backdrop-blur-sm flex items-center justify-center p-4">
 
-          <div className="w-full max-w-xl bg-white/90 backdrop-blur-2xl border border-white rounded-3xl shadow-2xl overflow-hidden">
+          <div className="w-full max-w-xl max-h-[94vh] bg-white/95 backdrop-blur-2xl border border-white/80 rounded-t-[2rem] sm:rounded-3xl shadow-2xl overflow-hidden">
 
             <div className="px-5 py-4 border-b border-white/70 flex justify-between items-center">
 
@@ -892,7 +973,7 @@ setEntries(
 
             </div>
 
-            <div className="p-5 space-y-4">
+            <div className="p-4 sm:p-5 space-y-4 overflow-y-auto">
 
               <div>
 
@@ -989,13 +1070,13 @@ setEntries(
 
             </div>
 
-            <div className="px-5 py-4 border-t border-white/70 flex justify-end gap-2">
+            <div className="px-4 sm:px-5 py-4 border-t border-white/70 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-4">
 
               <button
                 onClick={() =>
                   setShowEditor(false)
                 }
-                className="h-9 px-4 rounded-xl bg-white/70 border border-white text-[10px] font-semibold text-slate-500"
+                className="h-10 sm:h-9 px-4 rounded-xl bg-white/70 border border-white text-[10px] font-semibold text-slate-500 w-full sm:w-auto"
               >
                 Hủy
               </button>
@@ -1007,7 +1088,7 @@ setEntries(
                   !newTitle.trim() ||
                   !newContent.trim()
                 }
-                className="h-9 px-4 rounded-xl bg-teal-500 text-white text-[10px] font-semibold disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                className="h-10 sm:h-9 px-4 rounded-xl bg-teal-500 text-white text-[10px] font-semibold disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 w-full sm:w-auto"
               >
 
                 {saving && (
