@@ -1,6 +1,5 @@
 /* app/api/diary/route.ts */
 import { NextResponse } from "next/server";
-import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isAdminUser } from "@/lib/admin";
@@ -14,7 +13,6 @@ async function getAdminUser() {
   if (error || !data.user) return null;
 
   if (!isAdminUser(data.user)) return null;
-
   return data.user;
 }
 
