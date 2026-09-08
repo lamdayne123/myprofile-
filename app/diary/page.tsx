@@ -291,9 +291,9 @@ export default function DiaryPage() {
     <div className="relative min-h-screen overflow-x-clip text-slate-800 selection:bg-cyan-200/60">
       <div className="fixed inset-0 -z-20 overflow-hidden bg-sky-100">
         <picture>
-          <source media="(max-width: 767px)" srcSet="/images/background-mobile.jpg" />
+          <source media="(max-width: 767px)" srcSet="public/images/background-mobile.jpg" />
           <img
-            src="/images/background.jpg"
+            src="public/images/background-pc.jpg"
             alt=""
             aria-hidden="true"
             className="h-full w-full object-cover object-center"
