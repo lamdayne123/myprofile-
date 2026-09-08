@@ -1,3 +1,4 @@
+/* lib/supabase/client.ts */
 import { createBrowserClient } from "@supabase/ssr";
 
 export function createClient() {
@@ -5,7 +6,9 @@ export function createClient() {
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (!url || !key) {
-    throw new Error("Missing Supabase public environment variables.");
+    throw new Error(
+      "Missing Supabase public environment variables. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.",
+    );
   }
 
   return createBrowserClient(url, key);

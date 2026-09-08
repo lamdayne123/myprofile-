@@ -1,14 +1,18 @@
+/* lib/supabase/server.ts */
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export async function createSupabaseServerClient() {
-  const cookieStore = await cookies();
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (!url || !key) {
-    throw new Error("Missing Supabase environment variables.");
+    throw new Error(
+      "Missing Supabase public environment variables. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.",
+    );
   }
+
+  const cookieStore = await cookies();
 
   return createServerClient(url, key, {
     cookies: {
@@ -21,7 +25,8 @@ export async function createSupabaseServerClient() {
             cookieStore.set(name, value, options);
           });
         } catch {
-          // Route handlers can write cookies; Server Components sometimes cannot.
+          // Server Components can be read-only for cookies.
+          // Route Handlers / Proxy can still refresh sessions.
         }
       },
     },
