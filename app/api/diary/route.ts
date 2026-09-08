@@ -1,6 +1,26 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { getDb } from "@/lib/db";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+
+async function getAdminUser() {
+  const supabase = await createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  const email = user.email?.trim().toLowerCase();
+
+  if (!ADMIN_EMAIL || email !== ADMIN_EMAIL) {
+    return null;
+  }
+
+  return user;
+}
 
 /* =========================================================
    GET /api/diary
@@ -9,17 +29,16 @@ import { getDb } from "@/lib/db";
    - Chỉ lấy diary đã publish.
 
    Admin:
-   - Có session thì lấy cả published + draft.
+   - Nếu đăng nhập đúng tài khoản admin thì lấy cả
+     published + draft.
 ========================================================= */
 
 export async function GET() {
   try {
     const sql = getDb();
-    const session = await auth();
+    const admin = await getAdminUser();
 
-    const isAdmin = Boolean(session?.user);
-
-    const entries = isAdmin
+    const entries = admin
       ? await sql`
           SELECT
             id,
@@ -69,18 +88,17 @@ export async function GET() {
   }
 }
 
-
 /* =========================================================
    POST /api/diary
 
-   Chỉ admin đã đăng nhập mới được tạo.
+   Chỉ ADMIN mới được tạo.
 ========================================================= */
 
 export async function POST(request: Request) {
   try {
-    const session = await auth();
+    const admin = await getAdminUser();
 
-    if (!session?.user) {
+    if (!admin) {
       return NextResponse.json(
         {
           success: false,
@@ -119,10 +137,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const data = body as Record<
-      string,
-      unknown
-    >;
+    const data = body as Record<string, unknown>;
 
     const title =
       typeof data.title === "string"
@@ -181,10 +196,6 @@ export async function POST(request: Request) {
       );
     }
 
-    /* ==========================================
-       Vietnamese date/time
-    ========================================== */
-
     const now = new Date();
 
     const date = new Intl.DateTimeFormat(
@@ -206,10 +217,6 @@ export async function POST(request: Request) {
         hour12: false,
       }
     ).format(now);
-
-    /* ==========================================
-       INSERT
-    ========================================== */
 
     const result = await sql`
       INSERT INTO diary_entries (
