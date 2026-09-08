@@ -1,21 +1,11 @@
 /* app/api/diary/route.ts */
 import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isAdminUser } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
-
-function getAdminEmails(): string[] {
-  // Easy admin management:
-  // ADMIN_EMAILS="a@gmail.com,b@gmail.com,c@gmail.com"
-  // ADMIN_EMAIL is still supported for backward compatibility.
-  const raw = process.env.ADMIN_EMAILS ?? process.env.ADMIN_EMAIL ?? "";
-
-  return raw
-    .split(/[,\n;]+/)
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean);
-}
 
 async function getAdminUser() {
   const supabase = await createSupabaseServerClient();
@@ -24,6 +14,7 @@ async function getAdminUser() {
   if (error || !data.user) return null;
 
   if (!isAdminUser(data.user)) return null;
+
   return data.user;
 }
 
